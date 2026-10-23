@@ -1,0 +1,65 @@
+import { useEffect, type ReactNode } from 'react';
+import type { Decorator, Preview } from '@storybook/react-vite';
+import '../src/styles/theme.css';
+
+type Theme = 'light' | 'dark';
+type Surface = 'panel' | 'stage';
+
+/** Applies the theme to <html> and, on the stage, wraps the story in the dark video area. */
+function ThemeFrame({ theme, surface, children }: { theme: Theme; surface: Surface; children: ReactNode }) {
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  if (surface === 'stage') {
+    return (
+      <div data-surface="stage" className="bg-surface-stage p-6">
+        {children}
+      </div>
+    );
+  }
+  return <>{children}</>;
+}
+
+const withTheme: Decorator = (Story, context) => (
+  <ThemeFrame theme={context.globals.theme as Theme} surface={context.globals.surface as Surface}>
+    <Story />
+  </ThemeFrame>
+);
+
+const preview: Preview = {
+  parameters: {
+    a11y: { test: 'error' },
+    controls: { matchers: { color: /(background|color)$/i, date: /Date$/i } },
+  },
+  globalTypes: {
+    theme: {
+      description: 'Color theme',
+      toolbar: {
+        title: 'Theme',
+        icon: 'sun',
+        items: [
+          { value: 'light', title: 'Light', icon: 'sun' },
+          { value: 'dark', title: 'Dark', icon: 'moon' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+    surface: {
+      description: 'Where the component sits',
+      toolbar: {
+        title: 'Surface',
+        icon: 'component',
+        items: [
+          { value: 'panel', title: 'Panel', icon: 'sidebar' },
+          { value: 'stage', title: 'Stage', icon: 'video' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+  },
+  initialGlobals: { theme: 'light', surface: 'panel' },
+  decorators: [withTheme],
+};
+
+export default preview;
