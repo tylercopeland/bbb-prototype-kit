@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shared screen (mock)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1024px; height: 576px; box-sizing: border-box; background: #3b4a5e; padding: 18px 26px 0; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; overflow: hidden">
+  <div style="height: 100%; border-radius: 10px 10px 0 0; background: #ffffff; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,.35)">
+    <div style="height: 38px; flex-shrink: 0; background: #e9ecf0; display: flex; align-items: center; gap: 12px; padding: 0 14px">
+      <span style="display: flex; gap: 6px"><span style="width: 11px; height: 11px; border-radius: 6px; background: #f26b5b"></span><span style="width: 11px; height: 11px; border-radius: 6px; background: #f5bf4f"></span><span style="width: 11px; height: 11px; border-radius: 6px; background: #5fc454"></span></span>
+      <span style="height: 26px; padding: 0 12px; border-radius: 7px 7px 0 0; background: #ffffff; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: #1f2933; margin-top: 12px">Research board</span>
+      <span style="flex: 1; height: 24px; border-radius: 12px; background: #ffffff; display: flex; align-items: center; padding: 0 12px; font-size: 12px; color: #5b6574">research.example.edu/board/week-4</span>
+    </div>
+    <div style="flex: 1; display: flex; min-height: 0">
+      <div style="width: 170px; flex-shrink: 0; background: #f5f7f9; border-right: 1px solid #e1e6ec; padding: 18px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 12px; font-weight: 700; color: #5b6574; letter-spacing: .06em; text-transform: uppercase">Boards</span>
+        <span style="font-size: 13.5px; font-weight: 600; color: #1f2933">Week 3 · Survey</span>
+        <span style="font-size: 13.5px; font-weight: 700; color: #1f62d0; background: #e8f0fd; border-radius: 6px; padding: 4px 8px; margin: 0 -8px">Week 4 · Interviews</span>
+        <span style="font-size: 13.5px; font-weight: 600; color: #1f2933">Week 5 · Prototype</span>
+      </div>
+      <div style="flex: 1; padding: 22px 26px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <span style="font-size: 26px; font-weight: 700; color: #111827">Week 4 · Interview findings</span>
+          <span style="font-size: 13px; color: #5b6574">18 notes · 4 themes</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+          <div style="height: 104px; border-radius: 8px; background: #fff3bf; padding: 12px; box-sizing: border-box; font-size: 13.5px; font-weight: 600; color: #3d3200">“I never know who is still in the room.”</div>
+          <div style="height: 104px; border-radius: 8px; background: #ffe0ea; padding: 12px; box-sizing: border-box; font-size: 13.5px; font-weight: 600; color: #4a1630">“Raised hands get lost when I’m sharing.”</div>
+          <div style="height: 104px; border-radius: 8px; background: #dbeafe; padding: 12px; box-sizing: border-box; font-size: 13.5px; font-weight: 600; color: #12305e">“The controls move around too much.”</div>
+          <div style="height: 104px; border-radius: 8px; background: #dcfce7; padding: 12px; box-sizing: border-box; font-size: 13.5px; font-weight: 600; color: #0f3d22">“Breakouts are great once I find them.”</div>
+          <div style="height: 104px; border-radius: 8px; background: #dbeafe; padding: 12px; box-sizing: border-box; font-size: 13.5px; font-weight: 600; color: #12305e">“I want the slide bigger on my laptop.”</div>
+          <div style="height: 104px; border-radius: 8px; background: #fff3bf; padding: 12px; box-sizing: border-box; font-size: 13.5px; font-weight: 600; color: #3d3200">“Chat and people should be one place.”</div>
+          <div style="height: 104px; border-radius: 8px; background: #ffe0ea; padding: 12px; box-sizing: border-box; font-size: 13.5px; font-weight: 600; color: #4a1630">“Leave looks like hanging up a call.”</div>
+          <div style="height: 104px; border-radius: 8px; background: #dcfce7; padding: 12px; box-sizing: border-box; font-size: 13.5px; font-weight: 600; color: #0f3d22">“Notes during class would help a lot.”</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1024,"height":576}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Breakout room screen (mock)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="position: relative; width: 1024px; height: 576px; overflow: hidden; background: #ffffff; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; color: #111827">
+  <sc-if value="{{isBoard}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; inset: 0; background-color: #fbfcfe; background-image: radial-gradient(#d9dee6 1.4px, transparent 1.4px); background-size: 28px 28px"></div>
+    <div style="position: absolute; left: 48px; top: 36px; font-size: 30px; font-weight: 700">{{title}}</div>
+    <sc-for list="{{notes}}" as="n" hint-placeholder-count="5">
+      <div style="position: absolute; left: {{n.x}}; top: {{n.y}}; width: 190px; height: 150px; box-sizing: border-box; padding: 16px; border-radius: 6px; background: {{n.bg}}; color: {{n.ink}}; font-size: 21px; font-weight: 600; line-height: 1.25; box-shadow: 0 6px 14px rgba(15,23,36,.12); transform: rotate({{n.r}})">{{n.t}}</div>
+    </sc-for>
+    <svg width="1024" height="576" viewBox="0 0 1024 576" style="position: absolute; inset: 0" aria-hidden="true"><path d="{{ink}}" fill="none" stroke="{{inkC}}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <sc-if value="{{hasCursor}}" hint-placeholder-val="{{true}}">
+      <div style="position: absolute; left: {{cx}}; top: {{cy}}; display: flex; align-items: flex-start; gap: 3px"><svg width="26" height="28" viewBox="0 0 20 22" aria-hidden="true"><path d="M2 2l15 8-7 2-3 7z" fill="{{cc}}" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"></path></svg><span style="margin-top: 18px; background: {{cc}}; color: #ffffff; font-size: 16px; font-weight: 700; border-radius: 6px; padding: 2px 9px">{{cname}}</span></div>
+    </sc-if>
+  </sc-if>
+  <sc-if value="{{isDoc}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: #eef1f5"></div>
+    <div style="position: absolute; left: 150px; top: 30px; width: 724px; bottom: 0; background: #ffffff; box-shadow: 0 4px 18px rgba(15,23,36,.1); padding: 44px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+      <div style="font-size: 32px; font-weight: 700">{{title}}</div>
+      <sc-for list="{{lines}}" as="l" hint-placeholder-count="5">
+        <div style="display: flex; gap: 12px; align-items: baseline; font-size: 21px; line-height: 1.35; color: #1f2933"><span style="color: #8a94a3">•</span><span>{{l.t}}</span></div>
+      </sc-for>
+      <div style="display: flex; align-items: center; gap: 4px; font-size: 21px; color: #1f2933"><span>{{typing}}</span><span style="width: 3px; height: 26px; background: {{cc}}"></span><span style="margin-left: 6px; background: {{cc}}; color: #ffffff; font-size: 15px; font-weight: 700; border-radius: 5px; padding: 1px 7px">{{cname}}</span></div>
+    </div>
+  </sc-if>
+  <sc-if value="{{isSlide}}" hint-placeholder-val="{{false}}">
+    <dc-import name="Slide" hint-size="1024px,576px"></dc-import>
+  </sc-if>
+  <sc-if value="{{isQuiz}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: #f4f8ff; padding: 50px 70px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px">
+      <div style="font-size: 18px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #1f62d0">Practice · question 3 of 5</div>
+      <div style="font-size: 34px; font-weight: 700; line-height: 1.2">Which change makes it easiest to see who is muted?</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+        <sc-for list="{{answers}}" as="a" hint-placeholder-count="4">
+          <div style="height: 80px; border-radius: 12px; border: 2px solid {{a.bd}}; background: {{a.bg}}; display: flex; align-items: center; padding: 0 22px; font-size: 22px; font-weight: 600; color: #1f2933">{{a.t}}</div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"kind":{"editor":"enum","options":["board","doc","slide","quiz"],"default":"board"},"n":{"editor":"string","default":"0"},"$preview":{"width":1024,"height":576}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const kind = this.props.kind || 'board';
+    const n = parseInt(this.props.n || '0', 10) || 0;
+    const titles = ['What makes a class feel live?', 'Our three fixes', 'Mute states, sketched', 'Room for questions', 'Ideas wall', 'Notes for the share-back'];
+    const notesSets = [
+      [['Hear my name called', '#fff3bf', '#3d3200'], ['See who is talking', '#dbeafe', '#12305e'], ['Quick polls', '#dcfce7', '#0f3d22'], ['Fewer buttons', '#ffe0ea', '#4a1630'], ['Raise hand works', '#fff3bf', '#3d3200']],
+      [['Labels on icons', '#dbeafe', '#12305e'], ['One place for chat', '#dcfce7', '#0f3d22'], ['Bigger slide', '#fff3bf', '#3d3200']],
+      [['Grey = muted', '#eef1f5', '#1f2933'], ['Green = live', '#dcfce7', '#0f3d22'], ['Headphones?', '#ffe0ea', '#4a1630'], ['Hide when off', '#dbeafe', '#12305e']]
+    ];
+    const pos = [[60, 110, '-2deg'], [290, 130, '1.5deg'], [520, 100, '-1deg'], [140, 320, '2deg'], [380, 340, '-2deg']];
+    const set = notesSets[n % notesSets.length];
+    const notes = set.map((s, i) => ({ t: s[0], bg: s[1], ink: s[2], x: pos[i][0] + 'px', y: pos[i][1] + 'px', r: pos[i][2] }));
+    const inks = ['M760 140c60 40 120 120 110 220s-90 140-170 120 M690 360l12 30 28-16', 'M720 170h220 M720 230h180 M720 290h200 M720 400c40-40 120-40 160 0', 'M700 150c80-30 200 10 230 90s-40 170-140 170-150-60-130-140'];
+    const cur = [['Ana', '#a23c64', '700px', '380px'], ['Bruno', '#4e6b2a', '640px', '300px'], ['Lucas', '#6b4fa3', '760px', '260px']][n % 3];
+    const docs = [
+      ['Group 2 · share-back', ['Students lose track of who is talking', 'Chat and people should live together', 'The leave button looks like hanging up', 'Notes during class would help']],
+      ['My reflection', ['The new mute icons are easier to scan', 'I still want to see hands first', 'Breakouts should show a timer']],
+      ['Interview notes', ['P3: “I never know who is still there”', 'P5 wants the slide bigger on a laptop']]
+    ][n % 3];
+    return {
+      isBoard: kind === 'board', isDoc: kind === 'doc', isSlide: kind === 'slide', isQuiz: kind === 'quiz',
+      title: kind === 'doc' ? docs[0] : titles[n % titles.length], notes, ink: inks[n % inks.length], inkC: ['#e8590c', '#1f62d0', '#12a150'][n % 3],
+      hasCursor: true, cname: cur[0], cc: cur[1], cx: cur[2], cy: cur[3],
+      lines: docs[1].map((t) => ({ t })), typing: 'Next we could try',
+      answers: [['Grey icons for muted', '#1f62d0', '#e8f0fd'], ['A red badge on everyone', '#d5dce5', '#ffffff'], ['Hide the mic icon', '#d5dce5', '#ffffff'], ['Text under each name', '#d5dce5', '#ffffff']].map((a) => ({ t: a[0], bd: a[1], bg: a[2] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

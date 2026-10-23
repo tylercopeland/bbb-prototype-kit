@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Breakout rooms</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}@keyframes brIn{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}@keyframes brPanel{from{opacity:0;translate:-24px 0}to{opacity:1;translate:0 0}}@keyframes brPulse{0%,100%{opacity:1}50%{opacity:.35}}.br-in{animation:brIn .22s ease-out both}.br-panel{animation:brPanel .26s cubic-bezier(.2,.8,.2,1) both}.br-pulse{animation:brPulse 1.6s ease-in-out infinite}@media (prefers-reduced-motion: reduce){.br-in,.br-panel,.br-pulse{animation:none}}.chip:hover{border-color:#8fb0e6}.rcard:hover{box-shadow:0 0 0 2px #3a4d66}button:focus:not(:focus-visible){outline:none}button:focus-visible{outline:2px solid #5b8fe0;outline-offset:2px}.br-scroll::-webkit-scrollbar{width:8px}.br-scroll::-webkit-scrollbar-thumb{background:#d5dce5;border-radius:4px}</style>
+</helmet>
+<div style="position: relative; width: 1400px; height: 900px; overflow: hidden; background: #0b1220; color: #e6edf5; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif">
+
+  <!-- ===== top = information ===== -->
+  <div style="position: absolute; left: {{infoL}}; top: 14px; height: 38px; display: flex; align-items: center; gap: 10px; white-space: nowrap">
+    <span style="font-size: 14.5px; font-weight: 700; color: #ffffff">Hack Week: Brazil 2026</span>
+    <span style="display: flex; align-items: center; gap: 5px; color: #ff8a8f; font-weight: 700; font-size: 12.5px"><span style="width: 7px; height: 7px; border-radius: 4px; background: #ff5a5f"></span>REC</span>
+    <span style="font-size: 13px; color: #a9b6c6">14 people · 29:36</span>
+  </div>
+  <sc-if value="{{isLive}}" hint-placeholder-val="{{false}}">
+    <button type="button" onClick="{{goHelp}}" style="position: absolute; right: 24px; top: 14px; height: 32px; box-sizing: border-box; padding: 0 12px 0 6px; border-radius: 16px; border: 1.5px dashed #f5b74d; background: rgba(18,27,41,.92); display: flex; align-items: center; gap: 8px; font-family: inherit; font-size: 13px; font-weight: 600; color: #ffffff; cursor: pointer">
+      <span style="width: 22px; height: 22px; border-radius: 11px; background: #f5b74d; color: #2a1a00; display: flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="{{I.hand}}"></path></svg></span>Room 2 asked for help
+    </button>
+  </sc-if>
+
+  <sc-if value="{{isBack}}" hint-placeholder-val="{{false}}">
+    <button type="button" onClick="{{goRooms}}" style="position: absolute; right: 24px; top: 14px; height: 32px; box-sizing: border-box; padding: 0 12px 0 6px; border-radius: 16px; border: 1.5px dashed #7fb0ff; background: rgba(18,27,41,.92); display: flex; align-items: center; gap: 8px; font-family: inherit; font-size: 13px; font-weight: 600; color: #ffffff; cursor: pointer">
+      <span style="width: 22px; height: 22px; border-radius: 11px; background: #7fb0ff; color: #0b1f44; display: flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>Breakouts ended · {{nRoomsOpen}} rooms’ work saved
+    </button>
+  </sc-if>
+
+  <!-- ===== stage ===== -->
+  <div style="position: absolute; left: {{stL}}; top: 64px; width: {{stW}}; height: 742px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px; height: 36px; flex-shrink: 0">
+      <div role="tablist" aria-label="What you're looking at" style="display: flex; gap: 4px; padding: 3px; border-radius: 11px; background: #131d2c; border: 1px solid #24344a; flex-shrink: 0">
+        <button type="button" role="tab" aria-selected="{{tabMainSel}}" onClick="{{goMain}}" style="height: 30px; padding: 0 12px; border: 0; border-radius: 8px; background: {{tabMainBg}}; color: {{tabMainFg}}; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18 M5 4v10h14V4 M12 14v3 M8 21l4-4 4 4"></path></svg>Presentation<span style="font-weight: 500; opacity: .75">3 / 12</span></button>
+        <button type="button" role="tab" aria-selected="{{tabRoomsSel}}" onClick="{{goRooms}}" style="height: 30px; padding: 0 12px; border: 0; border-radius: 8px; background: {{tabRoomsBg}}; color: {{tabRoomsFg}}; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h7v7H3z M14 4h7v7h-7z M3 14h7v6H3z M14 14h7v6h-7z"></path></svg>{{roomsTabLabel}}<sc-if value="{{tabLive}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: center; gap: 5px; font-weight: 500; opacity: .85"><span class="br-pulse" style="width: 7px; height: 7px; border-radius: 4px; background: #3ecf8e"></span>{{timeLeft}}</span></sc-if></button>
+      </div>
+      <span style="min-width: 0; font-size: 13.5px; color: #8d9aab; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{headerHint}}</span>
+      <span style="flex: 1"></span>
+      <sc-if value="{{showSetupBoard}}" hint-placeholder-val="{{true}}">
+        <sc-if value="{{uneven}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{evenOut}}" style="height: 34px; padding: 0 12px; border: 1.5px dashed #f5b74d; border-radius: 17px; background: transparent; color: #ffd48a; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0">Rooms are uneven · Even out</button></sc-if>
+        <sc-if value="{{isGroups}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{shuffle}}" style="height: 34px; padding: 0 14px; border: 1px solid #2c3d55; border-radius: 17px; background: #131d2c; color: #e6edf5; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap; flex-shrink: 0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5 M4 20L21 3 M21 16v5h-5 M15 15l6 6 M4 4l5 5"></path></svg>Shuffle evenly</button></sc-if>
+      </sc-if>
+      <sc-if value="{{isLive}}" hint-placeholder-val="{{false}}">
+        <sc-if value="{{showLiveBoard}}" hint-placeholder-val="{{false}}"><span title="Previews are silent. Students see an eye on their room while you watch." style="display: flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px; border-radius: 15px; background: #131d2c; border: 1px solid #24344a; font-size: 12.5px; color: #a9b6c6; white-space: nowrap; flex-shrink: 0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6"></path></svg>Silent previews · students see when you watch</span></sc-if>
+      </sc-if>
+    </div>
+
+    <!-- SETUP: room board -->
+    <sc-if value="{{showSetupBoard}}" hint-placeholder-val="{{true}}">
+      <div class="br-in" style="flex: 1; min-height: 0; display: grid; grid-template-columns: {{setupCols}}; grid-auto-rows: {{setupRowH}}; gap: 12px; align-content: start; overflow: auto">
+        <sc-for list="{{rooms}}" as="r" hint-placeholder-count="4">
+          <div style="border-radius: 14px; background: #131d2c; border: {{r.border}}; box-sizing: border-box; padding: {{r.pad}}; display: flex; flex-direction: column; gap: 8px; min-width: 0">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <span style="width: {{r.dotS}}; height: {{r.dotS}}; border-radius: 4px; background: {{r.c}}; flex-shrink: 0"></span>
+              <span style="flex: 1; min-width: 0; font-size: {{r.titleFs}}; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span>
+              <sc-if value="{{r.showCount}}" hint-placeholder-val="{{true}}"><span style="font-size: 12.5px; color: #8d9aab">{{r.count}}</span></sc-if>
+            </div>
+            <sc-for list="{{r.members}}" as="m" hint-placeholder-count="3">
+              <button type="button" class="chip" onClick="{{m.pick}}" aria-pressed="{{m.sel}}" aria-label="{{m.aria}}" style="height: {{m.h}}; border: 1.5px solid {{m.bd}}; border-radius: 10px; background: {{m.bg}}; display: flex; align-items: center; gap: 10px; padding: 0 10px; font-family: inherit; cursor: pointer; text-align: left; min-width: 0">
+                <span style="width: 28px; height: 28px; border-radius: 14px; background: {{m.av}}; color: #ffffff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">{{m.ini}}</span>
+                <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: {{m.fg}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{m.name}}</span>
+                <sc-if value="{{m.isSel}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; font-weight: 700; color: #8fb6f5">Moving</span></sc-if>
+              </button>
+            </sc-for>
+            <sc-if value="{{r.canDrop}}" hint-placeholder-val="{{false}}">
+              <button type="button" onClick="{{r.drop}}" style="height: 38px; border: 1.5px dashed #5b8fe0; border-radius: 10px; background: rgba(91,143,224,.1); color: #b9d0f7; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Move {{selName}} here</button>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- MAIN ROOM: the original presentation -->
+    <sc-if value="{{inMainView}}" hint-placeholder-val="{{false}}">
+      <div class="br-in" style="flex: 1; min-height: 0; display: flex; gap: 16px; align-items: flex-start; justify-content: center">
+        <div style="position: relative; width: 1120px; height: 630px; border-radius: 10px; overflow: hidden; box-shadow: {{stageShadow}}">
+          <sc-if value="{{slideOnStage}}" hint-placeholder-val="{{true}}"><div style="position: absolute; left: 0; top: 0; transform: scale(1.09375); transform-origin: 0 0"><dc-import name="Slide" hint-size="1024px,576px"></dc-import></div></sc-if>
+          <sc-if value="{{roomOnStage}}" hint-placeholder-val="{{false}}">
+            <div class="br-in" style="position: absolute; left: 0; top: 0; transform: scale(1.09375); transform-origin: 0 0"><dc-import name="RoomScreen" kind="{{stR.kind}}" n="{{stR.n}}" hint-size="1024px,576px"></dc-import></div>
+            <div style="position: absolute; left: 14px; top: 14px; display: flex; align-items: center; gap: 8px">
+              <span style="height: 32px; padding: 0 12px; border-radius: 16px; background: rgba(15,27,43,.86); color: #ffffff; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 3px; background: {{stR.c}}"></span>{{stR.name}} · shown to everyone</span>
+              <button type="button" onClick="{{backToSlides}}" style="height: 32px; padding: 0 12px; border: 0; border-radius: 16px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer">Back to slides</button>
+            </div>
+          </sc-if>
+        </div>
+        <div style="width: 196px; display: flex; flex-direction: column; gap: 8px">
+          <div style="height: 112px; border-radius: 10px; background: #2a3542; border: 1px solid #22324a; position: relative; display: flex; align-items: center; justify-content: center"><svg width="48" height="44" viewBox="0 0 24 22" fill="#5d6b7e" style="margin-top: 18px" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M2 22c1-5.5 5-8 10-8s9 2.5 10 8z"></path></svg><span style="position: absolute; left: 6px; bottom: 6px; background: rgba(4,12,24,.72); color: #ffffff; border-radius: 4px; padding: 0 6px; font-size: 11.5px; font-weight: 600">You</span></div>
+          <sc-if value="{{isBack}}" hint-placeholder-val="{{false}}">
+          <div class="br-in" style="border-radius: 10px; background: #ffffff; color: #1f2933; padding: 12px; display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 14px; font-weight: 700; color: #111827">Everyone is back</span>
+            <span style="font-size: 12.5px; line-height: 1.4; color: #5b6574">{{backText}}</span>
+            <span style="font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b7280; padding-top: 4px">Share back</span>
+            <sc-for list="{{shareList}}" as="r" hint-placeholder-count="4">
+              <button type="button" onClick="{{r.stage}}" aria-pressed="{{r.onStage}}" style="height: 32px; border: 1px solid {{r.bd}}; border-radius: 8px; background: {{r.bg}}; padding: 0 8px; display: flex; align-items: center; gap: 7px; font-family: inherit; font-size: 12.5px; font-weight: 600; color: #1f2933; cursor: pointer; text-align: left"><span style="width: 8px; height: 8px; border-radius: 3px; background: {{r.c}}; flex-shrink: 0"></span><span style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span><span style="color: #1f62d0">{{r.verb}}</span></button>
+            </sc-for>
+            <sc-if value="{{moreToShare}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{goRooms}}" style="height: 30px; border: 0; background: transparent; color: #1f62d0; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; text-align: left; padding: 0">See all {{nRoomsOpen}} rooms’ work</button></sc-if>
+            <button type="button" onClick="{{backToSetup}}" style="height: 32px; border: 1px solid #c9d2dd; border-radius: 8px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">Set up new rooms</button>
+          </div>
+          </sc-if>
+          <sc-if value="{{notBack}}" hint-placeholder-val="{{true}}">
+          <div style="border-radius: 10px; border: 1px dashed #3a4d66; padding: 12px; display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; font-weight: 700; color: #ffffff">Main room</span>
+            <span style="font-size: 12.5px; line-height: 1.4; color: #a9b6c6">{{mainRoomText}}</span>
+            <button type="button" onClick="{{goRooms}}" style="height: 32px; border: 0; border-radius: 8px; background: #e6eef9; color: #0f1b2b; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">{{backToRoomsLabel}}</button>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- LIVE: room monitor -->
+    <sc-if value="{{showLiveBoard}}" hint-placeholder-val="{{false}}">
+      <div class="br-in" style="flex: 1; min-height: 0; display: grid; grid-template-columns: {{liveCols}}; gap: 12px; align-content: start; overflow: auto">
+        <sc-for list="{{liveRooms}}" as="r" hint-placeholder-count="4">
+          <div class="rcard" style="position: relative; border-radius: 14px; background: #131d2c; border: {{r.border}}; box-sizing: border-box; padding: 8px; display: flex; flex-direction: column; gap: 8px; min-width: 0">
+            <button type="button" onClick="{{r.thumbClick}}" aria-label="{{r.thumbAria}}" style="position: relative; width: 100%; height: {{thumbH}}; border: 0; padding: 0; border-radius: 9px; overflow: hidden; background: #ffffff; cursor: zoom-in">
+              <span style="position: absolute; left: 0; top: 0; transform: {{thumbScale}}; transform-origin: 0 0"><dc-import name="RoomScreen" kind="{{r.kind}}" n="{{r.n}}" hint-size="1024px,576px"></dc-import></span>
+              <span style="position: absolute; left: 6px; bottom: 6px; display: flex; gap: 4px">
+                <sc-for list="{{r.cams}}" as="c" hint-placeholder-count="3">
+                  <span style="width: {{camS}}; height: {{camS}}; border-radius: 7px; background: {{c.bg}}; border: 2px solid {{c.ring}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 10px; font-weight: 700">{{c.ini}}</span>
+                </sc-for>
+              </span>
+              <sc-if value="{{r.help}}" hint-placeholder-val="{{false}}"><span class="br-pulse" style="position: absolute; right: 6px; top: 6px; height: 24px; padding: 0 9px 0 6px; border-radius: 12px; background: #f5b74d; color: #2a1a00; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="{{I.hand}}"></path></svg>Help</span></sc-if>
+            </button>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 0 2px 2px">
+              <span style="width: 8px; height: 8px; border-radius: 4px; background: {{r.c}}; flex-shrink: 0"></span>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+                <span style="font-size: {{r.titleFs}}; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span>
+                <span style="font-size: 12px; color: {{r.statusC}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.status}}</span>
+              </span>
+              <sc-if value="{{r.showJoin}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{r.peek}}" aria-label="Preview {{r.name}}" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: #1c2738; color: #e6edf5; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6"></path></svg></button>
+              <button type="button" style="height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: #e6eef9; color: #0f1b2b; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">Join</button></sc-if>
+              <sc-if value="{{r.showStage}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{r.stage}}" style="height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: #e6eef9; color: #0f1b2b; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap">Show on stage</button></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <!-- ===== peek into a room ===== -->
+  <sc-if value="{{hasPeek}}" hint-placeholder-val="{{false}}">
+    <button type="button" onClick="{{closePeek}}" aria-label="Close preview" style="position: absolute; left: 360px; top: 0; right: 0; bottom: 0; border: 0; padding: 0; background: rgba(2,8,18,.62); cursor: default"></button>
+    <section class="br-in" role="dialog" aria-label="Preview of {{pk.name}}" style="position: absolute; left: 404px; top: 60px; width: 952px; height: 740px; box-sizing: border-box; border-radius: 18px; background: #ffffff; color: #1f2933; box-shadow: 0 30px 70px rgba(0,0,0,.55); display: flex; flex-direction: column; overflow: hidden">
+      <header style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #eef1f5">
+        <button type="button" onClick="{{pk.prev}}" aria-label="Previous room" style="width: 34px; height: 34px; border: 1px solid #d5dce5; border-radius: 10px; background: #ffffff; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+        <button type="button" onClick="{{pk.next}}" aria-label="Next room" style="width: 34px; height: 34px; border: 1px solid #d5dce5; border-radius: 10px; background: #ffffff; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+        <span style="width: 10px; height: 10px; border-radius: 3px; background: {{pk.c}}"></span>
+        <span style="display: flex; flex-direction: column"><span style="font-size: 18px; font-weight: 700; color: #111827">{{pk.name}}</span><span style="font-size: 12.5px; color: #5b6574">{{pk.pos}} · {{pk.status}}</span></span>
+        <span style="flex: 1"></span>
+        <span style="display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 15px; background: #eef1f5; font-size: 12.5px; font-weight: 600; color: #374151"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6"></path></svg>Students see you’re watching</span>
+        <button type="button" onClick="{{toggleListen}}" aria-pressed="{{listenPressed}}" style="height: 34px; padding: 0 12px; border: 1px solid {{listenBd}}; border-radius: 10px; background: {{listenBg}}; color: {{listenFg}}; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{listenD}}"></path></svg>{{listenLabel}}</button>
+        <button type="button" onClick="{{closePeek}}" aria-label="Close preview" style="width: 34px; height: 34px; border: 0; border-radius: 17px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12 M18 6L6 18"></path></svg></button>
+      </header>
+      <div style="flex: 1; min-height: 0; display: flex; gap: 16px; padding: 16px">
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+          <div style="position: relative; width: 640px; height: 360px; border-radius: 12px; overflow: hidden; border: 1px solid #e1e6ec">
+            <div style="position: absolute; left: 0; top: 0; transform: scale(0.625); transform-origin: 0 0"><dc-import name="RoomScreen" kind="{{pk.kind}}" n="{{pk.n}}" hint-size="1024px,576px"></dc-import></div>
+            <span style="position: absolute; left: 10px; top: 10px; height: 24px; padding: 0 9px; border-radius: 12px; background: rgba(15,27,43,.78); color: #ffffff; font-size: 12px; font-weight: 600; display: flex; align-items: center">{{pk.kindLabel}}</span>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <sc-for list="{{pk.cams}}" as="c" hint-placeholder-count="3">
+              <div style="position: relative; width: 150px; height: 100px; border-radius: 10px; background: {{c.tileBg}}; border: 2px solid {{c.ring}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; overflow: hidden">
+                <sc-if value="{{c.video}}" hint-placeholder-val="{{true}}"><svg width="52" height="48" viewBox="0 0 24 22" fill="#5d6b7e" style="margin-top: 18px" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M2 22c1-5.5 5-8 10-8s9 2.5 10 8z"></path></svg></sc-if>
+                <sc-if value="{{c.noVideo}}" hint-placeholder-val="{{false}}"><span style="width: 40px; height: 40px; border-radius: 20px; background: {{c.bg}}; color: #ffffff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{c.ini}}</span></sc-if>
+                <span style="position: absolute; left: 6px; bottom: 6px; background: rgba(4,12,24,.72); color: #ffffff; border-radius: 4px; padding: 0 6px; font-size: 11.5px; font-weight: 600">{{c.name}}</span>
+                <sc-if value="{{c.hand}}" hint-placeholder-val="{{false}}"><span style="position: absolute; right: 6px; top: 6px; width: 22px; height: 22px; border-radius: 11px; background: #f5b74d; display: flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="{{I.hand}}"></path></svg></span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <aside style="width: 248px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px">
+          <div style="border: 1px solid #e1e6ec; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px">
+            <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b7280">Talk time</span>
+            <sc-for list="{{pk.talk}}" as="t" hint-placeholder-count="3">
+              <div style="display: flex; flex-direction: column; gap: 4px"><span style="display: flex; font-size: 13px; color: #1f2933"><span style="flex: 1">{{t.name}}</span><span style="color: #6b7280">{{t.min}}</span></span><span style="height: 6px; border-radius: 3px; background: #eef1f5; overflow: hidden"><span style="display: block; width: {{t.w}}; height: 100%; background: #5b8fe0"></span></span></div>
+            </sc-for>
+          </div>
+          <div style="flex: 1; min-height: 0; border: 1px solid #e1e6ec; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px">
+            <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b7280">Room chat</span>
+            <sc-for list="{{pk.chat}}" as="m" hint-placeholder-count="2">
+              <div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 12.5px; font-weight: 700; color: #111827">{{m.name}} <span style="font-weight: 500; color: #8a94a3">{{m.time}}</span></span><span style="font-size: 13.5px; line-height: 1.35; color: #1f2933">{{m.t}}</span></div>
+            </sc-for>
+          </div>
+        </aside>
+      </div>
+      <footer style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-top: 1px solid #eef1f5">
+        <span style="flex: 1; height: 40px; border: 1.5px solid #c9d2dd; border-radius: 10px; display: flex; align-items: center; padding: 0 12px; font-size: 14px; color: #8a94a3">Message {{pk.name}}…</span>
+        <button type="button" style="height: 40px; padding: 0 16px; border: 1px solid #c9d2dd; border-radius: 10px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Send</button>
+        <button type="button" style="height: 40px; padding: 0 18px; border: 0; border-radius: 10px; background: #1f62d0; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4 M14 8l4 4-4 4 M18 12H8"></path></svg>Join {{pk.name}}</button>
+      </footer>
+    </section>
+  </sc-if>
+
+  <!-- ===== left panel ===== -->
+  <sc-if value="{{inRoomsView}}" hint-placeholder-val="{{true}}">
+  <aside class="br-panel" aria-label="Breakout rooms" style="position: absolute; left: 0; top: 0; width: 360px; height: 900px; box-sizing: border-box; background: #ffffff; color: #1f2933; border-right: 1px solid #e1e6ec; box-shadow: 6px 0 28px rgba(0,0,0,.28); display: flex; flex-direction: column">
+    <header style="display: flex; align-items: center; gap: 10px; padding: 16px 16px 12px; border-bottom: 1px solid #eef1f5">
+      <span style="width: 34px; height: 34px; border-radius: 10px; background: #fff3dc; color: #8a5a00; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h7v7H3z M14 4h7v7h-7z M3 14h7v6H3z M14 14h7v6h-7z"></path></svg></span>
+      <span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 17px; font-weight: 700; color: #111827">Breakout rooms</span><span style="font-size: 12.5px; color: #6b7280">{{panelSub}}</span></span>
+      <sc-if value="{{isLive}}" hint-placeholder-val="{{false}}"><span style="height: 24px; padding: 0 9px; border-radius: 12px; background: #dcf5e6; color: #0f7a3d; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 5px"><span class="br-pulse" style="width: 7px; height: 7px; border-radius: 4px; background: #12a150"></span>Live</span></sc-if>
+      <button type="button" aria-label="Close panel" style="width: 32px; height: 32px; border: 0; border-radius: 16px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12 M18 6L6 18"></path></svg></button>
+    </header>
+
+    <sc-if value="{{isSetup}}" hint-placeholder-val="{{true}}">
+      <div class="br-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b7280">How to split the class</span>
+          <div role="radiogroup" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+            <sc-for list="{{modes}}" as="o" hint-placeholder-count="2">
+              <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="border: 1.5px solid {{o.bd}}; border-radius: 12px; background: {{o.bg}}; padding: 12px; font-family: inherit; text-align: left; display: flex; flex-direction: column; gap: 8px; cursor: pointer">
+                <span style="display: flex; gap: 3px; flex-wrap: wrap; width: 64px">
+                  <sc-for list="{{o.dots}}" as="d" hint-placeholder-count="4"><span style="width: {{d.w}}; height: 14px; border-radius: 4px; background: {{d.c}}"></span></sc-for>
+                </span>
+                <span style="font-size: 14px; font-weight: 700; color: #111827">{{o.label}}</span>
+                <span style="font-size: 12px; line-height: 1.35; color: #5b6574">{{o.sub}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{isGroups}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b7280">Rooms</span>
+            <div style="display: flex; align-items: center; gap: 12px">
+              <div style="display: flex; align-items: center; border: 1.5px solid #c9d2dd; border-radius: 12px; overflow: hidden">
+                <button type="button" onClick="{{fewer}}" aria-label="Fewer rooms" style="width: 40px; height: 40px; border: 0; background: #ffffff; color: #374151; font-size: 20px; cursor: pointer">−</button>
+                <span aria-live="polite" style="width: 40px; text-align: center; font-size: 17px; font-weight: 700; color: #111827">{{nRooms}}</span>
+                <button type="button" onClick="{{more}}" aria-label="More rooms" style="width: 40px; height: 40px; border: 0; background: #ffffff; color: #374151; font-size: 20px; cursor: pointer">+</button>
+              </div>
+              <span style="font-size: 13.5px; line-height: 1.35; color: #374151">{{perRoom}}</span>
+            </div>
+            <div role="radiogroup" aria-label="Who goes where" style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px">
+              <sc-for list="{{assignOpts}}" as="o" hint-placeholder-count="2">
+                <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1.5px solid {{o.bd}}; border-radius: 10px; background: {{o.bg}}; font-family: inherit; text-align: left; cursor: pointer">
+                  <span style="width: 16px; height: 16px; border-radius: 8px; border: 2px solid {{o.ring}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><sc-if value="{{o.isOn}}" hint-placeholder-val="{{false}}"><span style="width: 8px; height: 8px; border-radius: 4px; background: #1f62d0"></span></sc-if></span>
+                  <span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600; color: #111827">{{o.label}}</span><span style="font-size: 12px; color: #5b6574">{{o.sub}}</span></span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{isSolo}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 12px 14px; border-radius: 12px; background: #f4f6f9; font-size: 13.5px; line-height: 1.45; color: #374151">13 rooms, one student each. Good for independent work, quizzes or quiet 1:1 check-ins. Previews let you look in on everyone from one grid.</div>
+        </sc-if>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b7280">Time</span>
+          <div style="display: flex; gap: 6px">
+            <sc-for list="{{durations}}" as="d" hint-placeholder-count="5">
+              <button type="button" onClick="{{d.pick}}" aria-pressed="{{d.on}}" style="flex: 1; height: 36px; border: 1.5px solid {{d.bd}}; border-radius: 10px; background: {{d.bg}}; color: {{d.fg}}; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">{{d.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column">
+          <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+            <button type="button" role="switch" aria-checked="{{o.on}}" onClick="{{o.flip}}" style="display: flex; align-items: center; gap: 12px; min-height: 48px; border: 0; border-bottom: 1px solid #eef1f5; background: transparent; padding: 6px 0; font-family: inherit; text-align: left; cursor: pointer">
+              <span style="flex: 1; font-size: 14px; color: #1f2933">{{o.label}}</span>
+              <span style="width: 38px; height: 22px; border-radius: 11px; background: {{o.swBg}}; position: relative; flex-shrink: 0"><span style="position: absolute; top: 2px; left: {{o.swL}}; width: 18px; height: 18px; border-radius: 9px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: left .15s ease"></span></span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <footer style="padding: 12px 16px 16px; border-top: 1px solid #eef1f5; display: flex; flex-direction: column; gap: 8px">
+        <button type="button" onClick="{{openRooms}}" style="height: 46px; border: 0; border-radius: 12px; background: #1f62d0; color: #ffffff; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer">Open {{openCount}} rooms</button>
+        <span style="font-size: 12px; color: #6b7280; text-align: center">Students get a 10-second heads-up before they move.</span>
+      </footer>
+    </sc-if>
+
+    <sc-if value="{{isLive}}" hint-placeholder-val="{{false}}">
+      <div class="br-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: #f4f6f9">
+          <span style="display: flex; flex-direction: column; flex: 1"><span style="font-size: 26px; font-weight: 700; color: #111827; font-variant-numeric: tabular-nums">{{timeLeft}}</span><span style="font-size: 12.5px; color: #5b6574">left · everyone returns automatically</span></span>
+          <button type="button" onClick="{{addTime}}" style="height: 36px; padding: 0 12px; border: 1px solid #c9d2dd; border-radius: 10px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">+5 min</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b7280">Message every room</span>
+          <div style="display: flex; gap: 8px"><span style="flex: 1; height: 40px; border: 1.5px solid #c9d2dd; border-radius: 10px; display: flex; align-items: center; padding: 0 12px; font-size: 14px; color: #8a94a3">e.g. “5 minutes left, pick one idea”</span><button type="button" aria-label="Send to all rooms" style="width: 40px; height: 40px; border: 0; border-radius: 10px; background: #1f62d0; color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14 M13 6l6 6-6 6"></path></svg></button></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b7280; padding-bottom: 6px">{{listTitle}}</span>
+          <sc-for list="{{liveRooms}}" as="r" hint-placeholder-count="4">
+            <button type="button" onClick="{{r.peek}}" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 8px; border: 0; border-radius: 10px; background: {{r.rowBg}}; font-family: inherit; text-align: left; cursor: pointer">
+              <span style="width: 8px; height: 8px; border-radius: 4px; background: {{r.c}}; flex-shrink: 0"></span>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span><span style="font-size: 12px; color: {{r.statusInk}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.status}}</span></span>
+              <span style="display: flex">
+                <sc-for list="{{r.cams}}" as="c" hint-placeholder-count="3"><span style="width: 22px; height: 22px; margin-left: -5px; border-radius: 11px; background: {{c.bg}}; border: 2px solid #ffffff; color: #ffffff; font-size: 8.5px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{c.ini}}</span></sc-for>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <footer style="padding: 12px 16px 16px; border-top: 1px solid #eef1f5; display: flex; flex-direction: column; gap: 8px">
+        <button type="button" onClick="{{closeRooms}}" style="height: 44px; border: 1.5px solid #e5484d; border-radius: 12px; background: #ffffff; color: #b42318; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Close all rooms</button>
+        <span style="font-size: 12px; color: #6b7280; text-align: center">Students get 60 seconds to wrap up.</span>
+      </footer>
+    </sc-if>
+  </aside>
+  </sc-if>
+
+  <!-- ===== bottom = action ===== -->
+  <nav aria-label="Actions" style="position: absolute; left: {{infoL}}; right: 24px; bottom: 14px; height: 60px; display: flex; align-items: center; gap: 12px">
+    <div style="flex: 1; display: flex; align-items: center; gap: 6px">
+      <sc-for list="{{panelBtns}}" as="b" hint-placeholder-count="4">
+        <button type="button" aria-label="{{b.label}}" style="width: 44px; height: 44px; border: 0; border-radius: 12px; background: {{b.bg}}; color: {{b.fg}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{b.d}}"></path></svg></button>
+      </sc-for>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px">
+      <sc-for list="{{mediaBtns}}" as="b" hint-placeholder-count="5">
+        <button type="button" aria-label="{{b.label}}" style="width: 48px; height: 48px; border: 0; border-radius: 24px; background: {{b.bg}}; color: {{b.fg}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{b.d}}"></path></svg></button>
+      </sc-for>
+    </div>
+    <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 6px">
+      <button type="button" aria-label="Room settings" style="width: 44px; height: 44px; border: 0; border-radius: 12px; background: #1c2738; color: #e6edf5; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{I.settings}}"></path></svg></button>
+      <button type="button" aria-label="Leave session" style="width: 44px; height: 44px; box-sizing: border-box; border: 1px solid #6b2f36; border-radius: 12px; background: #2a161b; color: #ff9ea1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4 M15 16l4-4-4-4 M19 12H9"></path></svg></button>
+    </div>
+  </nav>
+
+  <sc-if value="{{closedToast}}" hint-placeholder-val="{{false}}">
+    <div class="br-in" style="position: absolute; inset: 0; background: rgba(2,8,18,.55)"></div>
+    <div class="br-in" role="dialog" aria-label="Closing rooms" style="position: absolute; left: 700px; top: 300px; transform: translateX(-50%); width: 420px; box-sizing: border-box; padding: 22px; border-radius: 18px; background: #ffffff; color: #1f2933; box-shadow: 0 20px 50px rgba(0,0,0,.5); display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #9a5b00">Wrapping up</span>
+      <span style="font-size: 22px; font-weight: 700; color: #111827">Rooms close in <span style="font-variant-numeric: tabular-nums">0:60</span></span>
+      <span style="font-size: 14px; line-height: 1.45; color: #5b6574">Students see a countdown so they can finish their thought. Boards, notes and room chat are saved to Shared notes automatically.</span>
+      <div style="display: flex; gap: 8px; padding-top: 4px">
+        <button type="button" onClick="{{keepOpen}}" style="height: 42px; padding: 0 14px; border: 1px solid #c9d2dd; border-radius: 11px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Keep rooms open</button>
+        <button type="button" onClick="{{bringBack}}" style="flex: 1; height: 42px; border: 0; border-radius: 11px; background: #1f62d0; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">Bring everyone back now</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"phase":{"editor":"enum","options":["setup","live","back"],"default":"setup"},"mode":{"editor":"enum","options":["groups","solo"],"default":"groups"},"rooms":{"editor":"string","default":"4"},"moving":{"editor":"string","default":""},"peek":{"editor":"string","default":""},"view":{"editor":"enum","options":["rooms","main"],"default":"rooms"},"closing":{"editor":"enum","options":["no","yes"],"default":"no"},"onstage":{"editor":"string","default":""},"$preview":{"width":1400,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const S0 = this.state || {};
+    const g = (k, d) => (S0[k] !== undefined ? S0[k] : d);
+    const set = (o) => () => this.setState(o);
+    const phase = g('phase', this.props.phase || 'setup');
+    const mode = g('mode', this.props.mode || 'groups');
+    const nRooms = g('nRooms', parseInt(this.props.rooms || '4', 10) || 4);
+    const seed = g('seed', 1);
+    const moves = g('moves', {});
+    const moving = g('moving', this.props.moving || '');
+    const assign = g('assign', 'even');
+    const dur = g('dur', 10);
+    const opt = g('opt', { slide: true, back: true, auto: true, rec: false });
+    const peekP = this.props.peek;
+    const peek = g('peek', peekP === '' || peekP === undefined ? -1 : parseInt(peekP, 10));
+    const listen = g('listen', false);
+    const extra = g('extra', 0);
+    const closed = g('closed', this.props.closing === 'yes');
+    const back = phase === 'back';
+    const view = g('view', back ? 'main' : (this.props.view || 'rooms'));
+    const main = view === 'main';
+    const wide = main || back;
+    const stageRoom = g('stageRoom', this.props.onstage ? parseInt(this.props.onstage, 10) : -1);
+    const I = {
+      hand: 'M8 13V5.5a1.5 1.5 0 0 1 3 0V11 M11 10V4.5a1.5 1.5 0 0 1 3 0V11 M14 10.5V6a1.5 1.5 0 0 1 3 0v8a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L3 16.5a1.5 1.5 0 0 1 2.2-2L8 16',
+      settings: 'M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6 M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z'
+    };
+    const ST = [
+      ['bruno', 'Bruno', 'BR', '#4e6b2a', true], ['rafaela', 'Rafaela Monaco', 'RM', '#a23c64', true], ['cibelle', 'Cibelle Maciel', 'CM', '#2f6db3', false],
+      ['octavio', 'Octavio', 'OC', '#2b7a6f', false], ['frederick', 'Frederick Dixon', 'FD', '#2f6db3', true], ['anton', 'Anton Georgiev', 'AG', '#b5542e', true],
+      ['michelle', 'Michelle Winkler', 'MW', '#7a4fb5', true], ['ellen', 'Ellen', 'EL', '#8a5a12', false], ['timo', 'Timo', 'TI', '#3f6f8f', false],
+      ['marta', 'Marta Ribeiro', 'MR', '#2b7a6f', true], ['lucas', 'Lucas Pereira', 'LP', '#6b4fa3', true], ['ana', 'Ana Souza', 'AS', '#a23c64', false], ['joana', 'Joana Lima', 'JL', '#4e6b2a', false]
+    ].map((s) => ({ k: s[0], name: s[1], ini: s[2], av: s[3], video: s[4] }));
+    const byK = {}; ST.forEach((s) => { byK[s.k] = s; });
+    const COLORS = ['#5b8fe0', '#f5b74d', '#3ecf8e', '#c084fc', '#ff8a8f', '#38bdf8', '#fb923c', '#a3e635'];
+    // seeded shuffle
+    let x = seed * 9301 + 49297;
+    const rnd = () => { x = (x * 9301 + 49297) % 233280; return x / 233280; };
+    const order = ST.map((s) => s.k);
+    if (seed > 1) for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = order[i]; order[i] = order[j]; order[j] = t; }
+    const solo = mode === 'solo';
+    const N = solo ? ST.length : nRooms;
+    const roomOf = {};
+    if (solo) ST.forEach((s, i) => { roomOf[s.k] = i; });
+    else order.forEach((k, i) => { roomOf[k] = i % N; });
+    if (!solo) Object.keys(moves).forEach((k) => { if (moves[k] < N) roomOf[k] = moves[k]; });
+    const members = Array.from({ length: N }, () => []);
+    ST.forEach((s) => members[roomOf[s.k]].push(s));
+    const sizes = members.map((m) => m.length);
+    const uneven = !solo && Math.max.apply(null, sizes) - Math.min.apply(null, sizes) > 1;
+    const roomName = (i) => solo ? members[i][0].name : 'Room ' + (i + 1);
+    const color = (i) => COLORS[i % COLORS.length];
+
+    // setup board
+    const rooms = members.map((ms, i) => ({
+      name: solo ? 'Room ' + (i + 1) : roomName(i), c: color(i), count: ms.length + (ms.length === 1 ? ' student' : ' students'), showCount: !solo,
+      border: '1px solid #22324a', pad: solo ? '10px' : '12px', dotS: solo ? '8px' : '10px', titleFs: solo ? '13px' : '15px',
+      canDrop: !solo && !!moving && roomOf[moving] !== i, drop: () => this.setState({ moves: { ...moves, [moving]: i }, moving: '' }),
+      members: ms.map((s) => {
+        const sel = moving === s.k;
+        return { name: s.name, ini: s.ini, av: s.av, h: solo ? '44px' : '44px', isSel: sel, sel: sel ? 'true' : 'false',
+          bd: sel ? '#5b8fe0' : '#2c3d55', bg: sel ? 'rgba(91,143,224,.18)' : '#1a2536', fg: '#ffffff',
+          aria: solo ? s.name : (sel ? 'Moving ' + s.name + '. Pick a room' : 'Move ' + s.name + ' to another room'),
+          pick: solo ? () => {} : () => this.setState({ moving: sel ? '' : s.k }) };
+      })
+    }));
+    const lo = Math.floor(ST.length / N), hi = Math.ceil(ST.length / N);
+
+    // live data
+    const kinds = ['board', 'doc', 'quiz', 'board', 'slide', 'doc'];
+    const kindLabel = { board: 'Shared whiteboard', doc: 'Shared notes', quiz: 'Practice quiz', slide: 'Your slides' };
+    const groupStatus = [
+      ['Ana and Bruno are talking', '#8fe0b0', '#0f7a3d', false, 'talk'],
+      ['Asked for help · 1 min ago', '#ffd48a', '#9a5b00', true, 'help'],
+      ['Quiet for 4 min', '#a9b6c6', '#5b6574', false, 'quiet'],
+      ['Drawing on the board', '#a9b6c6', '#5b6574', false, 'work']
+    ];
+    const soloStatus = [
+      ['Typing in notes', '#a9b6c6', '#5b6574', false], ['Drawing', '#a9b6c6', '#5b6574', false], ['Asked for help', '#ffd48a', '#9a5b00', true],
+      ['Answering question 3', '#a9b6c6', '#5b6574', false], ['Quiet for 5 min', '#a9b6c6', '#5b6574', false], ['Done · waiting', '#8fe0b0', '#0f7a3d', false]
+    ];
+    const first = (s) => s.name.split(' ')[0];
+    const statusFor = (i) => {
+      if (solo) return soloStatus[i % soloStatus.length];
+      const s = groupStatus[i % groupStatus.length].slice();
+      if (s[4] === 'talk') s[0] = first(members[i][0]) + ' and ' + first(members[i][1] || members[i][0]) + ' are talking';
+      return s;
+    };
+    const speakingIn = (i, j) => !solo && i % 4 === 0 && j < 2;
+    const liveRooms = members.map((ms, i) => {
+      const kind = solo ? ['doc', 'board', 'quiz'][i % 3] : kinds[i % kinds.length];
+      const s = back ? [kindLabel[kind] + ' saved', '#8fe0b0', '#0f7a3d', false] : statusFor(i);
+      return { name: roomName(i), n: String(i), kind: solo ? ['doc', 'board', 'quiz'][i % 3] : kinds[i % kinds.length], c: color(i),
+        status: s[0], statusC: s[1], statusInk: s[2], help: s[3], titleFs: solo ? '13px' : '15px', showJoin: !solo && !back,
+        border: s[3] ? '2px solid #f5b74d' : (peek === i ? '2px solid #5b8fe0' : '1px solid #22324a'), rowBg: peek === i ? '#e8f0fd' : (s[3] ? '#fff8eb' : 'transparent'),
+        cams: ms.map((m, j) => ({ ini: m.ini, bg: m.av, ring: speakingIn(i, j) ? '#3ecf8e' : 'rgba(255,255,255,.8)' })),
+        peek: () => this.setState({ peek: i }), showStage: back, stage: () => this.setState({ stageRoom: i, view: 'main' }),
+        thumbClick: back ? () => this.setState({ stageRoom: i, view: 'main' }) : () => this.setState({ peek: i }), thumbAria: back ? 'Show ' + roomName(i) + ' on stage' : 'Preview ' + roomName(i) };
+    });
+    const pi = Math.max(0, Math.min(N - 1, peek));
+    const pr = liveRooms[pi];
+    const pms = members[pi];
+    const talkBase = [9, 6, 3, 2];
+    const pk = {
+      name: pr.name, c: pr.c, status: pr.status, kind: pr.kind, n: pr.n, kindLabel: kindLabel[pr.kind], pos: (solo ? 'Room ' + (pi + 1) : 'Room ' + (pi + 1)) + ' of ' + N,
+      prev: () => this.setState({ peek: (pi - 1 + N) % N }), next: () => this.setState({ peek: (pi + 1) % N }),
+      cams: pms.map((m, j) => ({ name: m.name.split(' ')[0], ini: m.ini, bg: m.av, video: m.video, noVideo: !m.video, tileBg: m.video ? '#2a3542' : '#131f31', ring: speakingIn(pi, j) ? '#3ecf8e' : 'transparent', hand: pr.help && j === 0 })),
+      talk: pms.map((m, j) => { const v = solo ? 0 : (talkBase[j] || 1); return { name: m.name.split(' ')[0], min: solo ? 'Working solo' : v + ' min', w: solo ? '0%' : Math.round(v / 10 * 100) + '%' }; }),
+      chat: solo ? [{ name: pms[0].name.split(' ')[0], time: '9:41', t: pr.help ? 'Can you check my answer to question 2?' : 'Starting on the reflection now' }]
+        : [{ name: pms[0].name.split(' ')[0], time: '9:38', t: 'Let’s each add two notes first' }, { name: (pms[1] || pms[0]).name.split(' ')[0], time: '9:40', t: pr.help ? 'We’re stuck on what “live” means, can the teacher pop in?' : 'I’ll take the share-back' }]
+    };
+    const mins = dur + extra;
+    const sw = (on) => ({ swBg: on ? '#1f62d0' : '#c9d2dd', swL: on ? '18px' : '2px', on: on ? 'true' : 'false' });
+    const dot = (c, w) => ({ c, w: w || '14px' });
+    return {
+      headerHint: back ? (main ? (stageRoom >= 0 ? 'Everyone sees ' + liveRooms[stageRoom].name + '’s work' : 'Everyone is back · room work saved') : 'Pick a room’s work to show everyone') : main ? (phase === 'live' ? (opt.slide ? 'Every room can see this slide' : 'Only you are in the main room') : 'Rooms aren’t open yet · setup is saved')
+        : phase === 'setup' ? (solo ? 'One student per room' : (moving ? 'Pick a room for ' + byK[moving].name.split(' ')[0] : 'Tap a student to move them'))
+        : (solo ? 'Tap any room for a closer look' : 'Tap a room to preview it'),
+      inMainView: main, inRoomsView: !wide, inRoomsTab: !main, infoL: wide ? '24px' : '384px', stL: wide ? '24px' : '384px', stW: wide ? '1352px' : '992px',
+      showSetupBoard: !main && phase === 'setup' && !closed, showLiveBoard: !main && (phase === 'live' || back),
+      goMain: set({ view: 'main', peek: -1, moving: '' }), goRooms: set({ view: 'rooms' }), goHelp: set({ view: 'rooms', peek: 1 }),
+      tabMainSel: main ? 'true' : 'false', tabRoomsSel: main ? 'false' : 'true', isBack: back, notBack: !back, nRoomsOpen: String(N),
+      keepOpen: set({ closed: false }), bringBack: set({ closed: false, phase: 'back', view: 'main', peek: -1, stageRoom: -1 }),
+      slideOnStage: !(back && stageRoom >= 0), roomOnStage: back && stageRoom >= 0, backToSlides: set({ stageRoom: -1 }),
+      stageShadow: back && stageRoom >= 0 ? '0 0 0 3px #5b8fe0, 0 10px 30px rgba(0,0,0,.45)' : '0 10px 30px rgba(0,0,0,.45)',
+      backText: 'All 13 students are in the main room. Each room’s board, notes and chat are saved to Shared notes.',
+      shareList: liveRooms.slice(0, 4).map((r, i) => ({ name: r.name, c: r.c, onStage: stageRoom === i ? 'true' : 'false', verb: stageRoom === i ? 'On stage' : 'Show', bd: stageRoom === i ? '#1f62d0' : '#e1e6ec', bg: stageRoom === i ? '#e8f0fd' : '#ffffff', stage: set({ stageRoom: stageRoom === i ? -1 : i, view: 'main' }) })), moreToShare: N > 4,
+      stR: liveRooms[Math.max(0, Math.min(N - 1, stageRoom))],
+      tabMainBg: main ? '#e6eef9' : 'transparent', tabMainFg: main ? '#0f1b2b' : '#a9b6c6', tabRoomsBg: main ? 'transparent' : '#e6eef9', tabRoomsFg: main ? '#a9b6c6' : '#0f1b2b',
+      roomsTabLabel: back ? 'Room work · ' + N : (phase === 'live' ? N + ' rooms live' : 'Breakout setup'), tabLive: phase === 'live',
+      mainNote: phase === 'live' ? (opt.slide ? 'Every room can see this slide · flip slides for the share-back' : 'Only you are here · students are in their rooms') : 'Rooms aren’t open yet · your setup is saved',
+      mainRoomText: phase === 'live' ? 'Students are in ' + N + ' rooms. Help requests still appear at the top right.' : 'Setup is saved. Open rooms whenever you are ready.',
+      backToRoomsLabel: phase === 'live' ? 'Back to rooms' : 'Back to setup',
+      I, isSetup: phase === 'setup' && !closed, isLive: phase === 'live', closedToast: closed && phase === 'live', isGroups: !solo, isSolo: solo,
+      stageTitle: phase === 'setup' ? (solo ? '13 individual rooms' : nRooms + ' rooms') : (solo ? 'Watching 13 rooms' : 'Watching ' + N + ' rooms'),
+      stageSub: phase === 'setup' ? (solo ? 'One student per room' : (moving ? 'Pick a room for ' + byK[moving].name.split(' ')[0] : 'Tap a student to move them')) : (solo ? 'Tap any room for a closer look' : 'Tap a room to preview it'),
+      panelSub: phase === 'setup' ? 'Set up · nothing is sent until you open rooms' : N + ' rooms · ' + mins + ' min',
+      setupCols: solo ? 'repeat(5, minmax(0, 1fr))' : 'repeat(' + Math.min(N, 4) + ', minmax(0, 1fr))', setupRowH: solo ? 'auto' : 'auto',
+      rooms, uneven, selName: moving ? byK[moving].name.split(' ')[0] : '',
+      evenOut: set({ moves: {}, moving: '' }), shuffle: set({ seed: seed + 1, moves: {}, moving: '' }),
+      modes: [
+        { label: 'Groups', sub: 'Mix students into a few rooms', on: !solo ? 'true' : 'false', bd: !solo ? '#1f62d0' : '#d5dce5', bg: !solo ? '#f4f8ff' : '#ffffff', pick: set({ mode: 'groups', moving: '' }), dots: [dot('#5b8fe0', '30px'), dot('#f5b74d', '30px'), dot('#3ecf8e', '30px'), dot('#c084fc', '30px')] },
+        { label: 'One per student', sub: 'Everyone gets their own room', on: solo ? 'true' : 'false', bd: solo ? '#1f62d0' : '#d5dce5', bg: solo ? '#f4f8ff' : '#ffffff', pick: set({ mode: 'solo', moving: '' }), dots: COLORS.concat(COLORS.slice(0, 2)).map((c) => dot(c, '10px')) }
+      ],
+      nRooms, fewer: set({ nRooms: Math.max(2, nRooms - 1), moves: {}, moving: '' }), more: set({ nRooms: Math.min(6, nRooms + 1), moves: {}, moving: '' }),
+      perRoom: (lo === hi ? lo : lo + '–' + hi) + ' students per room · 13 students',
+      assignOpts: [['even', 'Spread evenly', 'Shuffled so room sizes differ by one at most'], ['choose', 'Let students choose', 'They pick a room; you can still move people']].map((o) => {
+        const on = assign === o[0]; return { label: o[1], sub: o[2], on: on ? 'true' : 'false', isOn: on, bd: on ? '#1f62d0' : '#e1e6ec', bg: on ? '#f4f8ff' : '#ffffff', ring: on ? '#1f62d0' : '#c9d2dd', pick: set({ assign: o[0] }) };
+      }),
+      durations: [5, 10, 15, 20, 30].map((d) => ({ label: d + 'm', on: dur === d ? 'true' : 'false', bd: dur === d ? '#1f62d0' : '#d5dce5', bg: dur === d ? '#1f62d0' : '#ffffff', fg: dur === d ? '#ffffff' : '#1f2933', pick: set({ dur: d }) })),
+      opts: [['slide', 'Send my current slide to every room'], ['back', 'Students can come back on their own'], ['auto', 'Bring everyone back when time is up'], ['rec', 'Record breakout rooms']].map((o) => ({ label: o[1], ...sw(!!opt[o[0]]), flip: () => this.setState({ opt: { ...opt, [o[0]]: !opt[o[0]] } }) })),
+      openCount: String(N), openRooms: set({ phase: 'live', moving: '', peek: -1 }),
+      liveCols: solo ? (back ? 'repeat(6, minmax(0, 1fr))' : 'repeat(5, minmax(0, 1fr))') : (back ? 'repeat(4, minmax(0, 1fr))' : (N <= 4 ? 'repeat(2, minmax(0, 1fr))' : 'repeat(3, minmax(0, 1fr))')),
+      thumbH: solo ? (back ? '112px' : '97px') : (back || N > 4 ? '172px' : '264px'), thumbScale: 'scale(' + (solo ? (back ? 200 : 172) : (back ? 306 : (N <= 4 ? 470 : 306))) / 1024 + ')', camS: solo ? '22px' : '34px',
+      liveRooms, listTitle: solo ? 'Rooms · help first' : 'Rooms',
+      timeLeft: String(mins - 2).padStart(2, '0') + ':42', addTime: set({ extra: extra + 5 }),
+      closeRooms: set({ closed: true, peek: -1 }), backToSetup: set({ closed: false, phase: 'setup', extra: 0, view: 'rooms', stageRoom: -1 }),
+      hasPeek: phase === 'live' && !closed && !main && peek >= 0, closePeek: set({ peek: -1 }), pk,
+      toggleListen: set({ listen: !listen }), listenPressed: listen ? 'true' : 'false', listenLabel: listen ? 'Listening' : 'Listen in',
+      listenBg: listen ? '#1f62d0' : '#ffffff', listenFg: listen ? '#ffffff' : '#1f2933', listenBd: listen ? '#1f62d0' : '#c9d2dd',
+      listenD: listen ? 'M11 5L6 9H3v6h3l5 4z M15.5 8.5a5 5 0 0 1 0 7 M18.5 5.5a9 9 0 0 1 0 13' : 'M11 5L6 9H3v6h3l5 4z M22 9l-6 6 M16 9l6 6',
+      panelBtns: [
+        { label: 'People', d: 'M9 5a3 3 0 1 0 0 6a3 3 0 1 0 0-6 M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6 M17 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5 M16 14.6c2.3.1 3.9 1.5 4.5 4', bg: '#1c2738', fg: '#e6edf5' },
+        { label: 'Chat', d: 'M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-5 4v-4H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z', bg: '#1c2738', fg: '#e6edf5' },
+        { label: 'Notes', d: 'M6 3h9l4 4v14H6z M14 3v5h5 M9 12.5h7 M9 16.5h5', bg: '#1c2738', fg: '#e6edf5' },
+        { label: 'Plugins: breakout rooms open', d: 'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M17 14v6 M14 17h6', bg: '#e6eef9', fg: '#0f1b2b' }
+      ],
+      mediaBtns: [
+        { label: 'Mute', d: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z M5 11a7 7 0 0 0 14 0 M12 18v3', bg: '#e6eef9', fg: '#0f1b2b' },
+        { label: 'Camera', d: 'M2.5 7.5a1.5 1.5 0 0 1 1.5-1.5h10a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H4a1.5 1.5 0 0 1-1.5-1.5z M15.5 10.5l6-3.5v10l-6-3.5', bg: '#e6eef9', fg: '#0f1b2b' },
+        { label: 'Share media', d: 'M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z M8 21h8 M12 17v4 M9 10.5l3-3 3 3 M12 7.5V13', bg: '#1c2738', fg: '#e6edf5' },
+        { label: 'React', d: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M8.5 14c.9 1.3 2 2 3.5 2s2.6-.7 3.5-2 M9 9.5h.01 M15 9.5h.01', bg: '#1c2738', fg: '#e6edf5' },
+        { label: 'Raise hand', d: I.hand, bg: '#1c2738', fg: '#e6edf5' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

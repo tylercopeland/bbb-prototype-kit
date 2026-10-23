@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Breakout setup, simplified</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}@keyframes bsIn{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}@keyframes bsPanel{from{opacity:0;translate:-24px 0}to{opacity:1;translate:0 0}}.bs-in{animation:bsIn .22s ease-out both}.bs-panel{animation:bsPanel .26s cubic-bezier(.2,.8,.2,1) both}@media (prefers-reduced-motion: reduce){.bs-in,.bs-panel{animation:none}}button:focus:not(:focus-visible){outline:none}button:focus-visible{outline:2px solid #5b8fe0;outline-offset:2px}.opt:hover{border-color:#8fb0e6 !important}</style>
+</helmet>
+<div style="position: relative; width: 1400px; height: 900px; overflow: hidden; background: #0b1220; color: #e6edf5; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif">
+
+  <div style="position: absolute; left: {{infoL}}; top: 14px; height: 38px; display: flex; align-items: center; gap: 10px; white-space: nowrap">
+    <span style="font-size: 14.5px; font-weight: 700; color: #ffffff">Hack Week: Brazil 2026</span>
+    <span style="display: flex; align-items: center; gap: 5px; color: #ff8a8f; font-weight: 700; font-size: 12.5px"><span style="width: 7px; height: 7px; border-radius: 4px; background: #ff5a5f"></span>REC</span>
+    <span style="font-size: 13px; color: #a9b6c6">14 people · 29:36</span>
+  </div>
+
+  <!-- slide (B keeps the presentation on stage) -->
+  <sc-if value="{{showSlide}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 152px; top: 72px; width: 1096px; height: 616px; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.45); opacity: {{slideOp}}; transition: opacity .2s ease">
+      <div style="position: absolute; left: 0; top: 0; transform: scale(1.0703125); transform-origin: 0 0"><dc-import name="Slide" hint-size="1024px,576px"></dc-import></div>
+    </div>
+  </sc-if>
+
+  <!-- C: toolbar on the stage -->
+  <sc-if value="{{isC}}" hint-placeholder-val="{{false}}">
+    <div class="bs-in" role="toolbar" aria-label="Breakout setup" style="position: absolute; left: 24px; top: 66px; right: 24px; height: 56px; box-sizing: border-box; padding: 0 8px 0 16px; border-radius: 14px; background: #ffffff; color: #1f2933; display: flex; align-items: center; gap: 14px">
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #111827; white-space: nowrap"><span style="width: 28px; height: 28px; border-radius: 8px; background: #fff3dc; color: #8a5a00; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h7v7H3z M14 4h7v7h-7z M3 14h7v6H3z M14 14h7v6h-7z"></path></svg></span>Breakout rooms</span>
+      <span style="width: 1px; height: 26px; background: #e1e6ec"></span>
+      <div role="radiogroup" style="display: flex; padding: 3px; border-radius: 10px; background: #eef1f5">
+        <button type="button" role="radio" aria-checked="{{gSel}}" onClick="{{toGroups}}" style="height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: {{gBg}}; box-shadow: {{gSh}}; color: #111827; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap">Groups</button>
+        <button type="button" role="radio" aria-checked="{{sSel}}" onClick="{{toSolo}}" style="height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: {{sBg}}; box-shadow: {{sSh}}; color: #111827; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap">One per student</button>
+      </div>
+      <sc-if value="{{isGroups}}" hint-placeholder-val="{{true}}">
+        <div style="display: flex; align-items: center; border: 1.5px solid #d5dce5; border-radius: 10px; height: 36px; overflow: hidden">
+          <button type="button" onClick="{{fewer}}" aria-label="Fewer rooms" style="width: 34px; height: 36px; border: 0; background: #ffffff; color: #374151; font-size: 18px; cursor: pointer">−</button>
+          <span style="padding: 0 6px; font-size: 14px; font-weight: 700; color: #111827; white-space: nowrap">{{n}} rooms</span>
+          <button type="button" onClick="{{more}}" aria-label="More rooms" style="width: 34px; height: 36px; border: 0; background: #ffffff; color: #374151; font-size: 18px; cursor: pointer">+</button>
+        </div>
+      </sc-if>
+      <button type="button" onClick="{{cycleDur}}" aria-label="Duration {{dur}} minutes, change" style="height: 36px; padding: 0 12px; border: 1.5px solid #d5dce5; border-radius: 10px; background: #ffffff; color: #111827; font-family: inherit; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5b6574" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7a7 7 0 1 0 0 14a7 7 0 1 0 0-14 M12 10.5v3.5l2 1.5 M10 2.5h4"></path></svg>{{dur}} min</button>
+      <span style="flex: 1"></span>
+      <button type="button" onClick="{{toggleMore}}" aria-expanded="{{moreExp}}" style="height: 36px; padding: 0 12px; border: 0; border-radius: 10px; background: {{moreBg}}; color: #374151; font-family: inherit; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10 M18 6h2 M4 12h4 M12 12h8 M4 18h12 M20 18h0 M16 4v4 M10 10v4 M18 16v4"></path></svg>Options</button>
+      <button type="button" style="height: 40px; padding: 0 18px; border: 0; border-radius: 10px; background: #1f62d0; color: #ffffff; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap">Open {{nOpen}} rooms</button>
+      <button type="button" aria-label="Close breakout setup" style="width: 34px; height: 34px; border: 0; border-radius: 17px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12 M18 6L6 18"></path></svg></button>
+    </div>
+    <sc-if value="{{moreOpen}}" hint-placeholder-val="{{false}}">
+      <div class="bs-in" role="dialog" aria-label="Options" style="position: absolute; right: 190px; top: 128px; width: 320px; box-sizing: border-box; padding: 6px 14px; border-radius: 14px; background: #ffffff; color: #1f2933; box-shadow: 0 18px 44px rgba(0,0,0,.45); z-index: 5">
+        <sc-for list="{{opts}}" as="o" hint-placeholder-count="4">
+          <button type="button" role="switch" aria-checked="{{o.on}}" onClick="{{o.flip}}" style="width: 100%; display: flex; align-items: center; gap: 12px; min-height: 46px; border: 0; border-bottom: 1px solid {{o.line}}; background: transparent; padding: 0; font-family: inherit; text-align: left; cursor: pointer"><span style="flex: 1; font-size: 14px; color: #1f2933">{{o.label}}</span><span style="width: 36px; height: 21px; border-radius: 11px; background: {{o.swBg}}; position: relative; flex-shrink: 0"><span style="position: absolute; top: 2px; left: {{o.swL}}; width: 17px; height: 17px; border-radius: 9px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,.25)"></span></span></button>
+        </sc-for>
+      </div>
+    </sc-if>
+  </sc-if>
+
+  <!-- room board (A: stage, B: inside sheet, C: stage) -->
+  <sc-if value="{{showBoard}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; left: {{bL}}; top: {{bT}}; width: {{bW}}; z-index: {{bZ}}; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; gap: 10px; height: 30px">
+        <span style="font-size: 13.5px; color: {{hintC}}; white-space: nowrap">{{boardHint}}</span>
+        <span style="flex: 1"></span>
+        <sc-if value="{{isGroups}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{shuffle}}" style="height: 30px; padding: 0 12px; border: 1px solid {{shBd}}; border-radius: 15px; background: transparent; color: {{shFg}}; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5 M4 20L21 3 M21 16v5h-5 M15 15l6 6 M4 4l5 5"></path></svg>Shuffle</button></sc-if>
+      </div>
+      <div class="bs-in" style="display: grid; grid-template-columns: {{bCols}}; gap: 10px">
+        <sc-for list="{{rooms}}" as="r" hint-placeholder-count="4">
+          <div style="border-radius: 12px; background: {{cardBg}}; border: 1px solid {{cardBd}}; padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0">
+            <div style="display: flex; align-items: center; gap: 7px"><span style="width: 8px; height: 8px; border-radius: 3px; background: {{r.c}}"></span><span style="flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; color: {{cardInk}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span><sc-if value="{{isGroups}}" hint-placeholder-val="{{true}}"><span style="font-size: 12px; color: {{cardSub}}">{{r.count}}</span></sc-if></div>
+            <div style="display: flex; flex-wrap: wrap; gap: 5px">
+              <sc-for list="{{r.members}}" as="m" hint-placeholder-count="3">
+                <span title="{{m.name}}" style="height: 28px; padding: 0 9px 0 3px; border-radius: 14px; background: {{pillBg}}; display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: {{cardInk}}; white-space: nowrap"><span style="width: 22px; height: 22px; border-radius: 11px; background: {{m.av}}; color: #ffffff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{m.ini}}</span>{{m.first}}</span>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- A: one question at a time -->
+  <sc-if value="{{isA}}" hint-placeholder-val="{{false}}">
+    <aside class="bs-panel" aria-label="Breakout rooms" style="position: absolute; left: 0; top: 0; width: 360px; height: 900px; box-sizing: border-box; background: #ffffff; color: #1f2933; border-right: 1px solid #e1e6ec; box-shadow: 6px 0 28px rgba(0,0,0,.28); display: flex; flex-direction: column">
+      <header style="display: flex; align-items: center; gap: 10px; padding: 16px 16px 14px">
+        <span style="flex: 1; font-size: 17px; font-weight: 700; color: #111827">Breakout rooms</span>
+        <span style="display: flex; gap: 4px" aria-label="Step {{step}} of 2"><span style="width: 18px; height: 4px; border-radius: 2px; background: #1f62d0"></span><span style="width: 18px; height: 4px; border-radius: 2px; background: {{step2C}}"></span></span>
+        <button type="button" aria-label="Close" style="width: 32px; height: 32px; border: 0; border-radius: 16px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12 M18 6L6 18"></path></svg></button>
+      </header>
+      <sc-if value="{{aStep1}}" hint-placeholder-val="{{true}}">
+        <div class="bs-in" style="flex: 1; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 22px; font-weight: 700; color: #111827; line-height: 1.2; padding-bottom: 8px">How should we split the class?</span>
+          <sc-for list="{{splits}}" as="o" hint-placeholder-count="5">
+            <button type="button" class="opt" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="min-height: 56px; border: 1.5px solid {{o.bd}}; border-radius: 12px; background: {{o.bg}}; padding: 8px 14px; display: flex; align-items: center; gap: 12px; font-family: inherit; text-align: left; cursor: pointer">
+              <span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 15.5px; font-weight: 700; color: #111827">{{o.label}}</span><span style="font-size: 12.5px; color: #5b6574">{{o.sub}}</span></span>
+              <sc-if value="{{o.rec}}" hint-placeholder-val="{{false}}"><span style="height: 22px; padding: 0 8px; border-radius: 11px; background: #e6f6ee; color: #0f7a3d; font-size: 11.5px; font-weight: 700; display: flex; align-items: center">Suggested</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+        <footer style="padding: 12px 16px 16px; border-top: 1px solid #eef1f5"><button type="button" onClick="{{toStep2}}" style="width: 100%; height: 46px; border: 0; border-radius: 12px; background: #1f62d0; color: #ffffff; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer">Next: how long</button></footer>
+      </sc-if>
+      <sc-if value="{{aStep2}}" hint-placeholder-val="{{false}}">
+        <div class="bs-in" style="flex: 1; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 22px; font-weight: 700; color: #111827; line-height: 1.2; padding-bottom: 6px">How long?</span>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px">
+            <sc-for list="{{durs}}" as="d" hint-placeholder-count="6">
+              <button type="button" class="opt" onClick="{{d.pick}}" aria-pressed="{{d.on}}" style="height: 56px; border: 1.5px solid {{d.bd}}; border-radius: 12px; background: {{d.bg}}; color: {{d.fg}}; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">{{d.label}}</button>
+            </sc-for>
+          </div>
+          <div style="margin-top: 8px; padding: 12px 14px; border-radius: 12px; background: #f4f6f9; font-size: 14px; line-height: 1.45; color: #374151">{{summary}}</div>
+          <button type="button" onClick="{{toggleMore}}" aria-expanded="{{moreExp}}" style="align-self: flex-start; height: 32px; padding: 0; border: 0; background: transparent; color: #1f62d0; font-family: inherit; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="rotate: {{chevR}}"><path d="M9 6l6 6-6 6"></path></svg>More options</button>
+          <sc-if value="{{moreOpen}}" hint-placeholder-val="{{false}}">
+            <div class="bs-in" style="display: flex; flex-direction: column">
+              <sc-for list="{{opts}}" as="o" hint-placeholder-count="4">
+                <button type="button" role="switch" aria-checked="{{o.on}}" onClick="{{o.flip}}" style="display: flex; align-items: center; gap: 12px; min-height: 44px; border: 0; border-bottom: 1px solid #eef1f5; background: transparent; padding: 0; font-family: inherit; text-align: left; cursor: pointer"><span style="flex: 1; font-size: 14px; color: #1f2933">{{o.label}}</span><span style="width: 36px; height: 21px; border-radius: 11px; background: {{o.swBg}}; position: relative; flex-shrink: 0"><span style="position: absolute; top: 2px; left: {{o.swL}}; width: 17px; height: 17px; border-radius: 9px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,.25)"></span></span></button>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <footer style="padding: 12px 16px 16px; border-top: 1px solid #eef1f5; display: flex; gap: 8px"><button type="button" onClick="{{toStep1}}" style="height: 46px; padding: 0 16px; border: 1px solid #c9d2dd; border-radius: 12px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">Back</button><button type="button" style="flex: 1; height: 46px; border: 0; border-radius: 12px; background: #1f62d0; color: #ffffff; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer">Open {{nOpen}} rooms</button></footer>
+      </sc-if>
+    </aside>
+  </sc-if>
+
+  <!-- B: one sentence -->
+  <sc-if value="{{isB}}" hint-placeholder-val="{{false}}">
+    <sc-if value="{{bEdit}}" hint-placeholder-val="{{false}}">
+      <div class="bs-in" style="position: absolute; left: 252px; top: 96px; width: 896px; height: 452px; border-radius: 18px 18px 0 0; background: #ffffff; box-shadow: 0 -10px 40px rgba(0,0,0,.35)"></div>
+    </sc-if>
+    <div class="bs-in" role="dialog" aria-label="Breakout rooms" style="position: absolute; left: {{cardL}}; top: {{cardT}}; width: {{cardW}}; box-sizing: border-box; padding: 18px 20px; border-radius: {{cardR}}; background: #ffffff; color: #1f2933; box-shadow: 0 20px 50px rgba(0,0,0,.5); display: flex; flex-direction: column; gap: 14px; z-index: 3">
+      <div style="display: flex; align-items: center; gap: 10px"><span style="width: 30px; height: 30px; border-radius: 9px; background: #fff3dc; color: #8a5a00; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h7v7H3z M14 4h7v7h-7z M3 14h7v6H3z M14 14h7v6h-7z"></path></svg></span><span style="flex: 1; font-size: 16px; font-weight: 700; color: #111827">Breakout rooms</span><button type="button" aria-label="Close" style="width: 30px; height: 30px; border: 0; border-radius: 15px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12 M18 6L6 18"></path></svg></button></div>
+      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 20px; font-weight: 600; color: #111827; line-height: 1.6">
+        <span>Split the class into</span>
+        <span style="display: inline-flex; align-items: center; height: 38px; border-radius: 10px; background: #e8f0fd; color: #1f62d0"><button type="button" onClick="{{fewerB}}" aria-label="Fewer rooms" style="width: 30px; height: 38px; border: 0; background: transparent; color: #1f62d0; font-size: 18px; cursor: pointer">−</button><span style="font-weight: 700; white-space: nowrap">{{bRoomsLabel}}</span><button type="button" onClick="{{moreB}}" aria-label="More rooms" style="width: 30px; height: 38px; border: 0; background: transparent; color: #1f62d0; font-size: 18px; cursor: pointer">+</button></span>
+        <span>for</span>
+        <button type="button" onClick="{{cycleDur}}" style="height: 38px; padding: 0 12px; border: 0; border-radius: 10px; background: #e8f0fd; color: #1f62d0; font-family: inherit; font-size: 20px; font-weight: 700; cursor: pointer; white-space: nowrap">{{dur}} min</button>
+      </div>
+      <span style="font-size: 13px; color: #5b6574">{{bDefaults}}</span>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <button type="button" onClick="{{toggleEdit}}" style="height: 42px; padding: 0 14px; border: 1px solid #c9d2dd; border-radius: 11px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer">{{editLabel}}</button>
+        <span style="flex: 1"></span>
+        <button type="button" style="height: 42px; padding: 0 20px; border: 0; border-radius: 11px; background: #1f62d0; color: #ffffff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Open rooms</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- action bar -->
+  <nav aria-label="Actions" style="position: absolute; left: {{infoL}}; right: 24px; bottom: 14px; height: 60px; display: flex; align-items: center; gap: 12px">
+    <div style="flex: 1; display: flex; align-items: center; gap: 6px">
+      <sc-for list="{{panelBtns}}" as="b" hint-placeholder-count="4"><span style="width: 44px; height: 44px; border-radius: 12px; background: {{b.bg}}; color: {{b.fg}}; display: flex; align-items: center; justify-content: center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{b.d}}"></path></svg></span></sc-for>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px">
+      <sc-for list="{{mediaBtns}}" as="b" hint-placeholder-count="5"><span style="width: 48px; height: 48px; border-radius: 24px; background: {{b.bg}}; color: {{b.fg}}; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{b.d}}"></path></svg></span></sc-for>
+    </div>
+    <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 6px">
+      <span style="width: 44px; height: 44px; border-radius: 12px; background: #1c2738; color: #e6edf5; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6 M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"></path></svg></span>
+      <span style="width: 44px; height: 44px; box-sizing: border-box; border: 1px solid #6b2f36; border-radius: 12px; background: #2a161b; color: #ff9ea1; display: flex; align-items: center; justify-content: center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4 M15 16l4-4-4-4 M19 12H9"></path></svg></span>
+    </div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variant":{"editor":"enum","options":["a","b","c"],"default":"a"},"step":{"editor":"enum","options":["1","2"],"default":"1"},"open":{"editor":"enum","options":["closed","open"],"default":"closed"},"$preview":{"width":1400,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const S0 = this.state || {};
+    const g = (k, d) => (S0[k] !== undefined ? S0[k] : d);
+    const set = (o) => () => this.setState(o);
+    const v = this.props.variant || 'a';
+    const isA = v === 'a', isB = v === 'b', isC = v === 'c';
+    const step = g('step', this.props.step === '2' ? 2 : 1);
+    const opened = g('opened', isB && this.props.open === 'open');
+    const solo = g('solo', false);
+    const n = g('n', 4), dur = g('dur', 10), seed = g('seed', 1);
+    const opt = g('opt', { slide: true, back: true, auto: true, rec: false });
+    const ST = [['Bruno', 'BR', '#4e6b2a'], ['Rafaela Monaco', 'RM', '#a23c64'], ['Cibelle Maciel', 'CM', '#2f6db3'], ['Octavio', 'OC', '#2b7a6f'], ['Frederick Dixon', 'FD', '#2f6db3'], ['Anton Georgiev', 'AG', '#b5542e'], ['Michelle Winkler', 'MW', '#7a4fb5'], ['Ellen', 'EL', '#8a5a12'], ['Timo', 'TI', '#3f6f8f'], ['Marta Ribeiro', 'MR', '#2b7a6f'], ['Lucas Pereira', 'LP', '#6b4fa3'], ['Ana Souza', 'AS', '#a23c64'], ['Joana Lima', 'JL', '#4e6b2a']]
+      .map((s) => ({ name: s[0], first: s[0].split(' ')[0], ini: s[1], av: s[2] }));
+    const COLORS = ['#5b8fe0', '#f5b74d', '#3ecf8e', '#c084fc', '#ff8a8f', '#38bdf8', '#fb923c', '#a3e635'];
+    let x = seed * 7919;
+    const order = ST.slice();
+    if (seed > 1) for (let i = order.length - 1; i > 0; i--) { x = (x * 9301 + 49297) % 233280; const j = Math.floor(x / 233280 * (i + 1)); const t = order[i]; order[i] = order[j]; order[j] = t; }
+    const N = solo ? 13 : n;
+    const groups = Array.from({ length: N }, () => []);
+    order.forEach((s, i) => groups[i % N].push(s));
+    const rooms = groups.map((ms, i) => ({ name: solo ? ms[0].first : 'Room ' + (i + 1), c: COLORS[i % COLORS.length], count: String(ms.length), members: ms }));
+    const lo = Math.floor(13 / n), hi = Math.ceil(13 / n);
+    const per = (k) => { const a = Math.floor(13 / k), b = Math.ceil(13 / k); return (a === b ? a : a + '–' + b) + ' students each'; };
+    const sw = (on) => ({ swBg: on ? '#1f62d0' : '#c9d2dd', swL: on ? '17px' : '2px', on: on ? 'true' : 'false' });
+    const optList = [['back', 'Students can come back on their own'], ['auto', 'Bring everyone back when time is up'], ['slide', 'Send my current slide to every room'], ['rec', 'Record breakout rooms']];
+    const opts = optList.map((o, i) => ({ label: o[1], ...sw(!!opt[o[0]]), line: i === optList.length - 1 ? 'transparent' : '#eef1f5', flip: () => this.setState({ opt: { ...opt, [o[0]]: !opt[o[0]] } }) }));
+    const moreOpen = g('more', !isB && this.props.open === 'open');
+    const durList = [5, 10, 15, 20, 30];
+    const cycleDur = () => this.setState({ dur: durList[(durList.indexOf(dur) + 1) % durList.length] });
+    // board geometry
+    let showBoard = true, bL = 384, bT = 72, bW = 992, bCols = 'repeat(' + Math.min(N, 4) + ', minmax(0, 1fr))', bZ = 1, light = false;
+    if (solo) bCols = 'repeat(5, minmax(0, 1fr))';
+    if (isC) { bL = 24; bT = 140; bW = 1352; bCols = solo ? 'repeat(7, minmax(0, 1fr))' : 'repeat(' + Math.min(N, 6) + ', minmax(0, 1fr))'; }
+    if (isB) { showBoard = opened; bL = 276; bT = 112; bW = 848; bCols = 'repeat(' + Math.min(N, 4) + ', minmax(0, 1fr))'; bZ = 2; light = true; }
+    const summary = (solo ? '13 rooms, one student each' : n + ' rooms, ' + per(n)) + ', for ' + dur + ' minutes. Everyone comes back when time is up.';
+    const splits = [2, 3, 4, 5].map((k) => {
+      const on = !solo && n === k;
+      return { label: k + ' rooms', sub: per(k), rec: k === 4, on: on ? 'true' : 'false', bd: on ? '#1f62d0' : '#e1e6ec', bg: on ? '#f4f8ff' : '#ffffff', pick: set({ solo: false, n: k }) };
+    }).concat([{ label: 'One room per student', sub: '13 rooms · independent work', rec: false, on: solo ? 'true' : 'false', bd: solo ? '#1f62d0' : '#e1e6ec', bg: solo ? '#f4f8ff' : '#ffffff', pick: set({ solo: true }) }]);
+    return {
+      isA, isB, isC, infoL: isA ? '384px' : '24px',
+      showSlide: isB, slideOp: opened ? 0.25 : 1,
+      showBoard, bL: bL + 'px', bT: bT + 'px', bW: bW + 'px', bCols, bZ: String(bZ), rooms, isGroups: !solo,
+      boardHint: isB ? 'Shuffled evenly · tap Shuffle for new groups' : (solo ? 'Preview · one student per room' : 'Preview · shuffled so sizes differ by one at most'),
+      hintC: light ? '#5b6574' : '#8d9aab', shBd: light ? '#c9d2dd' : '#2c3d55', shFg: light ? '#1f2933' : '#e6edf5',
+      cardBg: light ? '#f7f9fb' : '#131d2c', cardBd: light ? '#e1e6ec' : '#22324a', cardInk: light ? '#111827' : '#ffffff', cardSub: light ? '#6b7280' : '#8d9aab', pillBg: light ? '#ffffff' : '#1a2536',
+      shuffle: set({ seed: seed + 1 }),
+      n, nOpen: String(N), dur, cycleDur,
+      fewer: set({ n: Math.max(2, n - 1) }), more: set({ n: Math.min(6, n + 1) }),
+      gSel: solo ? 'false' : 'true', sSel: solo ? 'true' : 'false', gBg: solo ? 'transparent' : '#ffffff', sBg: solo ? '#ffffff' : 'transparent',
+      gSh: solo ? 'none' : '0 1px 3px rgba(15,23,36,.15)', sSh: solo ? '0 1px 3px rgba(15,23,36,.15)' : 'none',
+      toGroups: set({ solo: false }), toSolo: set({ solo: true }),
+      moreOpen, toggleMore: set({ more: !moreOpen }), moreExp: moreOpen ? 'true' : 'false', moreBg: moreOpen ? '#e8f0fd' : '#eef1f5', chevR: moreOpen ? '90deg' : '0deg', opts,
+      step, aStep1: step === 1, aStep2: step === 2, step2C: step === 2 ? '#1f62d0' : '#d5dce5', toStep2: set({ step: 2 }), toStep1: set({ step: 1 }), splits,
+      durs: durList.map((d) => ({ label: d + ' min', on: dur === d ? 'true' : 'false', bd: dur === d ? '#1f62d0' : '#e1e6ec', bg: dur === d ? '#1f62d0' : '#ffffff', fg: dur === d ? '#ffffff' : '#1f2933', pick: set({ dur: d }) })).concat([{ label: 'No limit', on: 'false', bd: '#e1e6ec', bg: '#ffffff', fg: '#1f2933', pick: () => {} }]),
+      summary,
+      bEdit: opened, toggleEdit: set({ opened: !opened }), editLabel: opened ? 'Done reviewing' : 'Review groups',
+      bRoomsLabel: solo ? '13 rooms' : n + ' rooms', fewerB: set({ solo: false, n: Math.max(2, n - 1) }), moreB: () => this.setState(n >= 6 ? { solo: true } : { solo: false, n: n + 1 }),
+      bDefaults: (solo ? 'One student per room' : per(n) + ', shuffled evenly') + ' · everyone comes back when time is up',
+      cardL: opened ? '252px' : '450px', cardT: opened ? '548px' : '600px', cardW: opened ? '896px' : '500px', cardR: opened ? '0 0 18px 18px' : '18px',
+      panelBtns: [
+        { d: 'M9 5a3 3 0 1 0 0 6a3 3 0 1 0 0-6 M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6 M17 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5 M16 14.6c2.3.1 3.9 1.5 4.5 4', bg: '#1c2738', fg: '#e6edf5' },
+        { d: 'M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-5 4v-4H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z', bg: '#1c2738', fg: '#e6edf5' },
+        { d: 'M6 3h9l4 4v14H6z M14 3v5h5 M9 12.5h7 M9 16.5h5', bg: '#1c2738', fg: '#e6edf5' },
+        { d: 'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M17 14v6 M14 17h6', bg: '#e6eef9', fg: '#0f1b2b' }
+      ],
+      mediaBtns: [
+        { d: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z M5 11a7 7 0 0 0 14 0 M12 18v3', bg: '#e6eef9', fg: '#0f1b2b' },
+        { d: 'M2.5 7.5a1.5 1.5 0 0 1 1.5-1.5h10a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H4a1.5 1.5 0 0 1-1.5-1.5z M15.5 10.5l6-3.5v10l-6-3.5', bg: '#e6eef9', fg: '#0f1b2b' },
+        { d: 'M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z M8 21h8 M12 17v4 M9 10.5l3-3 3 3 M12 7.5V13', bg: '#1c2738', fg: '#e6edf5' },
+        { d: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M8.5 14c.9 1.3 2 2 3.5 2s2.6-.7 3.5-2 M9 9.5h.01 M15 9.5h.01', bg: '#1c2738', fg: '#e6edf5' },
+        { d: 'M8 13V5.5a1.5 1.5 0 0 1 3 0V11 M11 10V4.5a1.5 1.5 0 0 1 3 0V11 M14 10.5V6a1.5 1.5 0 0 1 3 0v8a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L3 16.5a1.5 1.5 0 0 1 2.2-2L8 16', bg: '#1c2738', fg: '#e6edf5' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

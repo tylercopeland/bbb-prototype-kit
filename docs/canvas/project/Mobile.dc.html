@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mobile room</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}@keyframes mbSheet{from{translate:0 40px;opacity:.4}to{translate:0 0;opacity:1}}@keyframes mbFade{from{opacity:0}to{opacity:1}}@keyframes mbPop{from{opacity:0;translate:0 8px;scale:.97}to{opacity:1;translate:0 0;scale:1}}.mb-sheet{animation:mbSheet .28s cubic-bezier(.2,.8,.2,1) both}.mb-fade{animation:mbFade .2s ease-out both}.mb-pop{animation:mbPop .2s cubic-bezier(.2,.8,.2,1) both;transform-origin:bottom center}@media (prefers-reduced-motion: reduce){.mb-sheet,.mb-fade,.mb-pop{animation:none}}.mb-list::-webkit-scrollbar{display:none}.mrow:active{background:#f4f6f9}</style>
+</helmet>
+<div style="position: relative; width: {{W}}; height: {{H}}; overflow: hidden; background: #0b1220; color: #e6edf5; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; border-radius: {{frameR}}">
+
+  <!-- status bar -->
+  <sc-if value="{{portrait}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; left: 0; top: 0; width: 390px; height: 47px; display: flex; align-items: center; justify-content: space-between; padding: 6px 30px 0; box-sizing: border-box; font-size: 15px; font-weight: 600; color: #ffffff">
+      <span>9:41</span>
+      <span style="width: 120px; height: 32px; border-radius: 16px; background: #000000; position: absolute; left: 135px; top: 9px"></span>
+      <span style="display: flex; gap: 6px; align-items: center"><svg width="18" height="12" viewBox="0 0 18 12" fill="#ffffff" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"></rect><rect x="5" y="5" width="3" height="7" rx="1"></rect><rect x="10" y="2" width="3" height="10" rx="1"></rect><rect x="15" y="0" width="3" height="12" rx="1"></rect></svg><svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true"><rect x=".5" y=".5" width="22" height="11" rx="3" stroke="#ffffff" opacity=".5"></rect><rect x="2" y="2" width="17" height="8" rx="2" fill="#ffffff"></rect><rect x="24" y="4" width="1.5" height="4" rx=".75" fill="#ffffff" opacity=".5"></rect></svg></span>
+    </div>
+  </sc-if>
+
+  <!-- top = information -->
+  <div style="position: absolute; left: {{infoL}}; top: {{infoT}}; right: {{infoR}}; height: 40px; display: flex; align-items: center; gap: 10px">
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+      <span style="font-size: 15px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Hack Week: Brazil 2026</span>
+      <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #a9b6c6"><span style="display: flex; align-items: center; gap: 4px; color: #ff8a8f; font-weight: 700"><span style="width: 6px; height: 6px; border-radius: 3px; background: #ff5a5f"></span>REC</span>14 people · 29:36</span>
+    </div>
+    <button type="button" onClick="{{openAlerts}}" aria-label="3 updates: 4 hands raised, Rafaela asked a question, 3 students with low engagement" style="height: 34px; padding: 0 10px 0 8px; border: 1.5px dashed #5c6f88; border-radius: 17px; background: transparent; color: #ffffff; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer">
+      <span style="display: flex"><span style="width: 18px; height: 18px; border-radius: 9px; background: #f5b74d; border: 2px solid #0b1220; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{I.hand}}"></path></svg></span><span style="width: 18px; height: 18px; margin-left: -6px; border-radius: 9px; background: #7fb0ff; border: 2px solid #0b1220"></span><span style="width: 18px; height: 18px; margin-left: -6px; border-radius: 9px; background: #a78bfa; border: 2px solid #0b1220"></span></span>3 updates
+    </button>
+  </div>
+
+  <!-- slide -->
+  <sc-if value="{{showSlide}}" hint-placeholder-val="{{true}}">
+  <div style="position: absolute; left: {{sL}}; top: {{sT}}; width: {{sW}}; height: {{sH}}; border-radius: 10px; overflow: hidden; box-shadow: {{slideShadow}}">
+    <div style="position: absolute; left: 0; top: 0; transform: {{sScale}}; transform-origin: 0 0"><dc-import name="Slide" page="{{slideNo}}" hint-size="1024px,576px"></dc-import></div>
+    <svg viewBox="0 0 1024 576" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none"><sc-for list="{{strokes}}" as="k" hint-placeholder-count="1"><path d="{{k.d}}" fill="none" stroke="{{k.c}}" stroke-width="{{k.w}}" stroke-opacity="{{k.o}}" stroke-linecap="round" stroke-linejoin="round"></path></sc-for></svg>
+    <sc-if value="{{annot}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{drawTap}}" aria-label="{{drawLabel}}" style="position: absolute; inset: 0; border: 0; padding: 0; background: transparent; cursor: crosshair"></button></sc-if>
+    <sc-if value="{{notAnnot}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{minimize}}" aria-label="Minimize presentation" style="position: absolute; right: 8px; top: 8px; width: 34px; height: 34px; border: 0; border-radius: 17px; background: rgba(15,27,43,.72); color: #ffffff; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6 M20 10h-6V4 M14 10l7-7 M3 21l7-7"></path></svg></button></sc-if>
+  </div>
+  </sc-if>
+
+  <!-- presenter pager (always visible: no hover on touch) -->
+  <sc-if value="{{showPager}}" hint-placeholder-val="{{true}}">
+  <div style="position: absolute; left: {{pgL}}; top: {{pgT}}; transform: translateX(-50%); display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 20px; background: #ffffff; box-shadow: 0 6px 18px rgba(0,0,0,.35)">
+    <button type="button" onClick="{{openSlides}}" aria-label="All slides" aria-expanded="{{slidesExp}}" style="width: 34px; height: 34px; border: 0; border-radius: 17px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; background: {{slidesBg}}; color: {{slidesFg}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z"></path></svg></button>
+    <button type="button" onClick="{{prev}}" aria-label="Previous slide" aria-disabled="{{prevDis}}" style="width: 34px; height: 34px; border: 0; border-radius: 17px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; background: transparent; color: {{prevFg}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+    <span aria-live="polite" style="min-width: 48px; text-align: center; font-size: 13.5px; font-weight: 700; color: #111827">{{slideNo}} / 12</span>
+    <button type="button" onClick="{{next}}" aria-label="Next slide" aria-disabled="{{nextDis}}" style="width: 34px; height: 34px; border: 0; border-radius: 17px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; background: transparent; color: {{nextFg}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+    <button type="button" onClick="{{startAnnot}}" aria-label="Annotate slide" style="width: 34px; height: 34px; border: 0; border-radius: 17px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; background: transparent; color: #374151"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z M14 7l3 3"></path></svg></button>
+  </div>
+  </sc-if>
+
+  <!-- annotation toolbar replaces the pager while drawing -->
+  <sc-if value="{{annot}}" hint-placeholder-val="{{false}}">
+  <div class="mb-pop" role="toolbar" aria-label="Annotate" style="position: absolute; left: {{pgL}}; top: {{pgT}}; transform: translateX(-50%); display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 20px; background: #ffffff; box-shadow: 0 6px 18px rgba(0,0,0,.35); white-space: nowrap">
+    <sc-for list="{{annotTools}}" as="a" hint-placeholder-count="3"><button type="button" onClick="{{a.pick}}" aria-label="{{a.label}}" aria-pressed="{{a.on}}" style="width: 34px; height: 34px; border: 0; border-radius: 17px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; background: {{a.bg}}; color: {{a.fg}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{a.d}}"></path></svg></button></sc-for>
+    <span style="width: 1px; height: 20px; background: #e1e6ec; margin: 0 3px"></span>
+    <sc-for list="{{annotColors}}" as="c" hint-placeholder-count="4"><button type="button" onClick="{{c.pick}}" aria-label="{{c.label}}" aria-pressed="{{c.on}}" style="width: 26px; height: 34px; border: 0; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer"><span style="width: 16px; height: 16px; border-radius: 8px; background: {{c.c}}; box-shadow: {{c.ring}}"></span></button></sc-for>
+    <span style="width: 1px; height: 20px; background: #e1e6ec; margin: 0 3px"></span>
+    <button type="button" onClick="{{undo}}" aria-label="Undo" style="width: 34px; height: 34px; border: 0; border-radius: 17px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; background: transparent; color: {{undoFg}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5 M4 9h10a6 6 0 0 1 0 12h-3"></path></svg></button>
+    <button type="button" onClick="{{endAnnot}}" style="height: 34px; padding: 0 14px; border: 0; border-radius: 17px; background: #1f62d0; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">Done</button>
+  </div>
+  </sc-if>
+
+  <!-- webcams: always shown -->
+  <div class="mb-list" role="list" aria-label="Webcams" style="position: absolute; left: {{cL}}; top: {{cT}}; width: {{cW}}; height: {{cH}}; display: grid; grid-template-columns: {{cCols}}; grid-auto-rows: {{cRow}}; gap: 6px; overflow: auto">
+    <sc-for list="{{tiles}}" as="t" hint-placeholder-count="12">
+      <div role="listitem" style="position: relative; border-radius: 10px; background: {{t.bg}}; border: {{t.border}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; overflow: hidden">
+        <sc-if value="{{t.pres}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{restore}}" aria-label="Presentation, slide {{slideNo}} of 12. Tap to bring it back" style="position: absolute; inset: 0; border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center"><span style="position: relative; width: {{pw}}; height: {{ph}}; border-radius: 4px; overflow: hidden; margin-top: -10px"><span style="position: absolute; left: 0; top: 0; transform: {{pScale}}; transform-origin: 0 0"><dc-import name="Slide" page="{{slideNo}}" hint-size="1024px,576px"></dc-import></span></span><span style="position: absolute; right: 5px; top: 5px; width: 24px; height: 24px; border-radius: 12px; background: rgba(15,27,43,.8); color: #ffffff; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7"></path></svg></span><span style="position: absolute; left: 5px; bottom: 5px; background: #1f62d0; color: #ffffff; border-radius: 4px; padding: 0 5px; font-size: 11px; font-weight: 700">Slides · {{slideNo}}/12</span></button></sc-if>
+        <sc-if value="{{t.video}}" hint-placeholder-val="{{false}}"><svg width="{{figW}}" height="{{figH}}" viewBox="0 0 24 22" fill="#5d6b7e" style="margin-top: 14px" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M2 22c1-5.5 5-8 10-8s9 2.5 10 8z"></path></svg></sc-if>
+        <sc-if value="{{t.initialsOnly}}" hint-placeholder-val="{{true}}"><span style="width: 36px; height: 36px; border-radius: {{t.avR}}; background: {{t.av}}; color: #ffffff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{t.ini}}</span></sc-if>
+        <sc-if value="{{t.more}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{openCams}}" aria-label="Show all 14 webcams" style="position: absolute; inset: 0; border: 0; background: transparent; color: #ffffff; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">{{t.label}}</button></sc-if>
+        <sc-if value="{{t.named}}" hint-placeholder-val="{{true}}"><span style="position: absolute; left: 5px; bottom: 5px; max-width: calc(100% - 10px); box-sizing: border-box; background: rgba(4,12,24,.72); color: #ffffff; border-radius: 4px; padding: 0 5px; font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.name}}</span></sc-if>
+        <sc-if value="{{t.hand}}" hint-placeholder-val="{{false}}"><span aria-label="Hand raised" style="position: absolute; right: 5px; top: 5px; width: 22px; height: 22px; border-radius: 11px; background: #f5b74d; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="{{I.hand}}"></path></svg></span></sc-if>
+      </div>
+    </sc-for>
+  </div>
+  <sc-if value="{{showAllRow}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; left: {{allL}}; top: {{allT}}; width: {{allW}}; height: 34px; display: flex; align-items: center; gap: 8px">
+      <span style="flex: 1; min-width: 0; font-size: 12.5px; color: #8d9aab; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Speaker and raised hands first</span>
+      <button type="button" onClick="{{openCams}}" aria-label="See all 14 webcams" style="height: 32px; padding: 0 12px; border: 1px dashed #3a4d66; border-radius: 16px; background: transparent; color: #e6edf5; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; flex-shrink: 0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z"></path></svg>+{{hiddenN}} · See all</button>
+    </div>
+  </sc-if>
+
+  <!-- bottom = action -->
+  <nav aria-label="Session controls" style="position: absolute; left: {{barL}}; top: {{barT}}; width: {{barW}}; height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 6px; {{barBg}}">
+    <button type="button" onClick="{{openPeople}}" aria-label="People and chat, 2 unread messages" style="position: relative; width: 48px; height: 48px; border: 0; border-radius: 14px; background: {{peopleBg}}; color: {{peopleFg}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{I.people}}"></path></svg><span style="position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; box-sizing: border-box; padding: 0 4px; border-radius: 9px; background: #1f62d0; color: #ffffff; font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #0b1220">2</span></button>
+    <div style="display: flex; align-items: center; gap: 8px">
+      <button type="button" onClick="{{toggleMic}}" aria-label="{{micLabel}}" aria-pressed="{{micPressed}}" style="width: 52px; height: 52px; border: 0; border-radius: 26px; background: {{micBg}}; color: {{micFg}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{micD}}"></path></svg></button>
+      <button type="button" aria-label="Turn camera off" style="width: 52px; height: 52px; border: 0; border-radius: 26px; background: #e6eef9; color: #0f1b2b; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{I.cam}}"></path></svg></button>
+      <button type="button" onClick="{{toggleReact}}" aria-label="React or raise hand" aria-expanded="{{reactExp}}" style="width: 52px; height: 52px; border: 0; border-radius: 26px; background: {{reactBg}}; color: {{reactFg}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{I.react}}"></path></svg></button>
+      <button type="button" onClick="{{openMore}}" aria-label="More: share, class tools, notes, settings" style="width: 48px; height: 48px; border: 0; border-radius: 14px; background: {{moreBg}}; color: {{moreFg}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{I.apps}}"></path></svg></button>
+    </div>
+    <button type="button" aria-label="Leave session" style="width: 48px; height: 48px; box-sizing: border-box; border: 1px solid #6b2f36; border-radius: 14px; background: #2a161b; color: #ff9ea1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{I.leave}}"></path></svg></button>
+  </nav>
+  <sc-if value="{{portrait}}" hint-placeholder-val="{{true}}"><span style="position: absolute; left: 128px; bottom: 8px; width: 134px; height: 5px; border-radius: 3px; background: #ffffff; opacity: .85"></span></sc-if>
+
+  <!-- reactions tray -->
+  <sc-if value="{{isReact}}" hint-placeholder-val="{{false}}">
+    <div class="mb-pop" role="dialog" aria-label="React" style="position: absolute; left: {{trayL}}; top: {{trayT}}; transform: translateX(-50%); width: 300px; box-sizing: border-box; padding: 10px; border-radius: 18px; background: #ffffff; box-shadow: 0 14px 36px rgba(0,0,0,.45); display: flex; flex-direction: column; gap: 8px">
+      <button type="button" style="height: 44px; border: 0; border-radius: 12px; background: #fff3d6; color: #6b4300; font-family: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{I.hand}}"></path></svg>Raise hand</button>
+      <div style="display: flex; justify-content: space-between">
+        <sc-for list="{{emojis}}" as="e" hint-placeholder-count="6"><button type="button" aria-label="{{e.l}}" style="width: 42px; height: 42px; border: 0; border-radius: 21px; background: #f4f6f9; font-size: 21px; cursor: pointer; padding: 0">{{e.c}}</button></sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- sheets -->
+  <sc-if value="{{hasSheet}}" hint-placeholder-val="{{false}}">
+    <button type="button" class="mb-fade" onClick="{{closeAll}}" aria-label="Close" style="position: absolute; inset: 0; border: 0; padding: 0; background: rgba(2,8,18,.55); cursor: default"></button>
+  </sc-if>
+
+  <sc-if value="{{isPC}}" hint-placeholder-val="{{false}}">
+    <section class="mb-sheet" aria-label="People and chat" style="position: absolute; left: {{shL}}; top: {{pcT}}; width: {{shW}}; bottom: 0; box-sizing: border-box; border-radius: {{shR}}; background: #ffffff; color: #1f2933; display: flex; flex-direction: column; overflow: hidden">
+      <span style="align-self: center; width: 38px; height: 5px; border-radius: 3px; background: #d5dce5; margin: 8px 0 6px; flex-shrink: 0"></span>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 2px 14px 10px; flex-shrink: 0">
+        <div role="tablist" style="flex: 1; display: flex; padding: 3px; border-radius: 12px; background: #eef1f5">
+          <button type="button" role="tab" aria-selected="{{tabPSel}}" onClick="{{goP}}" style="flex: 1; height: 36px; border: 0; border-radius: 9px; background: {{tabPBg}}; box-shadow: {{tabPSh}}; color: #111827; font-family: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer">People <span style="font-weight: 600; color: #6b7280">14</span></button>
+          <button type="button" role="tab" aria-selected="{{tabCSel}}" onClick="{{goC}}" style="flex: 1; height: 36px; border: 0; border-radius: 9px; background: {{tabCBg}}; box-shadow: {{tabCSh}}; color: #111827; font-family: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer">Chat <span style="min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: #e5484d; color: #ffffff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">2</span></button>
+        </div>
+        <button type="button" onClick="{{closeAll}}" aria-label="Close" style="width: 36px; height: 36px; border: 0; border-radius: 18px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12 M18 6L6 18"></path></svg></button>
+      </div>
+
+      <sc-if value="{{tabIsP}}" hint-placeholder-val="{{true}}">
+        <div class="mb-list" style="display: flex; gap: 6px; padding: 0 14px 6px; overflow-x: auto; flex-shrink: 0">
+          <sc-for list="{{chips}}" as="c" hint-placeholder-count="3">
+            <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="flex-shrink: 0; height: 32px; padding: 0 12px; border-radius: 16px; border: {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer">{{c.label}}<span style="opacity: .7">{{c.n}}</span></button>
+          </sc-for>
+        </div>
+        <div class="mb-list" style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 6px 20px">
+          <sc-for list="{{sections}}" as="sec" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 6px; padding: 12px 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: {{sec.c}}">{{sec.title}}<span style="font-weight: 600; color: #9aa3af">{{sec.n}}</span></div>
+            <sc-if value="{{sec.isLow}}" hint-placeholder-val="{{false}}"><div style="margin: 4px 10px 6px; font-size: 12.5px; line-height: 1.4; color: #4f3780">Quiet for 15+ minutes in this session. A quick check-in is the right next step.</div></sc-if>
+            <sc-for list="{{sec.rows}}" as="r" hint-placeholder-count="5">
+              <button type="button" class="mrow" onClick="{{r.open}}" aria-label="{{r.aria}}" style="width: 100%; min-height: 54px; border: 0; border-radius: 12px; background: {{r.bg}}; padding: 6px 10px; display: flex; align-items: center; gap: 12px; text-align: left; font-family: inherit; cursor: {{r.cur}}">
+                <span style="width: 36px; height: 36px; flex-shrink: 0; border-radius: {{r.avR}}; background: {{r.av}}; box-shadow: {{r.ring}}; color: #ffffff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{r.ini}}</span>
+                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+                  <span style="font-size: 15px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}<sc-if value="{{r.you}}" hint-placeholder-val="{{false}}"><span style="font-weight: 500; color: #6b7280"> (you)</span></sc-if></span>
+                  <sc-if value="{{r.hasSub}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: center; gap: 4px; font-size: 12.5px; color: {{r.subC}}"><sc-if value="{{r.subIcon}}" hint-placeholder-val="{{false}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.subD}}"></path></svg></sc-if>{{r.sub}}</span></sc-if>
+                </span>
+                <span style="display: flex; align-items: center; gap: 8px; flex-shrink: 0">
+                  <span style="width: 24px; height: 24px; border-radius: 12px; background: {{r.micBg}}; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{r.micC}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.micD}}"></path></svg></span>
+                  <span style="width: 18px; display: flex; justify-content: center"><sc-if value="{{r.cam}}" hint-placeholder-val="{{true}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h12v10H3z M15 10l6-3v10l-6-3"></path></svg></sc-if></span>
+                </span>
+              </button>
+            </sc-for>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{tabIsC}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 6px; padding: 0 14px 8px; flex-shrink: 0">
+          <span style="height: 30px; padding: 0 12px; border-radius: 15px; background: #1f2933; color: #ffffff; font-size: 13px; font-weight: 600; display: flex; align-items: center">Everyone</span>
+          <span style="height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #c9d2dd; color: #374151; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px">Direct <span style="width: 7px; height: 7px; border-radius: 4px; background: #e5484d"></span></span>
+        </div>
+        <div class="mb-list" style="flex: 1; min-height: 0; overflow-y: auto; padding: 4px 16px; display: flex; flex-direction: column; gap: 14px">
+          <sc-for list="{{messages}}" as="m" hint-placeholder-count="4">
+            <div style="display: flex; gap: 10px">
+              <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: {{m.avR}}; background: {{m.av}}; color: #ffffff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{m.ini}}</span>
+              <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13.5px; font-weight: 700; color: #111827">{{m.name}} <span style="font-weight: 500; color: #8a94a3">{{m.time}}</span></span><span style="font-size: 15px; line-height: 1.4; color: #1f2933">{{m.text}}</span></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 10px 14px 30px; border-top: 1px solid #eef1f5">
+          <span style="flex: 1; height: 42px; border-radius: 21px; background: #f1f4f8; display: flex; align-items: center; padding: 0 16px; font-size: 15px; color: #8a94a3">Message everyone</span>
+          <span style="width: 42px; height: 42px; border-radius: 21px; background: #1f62d0; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14 M13 6l6 6-6 6"></path></svg></span>
+        </div>
+      </sc-if>
+    </section>
+  </sc-if>
+
+  <!-- student actions: stacked sheet -->
+  <sc-if value="{{isStudent}}" hint-placeholder-val="{{false}}">
+    <button type="button" class="mb-fade" onClick="{{closeStudent}}" aria-label="Back to people" style="position: absolute; inset: 0; border: 0; padding: 0; background: rgba(2,8,18,.35); cursor: default"></button>
+    <section class="mb-sheet" role="dialog" aria-label="Actions for {{st.name}}" style="position: absolute; left: {{shL}}; width: {{shW}}; bottom: 0; box-sizing: border-box; border-radius: {{shR}}; background: #ffffff; color: #1f2933; padding: 0 16px {{stPadB}}; display: flex; flex-direction: column; max-height: {{stMaxH}}; overflow-y: auto">
+      <span style="align-self: center; width: 38px; height: 5px; border-radius: 3px; background: #d5dce5; margin: 8px 0 12px; flex-shrink: 0"></span>
+      <div style="display: flex; align-items: center; gap: 12px; padding-bottom: 14px">
+        <span style="width: 44px; height: 44px; border-radius: 22px; background: {{st.av}}; color: #ffffff; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{st.ini}}</span>
+        <span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 18px; font-weight: 700; color: #111827">{{st.name}}</span><span style="font-size: 13.5px; color: #5b6574">{{st.summary}}</span></span>
+      </div>
+      <div style="display: flex; gap: 8px; padding-bottom: 10px">
+        <button type="button" style="flex: 1; height: 44px; border: 1px solid #c9d2dd; border-radius: 12px; background: #ffffff; color: #111827; font-family: inherit; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{I.chat}}"></path></svg>Message</button>
+        <button type="button" style="flex: 1; height: 44px; border: 1px solid #c9d2dd; border-radius: 12px; background: #ffffff; color: #111827; font-family: inherit; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18 M5 4v10h14V4 M12 14v3 M8 21l4-4 4 4"></path></svg>Make presenter</button>
+      </div>
+      <sc-for list="{{st.rows}}" as="a" hint-placeholder-count="5">
+        <button type="button" onClick="{{a.onClick}}" style="width: 100%; min-height: 50px; border: 0; border-bottom: 1px solid #eef1f5; background: transparent; padding: 0 2px; display: flex; align-items: center; gap: 14px; font-family: inherit; font-size: 16px; color: #1f2933; text-align: left; cursor: pointer">
+          <span style="color: #4b5563; display: flex"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{a.d}}"></path></svg></span>
+          <span style="flex: 1; display: flex; flex-direction: column"><span>{{a.label}}</span><sc-if value="{{a.hasHint}}" hint-placeholder-val="{{false}}"><span style="font-size: 12.5px; color: #6b7280">{{a.hint}}</span></sc-if></span>
+          <sc-if value="{{a.isToggle}}" hint-placeholder-val="{{true}}"><span role="switch" aria-checked="{{a.checked}}" style="width: 44px; height: 26px; border-radius: 13px; background: {{a.swBg}}; position: relative; flex-shrink: 0"><span style="position: absolute; top: 3px; left: {{a.swL}}; width: 20px; height: 20px; border-radius: 10px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: left .15s ease"></span></span></sc-if>
+        </button>
+      </sc-for>
+      <button type="button" style="width: 100%; min-height: 50px; border: 0; background: transparent; padding: 0 2px; display: flex; align-items: center; gap: 14px; font-family: inherit; font-size: 16px; font-weight: 600; color: #b42318; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M9 9l6 6 M15 9l-6 6"></path></svg>Remove from session</button>
+    </section>
+  </sc-if>
+
+  <!-- more sheet -->
+  <sc-if value="{{isMore}}" hint-placeholder-val="{{false}}">
+    <section class="mb-sheet" aria-label="More" style="position: absolute; left: {{shL}}; width: {{shW}}; bottom: 0; box-sizing: border-box; border-radius: {{shR}}; background: #ffffff; color: #1f2933; padding: 0 16px {{stPadB}}; display: flex; flex-direction: column; max-height: {{stMaxH}}; overflow-y: auto">
+      <span style="align-self: center; width: 38px; height: 5px; border-radius: 3px; background: #d5dce5; margin: 8px 0 14px; flex-shrink: 0"></span>
+      <sc-for list="{{moreGroups}}" as="g" hint-placeholder-count="2">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b7280; padding: 4px 2px 8px">{{g.title}}</span>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-bottom: 14px">
+          <sc-for list="{{g.items}}" as="it" hint-placeholder-count="4">
+            <button type="button" style="height: 78px; border: 1px solid #e1e6ec; border-radius: 14px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 12.5px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; cursor: pointer; padding: 0 4px; text-align: center; line-height: 1.15"><span style="width: 34px; height: 34px; border-radius: 10px; background: {{it.bg}}; color: {{it.fg}}; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{it.d}}"></path></svg></span>{{it.label}}</button>
+          </sc-for>
+        </div>
+      </sc-for>
+      <sc-for list="{{moreRows}}" as="it" hint-placeholder-count="2">
+        <button type="button" style="width: 100%; min-height: 50px; border: 0; border-top: 1px solid #eef1f5; background: transparent; padding: 0 2px; display: flex; align-items: center; gap: 14px; font-family: inherit; font-size: 16px; color: #1f2933; text-align: left; cursor: pointer"><span style="color: {{it.fg}}; display: flex"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{it.d}}"></path></svg></span><span style="flex: 1">{{it.label}}</span><sc-if value="{{it.ext}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8a94a3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6 M20 4l-9 9 M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"></path></svg></sc-if></button>
+      </sc-for>
+    </section>
+  </sc-if>
+
+  <!-- everyone tray -->
+  <sc-if value="{{isCams}}" hint-placeholder-val="{{false}}">
+    <section class="mb-sheet" aria-label="Everyone's webcams" style="position: absolute; left: 0; top: 96px; width: 390px; bottom: 0; box-sizing: border-box; border-radius: 20px 20px 0 0; background: #111b2b; border-top: 1px solid #24344a; padding: 0 12px 34px; display: flex; flex-direction: column">
+      <span style="align-self: center; width: 38px; height: 5px; border-radius: 3px; background: #3a4d66; margin: 8px 0 10px; flex-shrink: 0"></span>
+      <div style="display: flex; align-items: center; padding: 0 4px 12px"><span style="flex: 1; font-size: 17px; font-weight: 700; color: #ffffff">Everyone <span style="font-weight: 600; color: #8a94a3">14</span></span><button type="button" onClick="{{closeAll}}" aria-label="Close" style="width: 34px; height: 34px; border: 0; border-radius: 17px; background: #1c2738; color: #e6edf5; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12 M18 6L6 18"></path></svg></button></div>
+      <div class="mb-list" style="flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 104px; gap: 6px">
+        <sc-for list="{{allTiles}}" as="t" hint-placeholder-count="14">
+          <div style="position: relative; border-radius: 10px; background: {{t.bg}}; border: {{t.border}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; overflow: hidden">
+            <sc-if value="{{t.video}}" hint-placeholder-val="{{false}}"><svg width="46" height="42" viewBox="0 0 24 22" fill="#5d6b7e" style="margin-top: 16px" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M2 22c1-5.5 5-8 10-8s9 2.5 10 8z"></path></svg></sc-if>
+            <sc-if value="{{t.initialsOnly}}" hint-placeholder-val="{{true}}"><span style="width: 38px; height: 38px; border-radius: {{t.avR}}; background: {{t.av}}; color: #ffffff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{t.ini}}</span></sc-if>
+            <span style="position: absolute; left: 5px; bottom: 5px; max-width: calc(100% - 10px); box-sizing: border-box; background: rgba(4,12,24,.72); color: #ffffff; border-radius: 4px; padding: 0 5px; font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.name}}</span>
+            <sc-if value="{{t.hand}}" hint-placeholder-val="{{false}}"><span style="position: absolute; right: 5px; top: 5px; width: 22px; height: 22px; border-radius: 11px; background: #f5b74d; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="{{I.hand}}"></path></svg></span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </sc-if>
+
+  <!-- all slides -->
+  <sc-if value="{{isSlides}}" hint-placeholder-val="{{false}}">
+    <section class="mb-sheet" aria-label="All slides" style="position: absolute; left: {{shL}}; width: {{shW}}; bottom: 0; box-sizing: border-box; border-radius: {{shR}}; background: #ffffff; color: #1f2933; padding: 0 16px {{stPadB}}; display: flex; flex-direction: column; max-height: {{stMaxH}}">
+      <span style="align-self: center; width: 38px; height: 5px; border-radius: 3px; background: #d5dce5; margin: 8px 0 10px; flex-shrink: 0"></span>
+      <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 12px; flex-shrink: 0"><span style="flex: 1; font-size: 18px; font-weight: 700; color: #111827">All slides <span style="font-weight: 600; color: #6b7280">{{slideNo}} / 12</span></span><button type="button" onClick="{{closeAll}}" aria-label="Close" style="width: 34px; height: 34px; border: 0; border-radius: 17px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12 M18 6L6 18"></path></svg></button></div>
+      <div class="mb-list" style="flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 8px; align-content: start">
+        <sc-for list="{{thumbs}}" as="th" hint-placeholder-count="12">
+          <button type="button" onClick="{{th.go}}" aria-label="Slide {{th.n}}: {{th.title}}" aria-current="{{th.cur}}" style="border: 0; padding: 0; background: transparent; font-family: inherit; display: flex; flex-direction: column; gap: 5px; cursor: pointer; text-align: left">
+            <span style="position: relative; width: 100%; aspect-ratio: 16 / 9; box-sizing: border-box; border-radius: 6px; border: {{th.border}}; background: {{th.bg}}; overflow: hidden; display: flex; flex-direction: column; gap: 4px; padding: 7px 8px">
+              <span style="width: 8px; height: 8px; border-radius: 2px; background: {{th.mark}}"></span>
+              <span style="font-size: 9px; font-weight: 700; line-height: 1.15; color: {{th.ink}}">{{th.title}}</span>
+              <span style="width: 60%; height: 3px; border-radius: 2px; background: {{th.line}}"></span>
+              <span style="width: 40%; height: 3px; border-radius: 2px; background: {{th.line}}"></span>
+            </span>
+            <span style="font-size: 12px; font-weight: {{th.fw}}; color: {{th.numC}}">{{th.n}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+  </sc-if>
+
+  <!-- alerts sheet -->
+  <sc-if value="{{isAlerts}}" hint-placeholder-val="{{false}}">
+    <section class="mb-sheet" aria-label="Updates" style="position: absolute; left: {{shL}}; width: {{shW}}; bottom: 0; box-sizing: border-box; border-radius: {{shR}}; background: #ffffff; color: #1f2933; padding: 0 16px {{stPadB}}; display: flex; flex-direction: column; gap: 8px">
+      <span style="align-self: center; width: 38px; height: 5px; border-radius: 3px; background: #d5dce5; margin: 8px 0 6px"></span>
+      <span style="font-size: 18px; font-weight: 700; color: #111827; padding: 0 2px 4px">Updates</span>
+      <sc-for list="{{alerts}}" as="al" hint-placeholder-count="3">
+        <button type="button" onClick="{{al.go}}" style="width: 100%; min-height: 64px; border: 1.5px dashed {{al.bd}}; border-radius: 14px; background: {{al.bg}}; padding: 10px 12px; display: flex; align-items: center; gap: 12px; font-family: inherit; text-align: left; cursor: pointer">
+          <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 17px; background: {{al.c}}; color: {{al.ink}}; display: flex; align-items: center; justify-content: center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{al.d}}"></path></svg></span>
+          <span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 15.5px; font-weight: 700; color: #111827">{{al.title}}</span><span style="font-size: 13px; color: #5b6574">{{al.sub}}</span></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a94a3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+      </sc-for>
+    </section>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"orient":{"editor":"enum","options":["portrait","landscape"],"default":"portrait"},"presmin":{"editor":"enum","options":["shown","min"],"default":"shown"},"annot":{"editor":"enum","options":["off","on"],"default":"off"},"sheet":{"editor":"enum","options":["none","people","chat","student","more","react","alerts","cams","slides"],"default":"none"},"pfilter":{"editor":"enum","options":["all","hands","low"],"default":"all"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st0 = this.state || {};
+    const g = (k, d) => (st0[k] !== undefined ? st0[k] : d);
+    const portrait = (this.props.orient || 'portrait') === 'portrait';
+    const propSheet = this.props.sheet || 'none';
+    const sheet = g('sheet', propSheet);
+    const tab = g('tab', propSheet === 'chat' ? 'chat' : 'people');
+    const student = g('student', propSheet === 'student' ? 'anton' : '');
+    const pfilter = g('pfilter', this.props.pfilter || 'all');
+    const micOn = g('micOn', true), slideNo = g('slideNo', 3), flags = g('flags', {});
+    const presMin = g('presMin', this.props.presmin === 'min');
+    const annot = !presMin && g('annot', this.props.annot === 'on');
+    const tool = g('tool', 'pen'), inkC = g('ink', '#e5484d');
+    const strokes = g('strokes', this.props.annot === 'on' ? [{ i: 0, t: 'pen', c: '#e5484d' }] : []);
+    const STROKES = ['M700 205c40-34 236-34 262-2s-70 42-160 40-140-14-102-38', 'M66 398h430', 'M560 470c70-30 110-80 128-150 M664 336l26-20 12 32'];
+    const set = (o) => () => this.setState(o);
+    const px = (n) => n + 'px';
+    const I = {
+      mic: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z M5 11a7 7 0 0 0 14 0 M12 18v3',
+      micOff: 'M3 3l18 18 M9 9v3a3 3 0 0 0 5.1 2.1 M15 9.3V6a3 3 0 0 0-5.7-1.3 M19 11a7 7 0 0 1-1.2 3.9 M5 11a7 7 0 0 0 10.6 6 M12 18v3',
+      cam: 'M2.5 7.5a1.5 1.5 0 0 1 1.5-1.5h10a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H4a1.5 1.5 0 0 1-1.5-1.5z M15.5 10.5l6-3.5v10l-6-3.5',
+      camOff: 'M3 3l18 18 M15 10l5-3v10 M14 14.5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h3',
+      react: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M8.5 14c.9 1.3 2 2 3.5 2s2.6-.7 3.5-2 M9 9.5h.01 M15 9.5h.01',
+      hand: 'M8 13V5.5a1.5 1.5 0 0 1 3 0V11 M11 10V4.5a1.5 1.5 0 0 1 3 0V11 M14 10.5V6a1.5 1.5 0 0 1 3 0v8a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L3 16.5a1.5 1.5 0 0 1 2.2-2L8 16',
+      leave: 'M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4 M15 16l4-4-4-4 M19 12H9',
+      people: 'M9 5a3 3 0 1 0 0 6a3 3 0 1 0 0-6 M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6 M17 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5 M16 14.6c2.3.1 3.9 1.5 4.5 4',
+      chat: 'M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-5 4v-4H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z',
+      apps: 'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M17 14v6 M14 17h6',
+      share: 'M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z M8 21h8 M12 17v4 M9 10.5l3-3 3 3 M12 7.5V13',
+      notes: 'M6 3h9l4 4v14H6z M14 3v5h5 M9 12.5h7 M9 16.5h5',
+      breakout: 'M3 4h7v7H3z M14 4h7v7h-7z M8.5 14h7v7h-7z',
+      poll: 'M5 20V10 M12 20V4 M19 20v-7',
+      timer: 'M12 7a7 7 0 1 0 0 14a7 7 0 1 0 0-14 M12 10.5v3.5l2 1.5 M10 2.5h4',
+      plug: 'M9 3v5 M15 3v5 M7 8h10v4a5 5 0 0 1-10 0z M12 17v4',
+      analytics: 'M3 4h18v12H3z M8 20h8 M12 16v4 M6 10.5h3l1.5-2.5 3 5 1.5-2.5h3',
+      settings: 'M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6 M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z',
+      captions: 'M3 6h18v12H3z M7 11h3 M7 14h6 M13 11h4 M15 14h2',
+      present: 'M3 4h18 M5 4v10h14V4 M12 14v3 M8 21l4-4 4 4',
+      mod: 'M12 3l7 3v5c0 4.5-3 8-7 10c-4-2-7-5.5-7-10V6z M9 12l2 2 4-4',
+      lock: 'M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3',
+      wb: 'M4 20l4-1 11-11-3-3L5 16z M14 7l3 3',
+      spark: 'M9 18h6 M10 21h4 M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z',
+      q: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7 M12 17h.01'
+    };
+    const HP = 'M4 15v-3a8 8 0 0 1 16 0v3 M4 15h3v5H4z M17 15h3v5h-3z';
+    const MIC = {
+      live: [I.mic, '#12a150', 'transparent', 'Mic on'], speaking: ['M7 10v4 M12 6v12 M17 10v4', '#ffffff', '#12a150', 'Speaking'],
+      muted: [I.micOff, '#8a94a3', 'transparent', 'Muted'], listen: [HP, '#8a94a3', 'transparent', 'Listening only'],
+      none: ['M3 3l18 18 M4 15v-3a8 8 0 0 1 12.5-6.6 M20 12v3 M4 15h3v5H4z M17 15h3v5h-3z', '#c3cad4', 'transparent', 'Hasn’t joined audio']
+    };
+    const P = [
+      { k: 'bruno', n: 'Bruno', i: 'BR', av: '#4e6b2a', mic: 'muted', cam: true, hand: '3 min' },
+      { k: 'rafaela', n: 'Rafaela Monaco', i: 'RM', av: '#a23c64', mic: 'muted', cam: true, hand: '2 min' },
+      { k: 'cibelle', n: 'Cibelle Maciel', i: 'CM', av: '#2f6db3', mic: 'muted', cam: false, hand: '1 min' },
+      { k: 'octavio', n: 'Octavio', i: 'OC', av: '#2b7a6f', mic: 'none', cam: false, hand: 'just now' },
+      { k: 'me', n: 'Helena Costa', i: 'HC', av: '#3d5a99', mic: 'live', cam: true, teacher: true },
+      { k: 'frederick', n: 'Frederick Dixon', i: 'FD', av: '#2f6db3', mic: 'speaking', cam: true },
+      { k: 'anton', n: 'Anton Georgiev', i: 'AG', av: '#b5542e', mic: 'muted', cam: true },
+      { k: 'michelle', n: 'Michelle Winkler', i: 'MW', av: '#7a4fb5', mic: 'muted', cam: true },
+      { k: 'ellen', n: 'Ellen', i: 'EL', av: '#8a5a12', mic: 'listen', cam: false },
+      { k: 'timo', n: 'Timo', i: 'TI', av: '#3f6f8f', mic: 'none', cam: false, low: 'Quiet for 22 min' },
+      { k: 'marta', n: 'Marta Ribeiro', i: 'MR', av: '#2b7a6f', mic: 'muted', cam: true },
+      { k: 'lucas', n: 'Lucas Pereira', i: 'LP', av: '#6b4fa3', mic: 'none', cam: true },
+      { k: 'ana', n: 'Ana Souza', i: 'AS', av: '#a23c64', mic: 'muted', cam: false, low: 'No chat or poll answers yet' },
+      { k: 'joana', n: 'Joana Lima', i: 'JL', av: '#4e6b2a', mic: 'listen', cam: false, low: 'Missed the last poll' }
+    ];
+    const byK = {}; P.forEach((p) => { byK[p.k] = p; });
+    const flip = (k, f) => () => this.setState({ flags: { ...flags, [k + f]: !flags[k + f] } });
+    const tags = (k) => [flags[k + 'o'] ? 'Moderator' : '', flags[k + 'w'] ? 'Whiteboard' : '', flags[k + 'l'] ? 'Chat locked' : ''].filter(Boolean);
+    const HAND = 'M8 13V5.5a1.5 1.5 0 0 1 3 0V12 M11 11V4a1.5 1.5 0 0 1 3 0v7 M14 11V5.5a1.5 1.5 0 0 1 3 0V14 M8 13V9.5a1.5 1.5 0 0 0-3 0V15a6 6 0 0 0 6 6h1a6 6 0 0 0 6-6v-1';
+    const row = (p, lowMode) => {
+      const m = MIC[p.mic];
+      let sub = '', subC = '#6b7280', subD = '', subIcon = false;
+      if (lowMode) sub = p.low;
+      else if (p.hand) { sub = 'Raised · ' + p.hand; subC = '#9a5b00'; subD = HAND; subIcon = true; }
+      else if (p.teacher) { sub = 'Presenting'; subC = '#1f62d0'; subD = I.present; subIcon = true; }
+      const extra = tags(p.k); if (extra.length) sub = [sub].concat(extra).filter(Boolean).join(' · ');
+      const me = p.k === 'me';
+      return { name: p.n, you: me, ini: p.i, av: p.av, avR: p.teacher ? '10px' : '18px', ring: p.mic === 'speaking' ? '0 0 0 2px #ffffff, 0 0 0 4px #12a150' : 'none',
+        sub, hasSub: !!sub, subC, subD, subIcon, micD: m[0], micC: m[1], micBg: m[2], cam: p.cam, bg: student === p.k ? '#e8f0fd' : 'transparent', cur: me ? 'default' : 'pointer',
+        aria: p.n + ', ' + m[3] + ', camera ' + (p.cam ? 'on' : 'off') + (me ? '' : '. Show actions'),
+        open: me ? () => {} : () => this.setState({ sheet: 'student', student: p.k, tab: 'people' }) };
+    };
+    const hands = P.filter((p) => p.hand), rest = P.filter((p) => !p.hand), low = P.filter((p) => p.low);
+    const sections = pfilter === 'low' ? [{ title: 'Low engagement', n: '3', c: '#5b3fb0', isLow: true, rows: low.map((p) => row(p, true)) }]
+      : pfilter === 'hands' ? [{ title: 'Raised hands', n: '4', c: '#9a5b00', rows: hands.map((p) => row(p)) }]
+      : [{ title: 'Raised hands', n: '4', c: '#9a5b00', rows: hands.map((p) => row(p)) }, { title: 'Everyone', n: '10', c: '#6b7280', rows: rest.map((p) => row(p)) }];
+    const chips = [['all', 'All', '14'], ['hands', 'Raised hands', '4'], ['low', 'Low engagement', '3']].map((c) => {
+      const on = pfilter === c[0];
+      return { label: c[1], n: c[2], on: on ? 'true' : 'false', bg: on ? '#1f2933' : '#ffffff', fg: on ? '#ffffff' : '#374151', bd: on ? '1px solid #1f2933' : '1px solid #c9d2dd', pick: set({ pfilter: c[0] }) };
+    });
+
+    // student sheet
+    const sp = byK[student] || byK.anton;
+    const muted = sp.mic !== 'live' && sp.mic !== 'speaking', joined = sp.mic === 'live' || sp.mic === 'speaking' || sp.mic === 'muted';
+    const asked = muted && joined && !!flags[sp.k + 'm'];
+    const micOnS = (!muted && !flags[sp.k + 'm']) || asked;
+    const sw = (on) => ({ swBg: on ? '#1f62d0' : '#c9d2dd', swL: on ? '21px' : '3px', checked: on ? 'true' : 'false' });
+    const stRow = (label, d, onClick, toggle, on, hint) => ({ label, d, onClick, isToggle: !!toggle, hasHint: !!hint, hint: hint || '', ...sw(!!on) });
+    const st = {
+      name: sp.n, ini: sp.i, av: sp.av,
+      summary: [asked ? 'Asked to unmute' : MIC[sp.mic][3], 'camera ' + (sp.cam ? 'on' : 'off')].concat(tags(sp.k)).join(' · '),
+      rows: [
+        stRow('Microphone', micOnS ? I.mic : I.micOff, joined ? flip(sp.k, 'm') : () => {}, true, micOnS, !joined ? 'Hasn’t joined audio yet' : asked ? 'Unmute requested' : muted ? 'Turning on asks them to unmute' : ''),
+        stRow('Turn off camera', I.camOff, () => {}, false, false, sp.cam ? '' : 'Camera is already off'),
+        stRow('Whiteboard access', I.wb, flip(sp.k, 'w'), true, flags[sp.k + 'w']),
+        stRow('Moderator', I.mod, flip(sp.k, 'o'), true, flags[sp.k + 'o']),
+        stRow('Lock public chat', I.lock, flip(sp.k, 'l'), true, flags[sp.k + 'l'])
+      ]
+    };
+
+    // geometry
+    let W, H, sL, sT, sW, sH, infoL, infoT, infoR, pgL, pgT, cL, cT, cW, cH, cCols, cRow, barL, barT, barW, barBg, shL, shW, shR, pcT, stPadB, stMaxH, trayL, trayT, nTiles, allT;
+    if (portrait) {
+      W = 390; H = 844; infoL = 16; infoT = 52; infoR = 16;
+      sL = 12; sW = 366; sH = Math.round(366 * 576 / 1024); sT = 424;
+      pgL = 195; pgT = sT + sH + 10;
+      cL = 12; cT = 100; cW = 366; cH = 266; cCols = 'repeat(2, 1fr)'; cRow = '130px'; nTiles = 4; allT = 374;
+      barL = 14; barT = 758; barW = 362; barBg = '';
+      shL = 0; shW = 390; shR = '20px 20px 0 0'; pcT = 92; stPadB = '34px'; stMaxH = '700px';
+      trayL = 195; trayT = 758 - 140;
+    } else {
+      W = 844; H = 390; sL = 59; sT = 52; sH = 262; sW = Math.round(sH * 1024 / 576);
+      infoL = 59; infoT = 6; infoR = 844 - (sL + sW);
+      pgL = sL + sW / 2; pgT = sT + sH - 50;
+      cL = sL + sW + 12; cT = 12; cW = 844 - 34 - cL; cH = 266; cCols = 'repeat(2, 1fr)'; cRow = '130px'; nTiles = 4; allT = 286;
+      barL = sL; barT = 326; barW = sW; barBg = '';
+      shL = 844 - 34 - 380; shW = 380; shR = '20px 20px 0 0'; pcT = 12; stPadB = '18px'; stMaxH = '378px';
+      trayL = sL + sW / 2; trayT = 326 - 136;
+    }
+    let pw = 0, ph = 0;
+    if (presMin) {
+      if (portrait) { cL = 12; cT = 100; cW = 366; cH = 646; cCols = 'repeat(3, 1fr)'; cRow = '124px'; pw = 104; }
+      else { cL = 59; cT = 12; cW = 844 - 34 - 59; cH = 304; cCols = 'repeat(5, 1fr)'; cRow = '96px'; barL = Math.round((844 - 466) / 2); barW = 466; pw = 124; }
+      ph = Math.round(pw * 576 / 1024);
+    }
+    const scale = sW / 1024;
+    const people14 = [
+      { name: 'Frederick', video: true, speaking: true }, { name: 'You', video: true, teacher: true }, { name: 'Bruno', video: true, hand: true },
+      { name: 'Rafaela', video: true, hand: true }, { name: 'Cibelle', ini: 'CM', av: '#2f6db3', hand: true }, { name: 'Octavio', ini: 'OC', av: '#2b7a6f', hand: true },
+      { name: 'Anton', video: true }, { name: 'Michelle', video: true }, { name: 'Marta', video: true }, { name: 'Lucas', video: true }, { name: 'Ellen', ini: 'EL', av: '#8a5a12' },
+      { name: 'Timo', ini: 'TI', av: '#3f6f8f' }, { name: 'Ana', ini: 'AS', av: '#a23c64' }, { name: 'Joana', ini: 'JL', av: '#4e6b2a' }
+    ];
+    const mk = (t) => ({ name: t.name, named: true, more: false, video: !!t.video, initialsOnly: !t.video, ini: t.ini || '', av: t.av || '#333', avR: t.teacher ? '9px' : '18px', hand: !!t.hand,
+      bg: t.video ? '#2a3542' : '#131f31', border: t.speaking ? '2px solid #3ecf8e' : '1px solid #22324a', label: '', w: t.speaking ? '150px' : '92px', fig: t.speaking ? '58' : '40' });
+    const allTiles = people14.map(mk);
+    const strip = people14.slice(0, 6).map(mk).concat([{ name: '', named: false, more: true, video: false, initialsOnly: false, hand: false, bg: 'transparent', border: '1px dashed #3a4d66', w: '92px', ini: '', av: '', avR: '', fig: '0' }]);
+    // Priority for the visible webcams: speaker, then raised hands (longest wait first), then recent activity.
+    const ranked = [
+      { name: 'Frederick', video: true, speaking: true, rank: 0 },
+      { name: 'Bruno', video: true, hand: true, rank: 1.3 }, { name: 'Rafaela', video: true, hand: true, rank: 1.2 },
+      { name: 'Cibelle', ini: 'CM', av: '#2f6db3', hand: true, rank: 1.1 }, { name: 'Octavio', ini: 'OC', av: '#2b7a6f', hand: true, rank: 1.0 }
+    ].sort((x, y) => (x.rank === 0 ? -1 : y.rank === 0 ? 1 : y.rank - x.rank));
+    let tiles = ranked.slice(0, nTiles).map((t) => ({ pres: false, name: t.name, named: true, more: false, video: !!t.video, initialsOnly: !t.video, ini: t.ini || '', av: t.av || '#333', avR: '18px', hand: !!t.hand,
+      bg: t.video ? '#2a3542' : '#131f31', border: t.speaking ? '2px solid #3ecf8e' : '1px solid #22324a', label: '' }));
+
+    if (presMin) tiles = [{ pres: true, named: false, more: false, video: false, initialsOnly: false, hand: false, bg: '#ffffff', border: '2px solid #5b8fe0', name: '', ini: '', av: '', avR: '', label: '' }].concat(people14.map(mk).map((t) => ({ ...t, pres: false })));
+    const isReact = sheet === 'react';
+    const tools = [['pen', 'Pen', 'M4 20l4-1 11-11-3-3L5 16z M14 7l3 3'], ['hl', 'Highlighter', 'M9 15l-3 3h5l1-1 M9 15l8-8 3 3-8 8z M4 21h16'], ['erase', 'Eraser', 'M7 21h10 M5.5 14.5l7-7 5 5-7 7H8z M12.5 7.5l3-3 5 5-3 3']];
+    const inks = [['#e5484d', 'Red'], ['#1f62d0', 'Blue'], ['#12a150', 'Green'], ['#111827', 'Black']];
+    const strokeOut = strokes.map((k) => ({ d: STROKES[k.i % STROKES.length], c: k.c, w: k.t === 'hl' ? 26 : 7, o: k.t === 'hl' ? 0.35 : 1 }));
+    const pcOpen = sheet === 'people' || sheet === 'chat' || sheet === 'student';
+    const alertsGo = (o) => () => this.setState(o);
+    return {
+      I, W: px(W), H: px(H), frameR: portrait ? '44px' : '40px', portrait, landscape: !portrait, strip, allTiles, isCams: sheet === 'cams', openCams: set({ sheet: 'cams' }),
+      infoL: px(infoL), infoT: px(infoT), infoR: px(infoR),
+      sL: px(sL), sT: px(sT), sW: px(sW), sH: px(sH), sScale: 'scale(' + scale + ')',
+      pgL: px(pgL), pgT: px(pgT), slideNo,
+      prev: set({ slideNo: Math.max(1, slideNo - 1) }), next: set({ slideNo: Math.min(12, slideNo + 1) }),
+      showSlide: !presMin, showPager: !presMin && !annot, annot, notAnnot: !annot, slideShadow: annot ? '0 0 0 3px #5b8fe0, 0 6px 20px rgba(0,0,0,.4)' : '0 6px 20px rgba(0,0,0,.4)',
+      minimize: set({ presMin: true, annot: false, sheet: 'none' }), restore: set({ presMin: false }),
+      pw: px(pw), ph: px(ph), pScale: 'scale(' + (pw / 1024) + ')',
+      openSlides: set({ sheet: sheet === 'slides' ? 'none' : 'slides' }), isSlides: sheet === 'slides', slidesExp: sheet === 'slides' ? 'true' : 'false',
+      slidesBg: sheet === 'slides' ? '#e8f0fd' : 'transparent', slidesFg: sheet === 'slides' ? '#1f62d0' : '#374151',
+      prevDis: slideNo === 1 ? 'true' : 'false', nextDis: slideNo === 12 ? 'true' : 'false', prevFg: slideNo === 1 ? '#c3cad4' : '#374151', nextFg: slideNo === 12 ? '#c3cad4' : '#374151',
+      startAnnot: set({ annot: true, sheet: 'none' }), endAnnot: set({ annot: false }),
+      strokes: strokeOut, drawLabel: tool === 'erase' ? 'Tap to erase the last mark' : 'Tap to draw on the slide',
+      drawTap: () => this.setState({ strokes: tool === 'erase' ? strokes.slice(0, -1) : strokes.concat([{ i: strokes.length, t: tool, c: inkC }]) }),
+      undo: () => this.setState({ strokes: strokes.slice(0, -1) }), undoFg: strokes.length ? '#374151' : '#c3cad4',
+      annotTools: tools.map((t) => ({ label: t[1], d: t[2], on: tool === t[0] ? 'true' : 'false', bg: tool === t[0] ? '#e8f0fd' : 'transparent', fg: tool === t[0] ? '#1f62d0' : '#374151', pick: set({ tool: t[0] }) })),
+      annotColors: inks.map((c) => ({ c: c[0], label: c[1] + ' ink', on: inkC === c[0] ? 'true' : 'false', ring: inkC === c[0] ? '0 0 0 2px #ffffff, 0 0 0 4px ' + c[0] : 'none', pick: set({ ink: c[0], tool: tool === 'erase' ? 'pen' : tool }) })),
+      thumbs: ['Hack Week: Brazil 2026', 'Agenda', 'BigBlueButton 4.0, refined', 'What we heard', 'Make state visible', 'Label the controls', 'Fix the dead ends', 'Presentation view', 'Scalable UI', 'Open questions', 'Next steps', 'Thank you'].map((title, i) => {
+        const n = i + 1, cur = n === slideNo, dark = n === 1 || n === 12;
+        return { n, title, cur: cur ? 'true' : 'false', border: cur ? '2.5px solid #1f62d0' : '1px solid #e1e6ec', bg: dark ? '#1f3a73' : '#ffffff', mark: dark ? '#8fb6f5' : '#1f62d0', ink: dark ? '#ffffff' : '#111827', line: dark ? 'rgba(255,255,255,.3)' : '#e1e6ec', numC: cur ? '#1f62d0' : '#6b7280', fw: cur ? '700' : '500', go: set({ slideNo: n, sheet: 'none' }) };
+      }),
+      figW: presMin ? '44' : '66', figH: presMin ? '40' : '60',
+      showAllRow: !presMin, allL: px(cL), allT: px(allT), allW: px(cW), hiddenN: String(14 - nTiles),
+      cL: px(cL), cT: px(cT), cW: px(cW), cH: px(cH), cCols, cRow, tiles,
+      barL: px(barL), barT: px(barT), barW: px(barW), barBg,
+      peopleBg: pcOpen ? '#e6eef9' : '#1c2738', peopleFg: pcOpen ? '#0f1b2b' : '#e6edf5',
+      micBg: micOn ? '#e6eef9' : '#3a1d22', micFg: micOn ? '#0f1b2b' : '#ff9ea1', micD: micOn ? I.mic : I.micOff,
+      micLabel: micOn ? 'Mute microphone' : 'Unmute microphone', micPressed: micOn ? 'false' : 'true', toggleMic: set({ micOn: !micOn }),
+      reactBg: isReact ? '#e6eef9' : '#1c2738', reactFg: isReact ? '#0f1b2b' : '#e6edf5', reactExp: isReact ? 'true' : 'false',
+      moreBg: sheet === 'more' ? '#e6eef9' : '#1c2738', moreFg: sheet === 'more' ? '#0f1b2b' : '#e6edf5',
+      toggleReact: set({ sheet: isReact ? 'none' : 'react' }), isReact, trayL: px(trayL), trayT: px(trayT),
+      emojis: [['👍', 'Thumbs up'], ['👏', 'Clap'], ['😂', 'Laugh'], ['😮', 'Surprised'], ['❤️', 'Love'], ['🎉', 'Celebrate']].map((e) => ({ c: e[0], l: e[1] })),
+      openPeople: set({ sheet: 'people', tab: 'people' }), openMore: set({ sheet: sheet === 'more' ? 'none' : 'more' }), openAlerts: set({ sheet: 'alerts' }),
+      closeAll: set({ sheet: 'none', student: '' }), closeStudent: set({ sheet: 'people', student: '' }),
+      hasSheet: sheet !== 'none' && !isReact,
+      isPC: pcOpen, isStudent: sheet === 'student', isMore: sheet === 'more', isAlerts: sheet === 'alerts',
+      shL: px(shL), shW: px(shW), shR, pcT: px(pcT), stPadB, stMaxH,
+      tabIsP: tab === 'people', tabIsC: tab === 'chat',
+      tabPSel: tab === 'people' ? 'true' : 'false', tabCSel: tab === 'chat' ? 'true' : 'false',
+      tabPBg: tab === 'people' ? '#ffffff' : 'transparent', tabCBg: tab === 'chat' ? '#ffffff' : 'transparent',
+      tabPSh: tab === 'people' ? '0 1px 3px rgba(15,23,36,.15)' : 'none', tabCSh: tab === 'chat' ? '0 1px 3px rgba(15,23,36,.15)' : 'none',
+      goP: set({ tab: 'people' }), goC: set({ tab: 'chat' }),
+      chips, sections, st,
+      messages: [
+        { name: 'Anton Georgiev', ini: 'AG', av: '#b5542e', avR: '16px', time: '8:29', text: 'Hi all!' },
+        { name: 'Rafaela Monaco', ini: 'RM', av: '#a23c64', avR: '16px', time: '9:02', text: 'Will the new layout work for 25+ classes too?' },
+        { name: 'Helena Costa', ini: 'HC', av: '#3d5a99', avR: '9px', time: '9:04', text: 'Yes! Hold that thought, we’ll get to scale on slide 9.' },
+        { name: 'Bruno', ini: 'BR', av: '#4e6b2a', avR: '16px', time: '9:06', text: 'Will the slides be shared after?' }
+      ],
+      moreGroups: [
+        { title: 'Present', items: [{ label: 'Share media', d: I.share, bg: '#e8f0fd', fg: '#1f62d0' }, { label: 'Notes', d: I.notes, bg: '#eef1f5', fg: '#374151' }, { label: 'Captions', d: I.captions, bg: '#eef1f5', fg: '#374151' }, { label: 'Whiteboard', d: I.wb, bg: '#eef1f5', fg: '#374151' }] },
+        { title: 'Class tools', items: [{ label: 'Breakout rooms', d: I.breakout, bg: '#e6f6ee', fg: '#0f7a3d' }, { label: 'Poll', d: I.poll, bg: '#fff3d6', fg: '#8a5a00' }, { label: 'Timer', d: I.timer, bg: '#f3effa', fg: '#5b3fb0' }, { label: 'More plugins', d: I.plug, bg: '#eef1f5', fg: '#374151' }] }
+      ],
+      moreRows: [
+        { label: 'Learning Analytics Dashboard', d: I.analytics, fg: '#5b3fb0', ext: true },
+        { label: 'Room settings', d: I.settings, fg: '#4b5563', ext: false }
+      ],
+      alerts: [
+        { title: '4 hands raised', sub: 'Bruno has waited 3 min', d: HAND, c: '#f5b74d', ink: '#2a1a00', bd: '#e8c27a', bg: '#fffaf0', go: alertsGo({ sheet: 'people', tab: 'people', pfilter: 'hands' }) },
+        { title: 'Rafaela asked a question', sub: '“Will the new layout work for 25+ classes too?”', d: I.q, c: '#7fb0ff', ink: '#0b1f44', bd: '#9cc0f5', bg: '#f4f8ff', go: alertsGo({ sheet: 'people', tab: 'chat' }) },
+        { title: '3 students with low engagement', sub: 'Quiet for 15+ minutes in this session', d: I.spark, c: '#a78bfa', ink: '#1b1033', bd: '#c7b6f7', bg: '#faf8fe', go: alertsGo({ sheet: 'people', tab: 'people', pfilter: 'low' }) }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

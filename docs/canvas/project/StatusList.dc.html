@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>People status exploration</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}.srow:hover{background:#f4f6f9}.srow .hov{opacity:0;transition:opacity .12s ease}.srow:hover .hov,.srow:focus-within .hov,.srow.demo .hov{opacity:1}.srow.demo{background:#f4f6f9}</style>
+</helmet>
+<div style="width: 1000px; height: 1000px; box-sizing: border-box; background: #eef1f5; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; display: flex; gap: 40px; padding: 40px">
+  <div style="width: 360px; flex-shrink: 0; background: #ffffff; border: 1px solid #e1e6ec; border-radius: 14px; box-shadow: 0 6px 24px rgba(15,23,36,.08); overflow: hidden; display: flex; flex-direction: column">
+    <div style="padding: 16px 16px 10px; display: flex; align-items: baseline; gap: 8px; border-bottom: 1px solid #eef1f5">
+      <span style="font-size: 17px; font-weight: 700; color: #111827">People</span><span style="font-size: 14px; color: #6b7280">14</span>
+    </div>
+    <div style="padding: 10px 8px; display: flex; flex-direction: column">
+      <sc-for list="{{sections}}" as="sec" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; gap: 6px; padding: 10px 8px 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: {{sec.c}}">{{sec.title}}<span style="font-weight: 600; color: #9aa3af">{{sec.n}}</span></div>
+        <sc-for list="{{sec.rows}}" as="r" hint-placeholder-count="4">
+          <div class="srow {{r.demo}}" style="display: flex; align-items: center; gap: 10px; height: {{rowH}}; padding: 0 8px; border-radius: 10px">
+            <span style="position: relative; width: 40px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; opacity: {{r.op}}">
+              <sc-if value="{{r.isVideo}}" hint-placeholder-val="{{false}}">
+                <span style="width: 40px; height: 30px; border-radius: 6px; background: #2f3b4c; box-shadow: {{r.ring}}; overflow: hidden; display: flex; align-items: flex-end; justify-content: center"><svg width="26" height="24" viewBox="0 0 24 22" fill="#5d6b7e" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M2 22c1-5.5 5-8 10-8s9 2.5 10 8z"></path></svg></span>
+              </sc-if>
+              <sc-if value="{{r.isInit}}" hint-placeholder-val="{{true}}">
+                <span style="width: 32px; height: 32px; border-radius: {{r.rad}}; background: {{r.av}}; box-shadow: {{r.ring}}; color: #ffffff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{r.ini}}</span>
+              </sc-if>
+              <sc-if value="{{r.hasBadge}}" hint-placeholder-val="{{false}}">
+                <span style="position: absolute; right: -3px; bottom: -4px; width: 17px; height: 17px; box-sizing: border-box; border-radius: 9px; background: {{r.bBg}}; border: 2px solid #ffffff; display: flex; align-items: center; justify-content: center"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="{{r.bC}}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.bD}}"></path></svg></span>
+              </sc-if>
+            </span>
+            <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center">
+              <span style="font-size: 14px; font-weight: 600; color: {{r.nameC}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}<sc-if value="{{r.you}}" hint-placeholder-val="{{false}}"><span style="font-weight: 500; color: #6b7280"> (you)</span></sc-if></span>
+              <sc-if value="{{r.hasSub}}" hint-placeholder-val="{{false}}">
+                <span style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: {{r.subC}}"><sc-if value="{{r.hasSubIcon}}" hint-placeholder-val="{{false}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.subD}}"></path></svg></sc-if>{{r.sub}}</span>
+              </sc-if>
+            </span>
+            <span class="hov" style="display: flex; gap: 4px">
+              <span style="width: 26px; height: 26px; border-radius: 7px; background: #e6eaf0; color: #374151; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"></path></svg></span>
+              <span style="width: 26px; height: 26px; border-radius: 7px; background: #e6eaf0; color: #374151; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.9"></circle><circle cx="12" cy="12" r="1.9"></circle><circle cx="12" cy="19" r="1.9"></circle></svg></span>
+            </span>
+            <sc-if value="{{showSlots}}" hint-placeholder-val="{{true}}">
+              <span role="img" aria-label="{{r.aria}}" style="display: flex; align-items: center; gap: 8px">
+                <span style="width: 22px; height: 22px; border-radius: 11px; background: {{r.s1Bg}}; display: flex; align-items: center; justify-content: center"><sc-if value="{{r.s1}}" hint-placeholder-val="{{true}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{r.s1C}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.s1D}}"></path></svg></sc-if></span>
+                <span style="width: 18px; height: 22px; display: flex; align-items: center; justify-content: center"><sc-if value="{{r.s2}}" hint-placeholder-val="{{true}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{icons.cam}}"></path></svg></sc-if></span>
+              </span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </sc-for>
+    </div>
+  </div>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 18px; padding-top: 6px">
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b7280">{{kicker}}</span>
+    <span style="font-size: 30px; font-weight: 700; color: #111827; line-height: 1.15">{{title}}</span>
+    <span style="font-size: 16px; color: #374151; line-height: 1.5">{{idea}}</span>
+    <div style="background: #ffffff; border: 1px solid #e1e6ec; border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #6b7280">How to read it</span>
+      <sc-for list="{{legend}}" as="l" hint-placeholder-count="5">
+        <div style="display: flex; align-items: center; gap: 12px; font-size: 14.5px; color: #1f2933">
+          <span style="width: 40px; display: flex; justify-content: center; flex-shrink: 0"><span style="min-width: 22px; height: 22px; padding: 0 {{l.pad}}; border-radius: {{l.r}}; background: {{l.bg}}; box-shadow: {{l.ring}}; display: flex; align-items: center; justify-content: center"><sc-if value="{{l.hasD}}" hint-placeholder-val="{{true}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{l.c}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{l.d}}"></path></svg></sc-if></span></span>
+          <span>{{l.t}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <sc-for list="{{pros}}" as="p" hint-placeholder-count="3"><span style="font-size: 14.5px; color: #0b5c47; line-height: 1.4">+ {{p}}</span></sc-for>
+      <sc-for list="{{cons}}" as="p" hint-placeholder-count="2"><span style="font-size: 14.5px; color: #9b2226; line-height: 1.4">− {{p}}</span></sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variant":{"editor":"enum","options":["a","b","c"],"default":"a"},"$preview":{"width":1000,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const v = this.props.variant || 'a';
+    const I = {
+      mic: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z M5 11a7 7 0 0 0 14 0 M12 18v3',
+      micOff: 'M3 3l18 18 M9 9v3a3 3 0 0 0 5.1 2.1 M15 9.3V6a3 3 0 0 0-5.7-1.3 M19 11a7 7 0 0 1-1.2 3.9 M5 11a7 7 0 0 0 10.6 6 M12 18v3',
+      hp: 'M4 15v-3a8 8 0 0 1 16 0v3 M4 15h3v5H4z M17 15h3v5h-3z',
+      hpOff: 'M3 3l18 18 M4 15v-3a8 8 0 0 1 12.5-6.6 M20 12v3 M4 15h3v5H4z M17 15h3v5h-3z',
+      cam: 'M3 7h12v10H3z M15 10l6-3v10l-6-3',
+      bars: 'M7 10v4 M12 6v12 M17 10v4',
+      hand: 'M8 13V5.5a1.5 1.5 0 0 1 3 0V12 M11 11V4a1.5 1.5 0 0 1 3 0v7 M14 11V5.5a1.5 1.5 0 0 1 3 0V14 M8 13V9.5a1.5 1.5 0 0 0-3 0V15a6 6 0 0 0 6 6h1a6 6 0 0 0 6-6v-1',
+      present: 'M3 4h18 M5 4v10h14V4 M12 14v3 M8 21l4-4 4 4'
+    };
+    const P = [
+      { k: 'bruno', n: 'Bruno', i: 'BR', av: '#4e6b2a', mic: 'muted', cam: true, hand: '3 min' },
+      { k: 'rafaela', n: 'Rafaela Monaco', i: 'RM', av: '#a23c64', mic: 'muted', cam: true, hand: '2 min' },
+      { k: 'cibelle', n: 'Cibelle Maciel', i: 'CM', av: '#2f6db3', mic: 'muted', cam: false, hand: '1 min' },
+      { k: 'octavio', n: 'Octavio', i: 'OC', av: '#2b7a6f', mic: 'none', cam: false, hand: 'just now' },
+      { k: 'helena', n: 'Helena Costa', i: 'HC', av: '#3d5a99', mic: 'live', cam: true, teacher: true, you: true },
+      { k: 'frederick', n: 'Frederick Dixon', i: 'FD', av: '#2f6db3', mic: 'speaking', cam: true },
+      { k: 'anton', n: 'Anton Georgiev', i: 'AG', av: '#b5542e', mic: 'muted', cam: true },
+      { k: 'michelle', n: 'Michelle Winkler', i: 'MW', av: '#7a4fb5', mic: 'muted', cam: true },
+      { k: 'ellen', n: 'Ellen', i: 'EL', av: '#8a5a12', mic: 'listen', cam: false },
+      { k: 'timo', n: 'Timo', i: 'TI', av: '#3f6f8f', mic: 'none', cam: false },
+      { k: 'marta', n: 'Marta Ribeiro', i: 'MR', av: '#2b7a6f', mic: 'muted', cam: true },
+      { k: 'lucas', n: 'Lucas Pereira', i: 'LP', av: '#6b4fa3', mic: 'none', cam: true },
+      { k: 'ana', n: 'Ana Souza', i: 'AS', av: '#a23c64', mic: 'muted', cam: false },
+      { k: 'joana', n: 'Joana Lima', i: 'JL', av: '#4e6b2a', mic: 'listen', cam: false }
+    ];
+    const GREEN = '#12a150', AMBER = '#9a5b00';
+    const words = { live: 'Mic on', speaking: 'Speaking', muted: 'Muted', listen: 'Listening only', none: 'Not in audio' };
+    const row = (p, opts) => {
+      const o = opts || {};
+      const speaking = p.mic === 'speaking';
+      let sub = '', subC = '#6b7280', subD = '', hasSubIcon = false;
+      if (p.hand) { sub = 'Raised · ' + p.hand + (o.handSuffix ? ' · ' + words[p.mic] : ''); subC = AMBER; subD = I.hand; hasSubIcon = true; }
+      else if (p.teacher) { sub = 'Presenting'; subD = I.present; hasSubIcon = true; subC = '#1f62d0'; }
+      else if (o.subFromMic && (p.mic === 'listen' || p.mic === 'none')) { sub = p.mic === 'listen' ? 'Listening only' : 'Hasn’t joined audio'; }
+      const r = {
+        name: p.n, you: !!p.you, ini: p.i, av: p.av, rad: p.teacher ? '9px' : '16px',
+        isVideo: false, isInit: true, hasBadge: false, bBg: '', bC: '', bD: '',
+        ring: speaking ? '0 0 0 2px #ffffff, 0 0 0 4px ' + GREEN : 'none', op: 1, nameC: '#111827',
+        sub, hasSub: !!sub, subC, subD, hasSubIcon, demo: p.k === 'anton' ? 'demo' : '',
+        aria: words[p.mic] + ', camera ' + (p.cam ? 'on' : 'off'),
+        s1: false, s1D: '', s1C: '', s1Bg: 'transparent', s2: p.cam
+      };
+      return r;
+    };
+    let sections, legend, kicker, title, idea, pros, cons, showSlots = true, rowH = '44px';
+    const hands = P.filter((p) => p.hand), rest = P.filter((p) => !p.hand);
+    if (v === 'a') {
+      const A = (p) => {
+        const r = row(p);
+        const m = { live: [I.mic, GREEN, 'transparent'], speaking: [I.bars, '#ffffff', GREEN], muted: [I.micOff, '#8a94a3', 'transparent'], listen: [I.hp, '#8a94a3', 'transparent'], none: [I.hpOff, '#c3cad4', 'transparent'] }[p.mic];
+        return { ...r, s1: true, s1D: m[0], s1C: m[1], s1Bg: m[2] };
+      };
+      sections = [{ title: 'Raised hands', n: '4', c: AMBER, rows: hands.map(A) }, { title: 'Everyone', n: '10', c: '#6b7280', rows: rest.map(A) }];
+      kicker = 'Option A'; title = 'One grey column, colour only when someone is live';
+      idea = 'Every row answers the same two questions in the same place: audio, then camera. Everything is grey except a live mic, which turns green. The line under the name is kept only for things the icons can’t say: a raised hand and who is presenting.';
+      legend = [
+        { d: I.bars, c: '#ffffff', bg: GREEN, t: 'Speaking now (plus a green ring on the avatar)' },
+        { d: I.mic, c: GREEN, bg: 'transparent', t: 'Mic on, not speaking' },
+        { d: I.micOff, c: '#8a94a3', bg: 'transparent', t: 'Muted' },
+        { d: I.hp, c: '#8a94a3', bg: 'transparent', t: 'Listening only' },
+        { d: I.hpOff, c: '#c3cad4', bg: 'transparent', t: 'Hasn’t joined audio' },
+        { d: I.cam, c: '#6b7280', bg: 'transparent', t: 'Camera on (an empty slot = off, and that’s fine)' }
+      ];
+      pros = ['Most explicit: every student’s audio state is visible without learning a rule', 'Two fixed columns, so the eye runs straight down the list', 'Message and ⋯ only appear on hover (shown on Anton)'];
+      cons = ['Still 14 small icons to read in a big class', 'Muted and listening-only look similar at a glance'];
+    } else if (v === 'b') {
+      const B = (handSuffix) => (p) => { const r = row(p, { subFromMic: true, handSuffix }); return p.mic === 'speaking' ? { ...r, s1: true, s1D: I.bars, s1C: '#ffffff', s1Bg: GREEN } : r; };
+      const on = rest.filter((p) => p.mic === 'live' || p.mic === 'speaking'), muted = rest.filter((p) => p.mic === 'muted'), out = rest.filter((p) => p.mic === 'listen' || p.mic === 'none');
+      sections = [
+        { title: 'Raised hands', n: '4', c: AMBER, rows: hands.map(B(true)) },
+        { title: 'On mic', n: String(on.length), c: '#0f7a3d', rows: on.map(B(false)) },
+        { title: 'Muted', n: String(muted.length), c: '#6b7280', rows: muted.map(B(false)) },
+        { title: 'Not in audio', n: String(out.length), c: '#6b7280', rows: out.map(B(false)) }
+      ];
+      kicker = 'Option B'; title = 'Let the list’s order say it';
+      idea = 'Instead of an icon on every row, people are grouped by audio state: On mic, Muted, Not in audio. The headings carry the meaning, so rows only need a name and a camera glyph. The “Not in audio” group is where a teacher looks when someone can’t hear or can’t speak.';
+      legend = [
+        { hasD: false, bg: 'transparent', t: 'Section heading = audio state, with a live count' },
+        { d: I.bars, c: '#ffffff', bg: GREEN, t: 'Speaking now' },
+        { d: I.cam, c: '#6b7280', bg: 'transparent', t: 'Camera on' },
+        { d: I.hand, c: AMBER, bg: 'transparent', t: 'Raised hands stay pinned on top, with their audio state in words' }
+      ];
+      pros = ['Fewest icons of the three', 'Counts answer “how many can hear me?” instantly', 'Problems (not in audio) collect in one place'];
+      cons = ['People move between groups when they mute or unmute, which can be jumpy', 'Finding a specific name means checking several groups'];
+    } else {
+      const C = (p) => {
+        const r = row(p);
+        let b = null;
+        if (p.mic === 'live') b = [I.mic, '#ffffff', GREEN];
+        if (p.mic === 'speaking') b = [I.bars, '#ffffff', GREEN];
+        if (p.mic === 'listen') b = [I.hp, '#4b5563', '#e3e8ef'];
+        if (p.mic === 'none') b = [I.hpOff, '#6b7280', '#e3e8ef'];
+        return { ...r, isVideo: p.cam, isInit: !p.cam, hasBadge: !!b, bD: b ? b[0] : '', bC: b ? b[1] : '', bBg: b ? b[2] : '',
+          op: p.mic === 'none' ? 0.5 : 1, nameC: p.mic === 'none' ? '#6b7280' : '#111827', ring: p.mic === 'speaking' ? '0 0 0 2px #ffffff, 0 0 0 4px ' + GREEN : (p.teacher && p.cam ? '0 0 0 2px #ffffff, 0 0 0 4px #1f62d0' : 'none') };
+      };
+      showSlots = false; rowH = '46px';
+      sections = [{ title: 'Raised hands', n: '4', c: AMBER, rows: hands.map(C) }, { title: 'Everyone', n: '10', c: '#6b7280', rows: rest.map(C) }];
+      kicker = 'Option C'; title = 'The avatar is the status';
+      idea = 'No icon column at all. If a camera is on, the avatar becomes a tiny live video tile; if it’s off, you see initials, which is perfectly normal. Muted is the expected state in a class, so it gets no mark. Only exceptions get a small badge: mic on, listening only, or not in audio (which also fades the row).';
+      legend = [
+        { hasD: false, bg: '#2f3b4c', r: '5px', pad: '9px', t: 'Camera on: the avatar is a mini video tile' },
+        { hasD: false, bg: '#a23c64', r: '11px', t: 'Camera off: initials (no warning, it’s optional)' },
+        { d: I.bars, c: '#ffffff', bg: GREEN, r: '11px', ring: '0 0 0 2px #ffffff, 0 0 0 4px ' + GREEN, t: 'Speaking (badge and green ring)' },
+        { d: I.mic, c: '#ffffff', bg: GREEN, r: '11px', t: 'Mic on. No badge at all means muted' },
+        { d: I.hpOff, c: '#6b7280', bg: '#e3e8ef', r: '11px', t: 'Not in audio, and the row is faded' }
+      ];
+      pros = ['Calmest list: the right side is free until you hover', 'Camera state is obvious without an icon to decode', 'Anyone who isn’t really “there” visibly fades'];
+      cons = ['“No badge = muted” is a rule teachers have to learn once', 'Video tiles are small; they read as “on”, not as a face'];
+    }
+    legend = legend.map((l) => ({ hasD: l.hasD !== false, d: l.d || '', c: l.c || '#6b7280', bg: l.bg, r: l.r || '11px', pad: l.pad || '0', ring: l.ring || 'none', t: l.t }));
+    return { sections, legend, kicker, title, idea, pros, cons, showSlots, rowH, icons: I };
+  }
+}
+</script>
+</body>
+</html>

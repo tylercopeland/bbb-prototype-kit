@@ -1,0 +1,707 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "BO10Closing-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 10 · Close rooms: 60-second wrap-up",
+      "w": 1400,
+      "x": -2413,
+      "y": 5844
+    },
+    "BO11Back-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 11 · Everyone is back in the main room",
+      "w": 1400,
+      "x": -933,
+      "y": 5844
+    },
+    "BO12ShareBack-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 12 · Show a room’s work to everyone",
+      "w": 1400,
+      "x": 547,
+      "y": 5844
+    },
+    "BO1Entry-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 1 · Plugins → Breakout rooms",
+      "w": 1400,
+      "x": -2413,
+      "y": 3364
+    },
+    "BO2SetupGroups-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 2 · Set up groups (4 rooms, spread evenly)",
+      "w": 1400,
+      "x": -933,
+      "y": 3364
+    },
+    "BO3SetupMove-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 3 · Move a student between rooms",
+      "w": 1400,
+      "x": 547,
+      "y": 3364
+    },
+    "BO4SetupSolo-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 4 · One room per student",
+      "w": 1400,
+      "x": 2027,
+      "y": 3364
+    },
+    "BO5LiveGroups-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 5 · Rooms live: watch every group",
+      "w": 1400,
+      "x": -2413,
+      "y": 4604
+    },
+    "BO6PeekGroup-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 6 · Preview a group room (asked for help)",
+      "w": 1400,
+      "x": -933,
+      "y": 4604
+    },
+    "BO7LiveSolo-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 7 · Rooms live: 13 individual rooms",
+      "w": 1400,
+      "x": 547,
+      "y": 4604
+    },
+    "BO8PeekSolo-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 8 · Preview an individual room",
+      "w": 1400,
+      "x": 2027,
+      "y": 4604
+    },
+    "BO9MainView-desk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Breakout · 9 · Rooms live, teacher flips back to Presentation",
+      "w": 1400,
+      "x": 3507,
+      "y": 4604
+    },
+    "Breakout.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "components",
+      "title": "Component — Breakout rooms",
+      "w": 1400,
+      "x": 2000,
+      "y": 5000
+    },
+    "BreakoutSetup.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "components",
+      "title": "Component — Breakout setup (simplified variants)",
+      "w": 1400,
+      "x": 4960,
+      "y": 5000
+    },
+    "F1Bar-4roh-l8ju.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "A · Action bar copy",
+      "w": 1400,
+      "x": -2413,
+      "y": -2711
+    },
+    "Focus.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "components",
+      "title": "Component — No-rail focus room",
+      "w": 1400,
+      "x": 1520,
+      "y": 2240
+    },
+    "G1People-my6z.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "1 · People tab (clicked People) copy",
+      "w": 1400,
+      "x": -2413,
+      "y": -1476
+    },
+    "G2ChatEveryone-gqvt.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "2 · Chat tab · Everyone copy",
+      "w": 1400,
+      "x": -933,
+      "y": -1476
+    },
+    "G3ChatDirect-56ch.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "3 · Chat tab · Direct conversations copy",
+      "w": 1400,
+      "x": 547,
+      "y": -1476
+    },
+    "G4DmRafaela-gtn4.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "4 · Direct message with Rafaela copy",
+      "w": 1400,
+      "x": -2413,
+      "y": -356
+    },
+    "G5DmFromPeople-ogjp.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "5 · New direct message started from People copy",
+      "w": 1400,
+      "x": -933,
+      "y": -356
+    },
+    "H1MediaSlides-2x0x.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Share media · Slides (action bar) copy",
+      "w": 1400,
+      "x": -2413,
+      "y": 884
+    },
+    "H2MediaScreen-ez5s.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Share media · Screen (action bar) copy",
+      "w": 1400,
+      "x": -933,
+      "y": 884
+    },
+    "L1LowEngagement-qeqx.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "6 · Insight → People filtered to low engagement copy",
+      "w": 1400,
+      "x": 2027,
+      "y": -1476
+    },
+    "M1ShareScreen-k5tp.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Presenter · sharing screen, Screen tab copy",
+      "w": 1400,
+      "x": -2413,
+      "y": 2124
+    },
+    "M2ShareDeck-581i.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Presenter · sharing screen, Presentation tab copy",
+      "w": 1400,
+      "x": -933,
+      "y": 2124
+    },
+    "MB10Everyone.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · See all → everyone",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "MB11Slides.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · All slides (grid button)",
+      "w": 390,
+      "x": 3760,
+      "y": 0
+    },
+    "MB12Annotate.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · Annotate (pencil)",
+      "w": 390,
+      "x": 4230,
+      "y": 0
+    },
+    "MB13Minimized.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · Presentation minimized",
+      "w": 390,
+      "x": 4700,
+      "y": 0
+    },
+    "MB14LandMin.dc.html": {
+      "h": 390,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone landscape · Presentation minimized",
+      "w": 844,
+      "x": 1848,
+      "y": 1000
+    },
+    "MB1Room.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · room (teacher presenting)",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "MB2Updates.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · tap “3 updates”",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "MB3People.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · People & chat sheet",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "MB4Student.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · tap a student → actions",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "MB5Chat.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · Chat tab",
+      "w": 390,
+      "x": 2350,
+      "y": 0
+    },
+    "MB6React.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · React + raise hand",
+      "w": 390,
+      "x": 2820,
+      "y": 0
+    },
+    "MB7More.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone · More sheet",
+      "w": 390,
+      "x": 3290,
+      "y": 0
+    },
+    "MB8Landscape.dc.html": {
+      "h": 390,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone landscape · room",
+      "w": 844,
+      "x": 0,
+      "y": 1000
+    },
+    "MB9LandscapePeople.dc.html": {
+      "h": 390,
+      "is_interactive": true,
+      "page": "mobile",
+      "title": "Phone landscape · People sheet",
+      "w": 844,
+      "x": 924,
+      "y": 1000
+    },
+    "Mobile.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "components",
+      "title": "Component — Mobile room",
+      "w": 390,
+      "x": 1200,
+      "y": 4000
+    },
+    "N1Overview-xpbk.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Presenter · All slides overview copy",
+      "w": 1400,
+      "x": 547,
+      "y": 2124
+    },
+    "O1Analytics.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Teacher · Learning Analytics Dashboard entry point",
+      "w": 1400,
+      "x": 2027,
+      "y": 2124
+    },
+    "O2StudentActions.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Teacher · student actions (hover a person → ⋯)",
+      "w": 1400,
+      "x": 3507,
+      "y": 2124
+    },
+    "PL1Setup.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Poll · 1 · Set up from Plugins → Poll",
+      "w": 1400,
+      "x": -2413,
+      "y": 7364
+    },
+    "PL2Live.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Poll · 2 · Answers coming in (only you see them)",
+      "w": 1400,
+      "x": -933,
+      "y": 7364
+    },
+    "PL3Shown.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Poll · 3 · Results shown to everyone",
+      "w": 1400,
+      "x": 547,
+      "y": 7364
+    },
+    "RailRoom.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "components",
+      "title": "Component — Rail room (prompts 1 + 2)",
+      "w": 1400,
+      "x": 0,
+      "y": 2240
+    },
+    "RoomCurrent.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "components",
+      "title": "Component — Room (4.0 today)",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "RoomImproved.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "components",
+      "title": "Component — Room (improved)",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "RoomScreen.dc.html": {
+      "h": 576,
+      "is_interactive": true,
+      "page": "components",
+      "title": "Component — Breakout room screen",
+      "w": 1024,
+      "x": 3480,
+      "y": 5000
+    },
+    "ScreenShare.dc.html": {
+      "h": 576,
+      "page": "components",
+      "title": "Component — Shared screen (mock)",
+      "w": 1024,
+      "x": 1520,
+      "y": 3360
+    },
+    "Shell.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "components",
+      "title": "Component — Scalable room shell",
+      "w": 1440,
+      "x": 1520,
+      "y": 1120
+    },
+    "Slide.dc.html": {
+      "h": 576,
+      "page": "components",
+      "title": "Component — Slide (BigBlueButton 4.0, refined)",
+      "w": 1024,
+      "x": 0,
+      "y": 1120
+    },
+    "StatusList.dc.html": {
+      "h": 1000,
+      "is_interactive": true,
+      "page": "components",
+      "title": "StatusList (people status exploration)",
+      "w": 1000,
+      "x": 0,
+      "y": 4000
+    },
+    "TM1Ready.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Timer · 1 · Added from Plugins → Timer",
+      "w": 1400,
+      "x": -2413,
+      "y": 8604
+    },
+    "TM2Running.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Timer · 2 · Running (interactive: start, pause, +1 min, move)",
+      "w": 1400,
+      "x": -933,
+      "y": 8604
+    },
+    "TM3Min.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Timer · 3 · Minimized to a pill",
+      "w": 1400,
+      "x": 547,
+      "y": 8604
+    },
+    "TM4Done.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "page-dpqe21",
+      "title": "Timer · 4 · Time’s up",
+      "w": 1400,
+      "x": 2027,
+      "y": 8604
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-19T16:20:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "nMobile": {
+      "fill": "blue",
+      "page": "mobile",
+      "text": "What changes on a phone\n• Same model: top = information, bottom = action, slide first, webcams always visible\n• Updates collapse into one dashed “3 updates” chip; tapping it opens a sheet where each update jumps to the people or chat view that resolves it\n• Slide controls can’t rely on hover, so a small white pager sits under the slide (all slides · prev · 3/12 · next · annotate). Grid opens All slides, the pencil swaps the pager for a pen / highlighter / eraser toolbar with colours, Undo and Done, and the corner button minimizes the slide into a tile in the webcam grid (tap it to bring it back)\n• Webcams sit on top, capped at four so faces stay readable: the speaker, then raised hands by longest wait, then recent activity. “+10 · See all” opens everyone. Minimizing the slide is the explicit “show me the class” mode, so it shows all 14\n• Action bar: People & chat · Mic · Camera · React · More · Leave. React holds Raise hand, so the bar fits one thumb row\n• People and Chat become one bottom sheet with the same tabs, filters and status icons as desktop. Tap a student for a second sheet with every teacher action\n• Share media, notes, captions, breakout rooms, poll, timer, plugins, Learning Analytics and Room settings move into More",
+      "w": 520,
+      "x": 5190,
+      "y": -300
+    },
+    "nMobileLand": {
+      "fill": "gray",
+      "page": "mobile",
+      "text": "Landscape: the slide takes the left, webcams a two-column strip on the right, and controls sit under the slide. Sheets open from the right half so the slide stays visible.",
+      "w": 380,
+      "x": 2772,
+      "y": 1000
+    },
+    "note-aknqxs": {
+      "fill": "blue",
+      "page": "page-dpqe21",
+      "text": "How the panel works\n• People and Chat open the same panel; segmented tabs at the top switch between them, and the bottom-bar button for the active tab lights up\n• Chat has an Everyone / Direct switch. Direct lists private conversations, with unread ones highlighted\n• Opening a conversation shows a private thread: a back arrow, a lock and ‘Direct message’ label, an ‘only you two can see this’ note, and a lock in the composer\n• Every person in People has a ‘Message privately’ button that jumps straight to their thread\n\nTry it in Play on any board: People tab → chat bubble on Frederick → back → Everyone.\n\nOpen question: should moderators be able to turn off private chat for a classroom? The thread note would then need to change.",
+      "w": 480,
+      "x": 547,
+      "y": -356
+    },
+    "note-breakout-desk": {
+      "kind": "title1",
+      "maxW": 2880,
+      "page": "page-dpqe21",
+      "text": "Breakout rooms: set up, watch and preview rooms",
+      "w": 240,
+      "x": -2413,
+      "y": 3084
+    },
+    "note-ferk0f": {
+      "kind": "title1",
+      "maxW": 4360,
+      "page": "page-dpqe21",
+      "text": "People + chat: one panel, two tabs",
+      "w": 240,
+      "x": -2413,
+      "y": -1699
+    },
+    "note-oyhfh6": {
+      "kind": "title1",
+      "maxW": 4360,
+      "page": "page-dpqe21",
+      "text": "Share media: one button, every media type",
+      "w": 240,
+      "x": -2413,
+      "y": 604
+    },
+    "note-polltimer-desk": {
+      "kind": "title1",
+      "maxW": 2880,
+      "page": "page-dpqe21",
+      "text": "Poll and timer: from Plugins, into the room",
+      "w": 240,
+      "x": -2413,
+      "y": 7084
+    },
+    "note-rx50nv": {
+      "kind": "title1",
+      "maxW": 2880,
+      "page": "page-dpqe21",
+      "text": "Presenter: switching between slides and a shared screen",
+      "w": 240,
+      "x": -2413,
+      "y": 1844
+    },
+    "note-xn9jsr": {
+      "fill": "blue",
+      "page": "page-dpqe21",
+      "text": "Share media\n• Replaces the Share screen button in the media group. The icon is a plus in a frame\n• Clicking it opens a white picker above the button. Types sit along the bottom: Slides, Video, Screen, Audio, URL, More\n• Slides: Add slides plus your decks; the selected deck gets a blue border and check\n• Screen: entire screen, a window or a browser tab (tabs can include audio)\n• Video and URL: paste a link; Audio: share computer audio\n• In the Command bar concept, Share media lives in the More grid\n\nTry it in Play: click the media button, then switch types.",
+      "w": 440,
+      "x": 2027,
+      "y": 884
+    },
+    "titleMobile": {
+      "kind": "title1",
+      "maxW": 3200,
+      "page": "mobile",
+      "text": "Scaling down to a phone",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    }
+  },
+  "order": [
+    "RoomCurrent.dc.html",
+    "RoomImproved.dc.html",
+    "Slide.dc.html",
+    "Shell.dc.html",
+    "RailRoom.dc.html",
+    "Focus.dc.html",
+    "ScreenShare.dc.html",
+    "StatusList.dc.html",
+    "MB1Room.dc.html",
+    "MB2Updates.dc.html",
+    "MB3People.dc.html",
+    "MB4Student.dc.html",
+    "MB5Chat.dc.html",
+    "MB6React.dc.html",
+    "MB7More.dc.html",
+    "MB8Landscape.dc.html",
+    "MB9LandscapePeople.dc.html",
+    "Mobile.dc.html",
+    "MB10Everyone.dc.html",
+    "MB11Slides.dc.html",
+    "MB12Annotate.dc.html",
+    "MB13Minimized.dc.html",
+    "MB14LandMin.dc.html",
+    "Breakout.dc.html",
+    "RoomScreen.dc.html",
+    "BreakoutSetup.dc.html",
+    "L1LowEngagement-qeqx.dc.html",
+    "M1ShareScreen-k5tp.dc.html",
+    "M2ShareDeck-581i.dc.html",
+    "N1Overview-xpbk.dc.html",
+    "F1Bar-4roh-l8ju.dc.html",
+    "G1People-my6z.dc.html",
+    "G2ChatEveryone-gqvt.dc.html",
+    "G3ChatDirect-56ch.dc.html",
+    "G4DmRafaela-gtn4.dc.html",
+    "G5DmFromPeople-ogjp.dc.html",
+    "H1MediaSlides-2x0x.dc.html",
+    "H2MediaScreen-ez5s.dc.html",
+    "O1Analytics.dc.html",
+    "O2StudentActions.dc.html",
+    "BO1Entry-desk.dc.html",
+    "BO2SetupGroups-desk.dc.html",
+    "BO3SetupMove-desk.dc.html",
+    "BO4SetupSolo-desk.dc.html",
+    "BO5LiveGroups-desk.dc.html",
+    "BO6PeekGroup-desk.dc.html",
+    "BO7LiveSolo-desk.dc.html",
+    "BO8PeekSolo-desk.dc.html",
+    "BO9MainView-desk.dc.html",
+    "BO10Closing-desk.dc.html",
+    "BO11Back-desk.dc.html",
+    "BO12ShareBack-desk.dc.html",
+    "PL1Setup.dc.html",
+    "PL2Live.dc.html",
+    "PL3Shown.dc.html",
+    "TM1Ready.dc.html",
+    "TM2Running.dc.html",
+    "TM3Min.dc.html",
+    "TM4Done.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "components",
+      "name": "Components"
+    },
+    {
+      "id": "page-dpqe21",
+      "name": "Prototype - Desktop"
+    },
+    {
+      "id": "mobile",
+      "name": "Prototype - Mobile"
+    }
+  ],
+  "title": "BigBlueButton 4.0 — Current vs Improved"
+}

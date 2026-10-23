@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Slide — BigBlueButton 4.0, refined</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1024px; height: 576px; position: relative; box-sizing: border-box; background: #ffffff; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; color: #0f1b2b; overflow: hidden">
+  <div style="position: absolute; right: 0; top: 0; width: 352px; height: 576px; background: #eef4fe"></div>
+
+  <div style="position: absolute; left: 0; top: 0; width: 672px; height: 576px; box-sizing: border-box; padding: 48px 56px 40px 64px; display: flex; flex-direction: column">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <span style="width: 22px; height: 22px; border-radius: 6px; background: #1f62d0"></span>
+      <span style="font-size: 17px; font-weight: 700; color: #0f1b2b">BigBlueButton</span>
+    </div>
+    <div style="margin-top: 76px; font-size: 14px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #1f62d0">Hack Week · Brazil 2026</div>
+    <h1 style="margin: 12px 0 0; font-size: 62px; line-height: 1.04; font-weight: 700; letter-spacing: -0.01em; color: #0f1b2b">BigBlueButton 4.0,<br>refined</h1>
+    <p style="margin: 22px 0 0; font-size: 20px; line-height: 1.4; color: #3b4a5c; max-width: 500px">Small changes to the core meeting screens that make the room easier to read at a glance.</p>
+    <div style="flex-grow: 1"></div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #4b5563">
+      <span>Design review</span><span>·</span><span>Frederick Dixon</span>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 708px; top: 120px; width: 268px; display: flex; flex-direction: column; gap: 18px">
+    <div style="font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #1f62d0">Today</div>
+    <div style="display: flex; gap: 14px; align-items: baseline"><span style="font-size: 15px; font-weight: 700; color: #1f62d0">01</span><span style="font-size: 19px; font-weight: 600; color: #0f1b2b">Make state visible</span></div>
+    <div style="display: flex; gap: 14px; align-items: baseline"><span style="font-size: 15px; font-weight: 700; color: #1f62d0">02</span><span style="font-size: 19px; font-weight: 600; color: #0f1b2b">Label the controls</span></div>
+    <div style="display: flex; gap: 14px; align-items: baseline"><span style="font-size: 15px; font-weight: 700; color: #1f62d0">03</span><span style="font-size: 19px; font-weight: 600; color: #0f1b2b">Fix the dead ends</span></div>
+    <div style="display: flex; gap: 14px; align-items: baseline"><span style="font-size: 15px; font-weight: 700; color: #1f62d0">04</span><span style="font-size: 19px; font-weight: 600; color: #0f1b2b">Presentation view</span></div>
+  </div>
+  <div style="position: absolute; right: 48px; bottom: 40px; font-size: 14px; font-weight: 600; color: #4b5563">{{page}} / 12</div>
+
+  <svg width="240" height="26" viewBox="0 0 240 26" aria-hidden="true" style="position: absolute; left: 60px; top: 324px"><path d="M4 16c30-6 70-9 110-8s80 4 118 1" fill="none" stroke="#e8590c" stroke-width="5" stroke-linecap="round"></path></svg>
+
+  <sc-if value="{{showPointer}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 312px; top: 300px; display: flex; align-items: flex-start; gap: 2px">
+      <svg width="20" height="22" viewBox="0 0 20 22" aria-hidden="true"><path d="M2 2l15 8-7 2-3 7z" fill="#e8590c" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+      <span style="margin-top: 14px; background: #e8590c; color: #ffffff; font-size: 12px; font-weight: 700; border-radius: 5px; padding: 2px 7px">Frederick</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"page":{"editor":"string","default":"3"},"pointer":{"editor":"boolean","default":false},"$preview":{"width":1024,"height":576}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { showPointer: !!this.props.pointer, page: String(this.props.page || '3') };
+  }
+}
+</script>
+</body>
+</html>
