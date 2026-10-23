@@ -3,7 +3,7 @@
 The screens the prototype must reproduce, from the **BigBlueButton 4.0 — Current vs Improved** canvas.
 Each row is one artboard. "Source board" is the large board it renders, and "State" is the props it is shown with, which map directly to the routes or story args you build.
 
-Export each artboard as a PNG into `docs/screenshots/` using the file stem as the name (for example `MB1Room.png`). Claude Code compares against those images; it cannot open the canvas itself.
+Every state here was checked against the `<dc-import>` props in `docs/canvas/project/` (2026-10-23). The canvas source is the main reference: Claude Code reads it for copy, layout and state logic, but can't render it, because the boards only run inside the design canvas. For visual comparison, export key artboards as PNGs into `docs/screenshots/`, named by file stem (for example `MB1Room.png`).
 
 ## Prototype - Desktop
 
@@ -25,16 +25,16 @@ Export each artboard as a PNG into `docs/screenshots/` using the file stem as th
 | 14 | Teacher · student actions (hover a person → ⋯) | `O2StudentActions` | 1400×900 | Focus | layout=bar panel=people pmenu=anton |
 | 15 | Breakout · 1 · Plugins → Breakout rooms | `BO1Entry-desk` | 1400×900 | Focus | layout=bar panel=none plugins=open |
 | 16 | Breakout · 2 · Set up groups (4 rooms, spread evenly) | `BO2SetupGroups-desk` | 1400×900 | Breakout | phase=setup mode=groups rooms=4 |
-| 17 | Breakout · 3 · Move a student between rooms | `BO3SetupMove-desk` | 1400×900 | Breakout | phase=setup mode=groups rooms=4 moving=anton (inferred) |
-| 18 | Breakout · 4 · One room per student | `BO4SetupSolo-desk` | 1400×900 | Breakout | phase=setup mode=solo (inferred) |
+| 17 | Breakout · 3 · Move a student between rooms | `BO3SetupMove-desk` | 1400×900 | Breakout | phase=setup mode=groups rooms=4 moving=ana |
+| 18 | Breakout · 4 · One room per student | `BO4SetupSolo-desk` | 1400×900 | Breakout | phase=setup mode=solo |
 | 19 | Breakout · 5 · Rooms live: watch every group | `BO5LiveGroups-desk` | 1400×900 | Breakout | phase=live mode=groups rooms=4 |
-| 20 | Breakout · 6 · Preview a group room (asked for help) | `BO6PeekGroup-desk` | 1400×900 | Breakout | phase=live mode=groups rooms=4 peek=1 (inferred) |
-| 21 | Breakout · 7 · Rooms live: 13 individual rooms | `BO7LiveSolo-desk` | 1400×900 | Breakout | phase=live mode=solo (inferred) |
-| 22 | Breakout · 8 · Preview an individual room | `BO8PeekSolo-desk` | 1400×900 | Breakout | phase=live mode=solo peek=2 (inferred) |
-| 23 | Breakout · 9 · Rooms live, teacher flips back to Presentation | `BO9MainView-desk` | 1400×900 | Breakout | phase=live view=main (inferred) |
+| 20 | Breakout · 6 · Preview a group room (asked for help) | `BO6PeekGroup-desk` | 1400×900 | Breakout | phase=live mode=groups rooms=4 peek=1 |
+| 21 | Breakout · 7 · Rooms live: 13 individual rooms | `BO7LiveSolo-desk` | 1400×900 | Breakout | phase=live mode=solo |
+| 22 | Breakout · 8 · Preview an individual room | `BO8PeekSolo-desk` | 1400×900 | Breakout | phase=live mode=solo peek=2 |
+| 23 | Breakout · 9 · Rooms live, teacher flips back to Presentation | `BO9MainView-desk` | 1400×900 | Breakout | phase=live mode=groups rooms=4 view=main |
 | 24 | Breakout · 10 · Close rooms: 60-second wrap-up | `BO10Closing-desk` | 1400×900 | Breakout | phase=live mode=groups rooms=4 closing=yes |
-| 25 | Breakout · 11 · Everyone is back in the main room | `BO11Back-desk` | 1400×900 | Breakout | phase=back (inferred) |
-| 26 | Breakout · 12 · Show a room’s work to everyone | `BO12ShareBack-desk` | 1400×900 | Breakout | phase=back onstage=0 (inferred) |
+| 25 | Breakout · 11 · Everyone is back in the main room | `BO11Back-desk` | 1400×900 | Breakout | phase=back mode=groups rooms=4 |
+| 26 | Breakout · 12 · Show a room’s work to everyone | `BO12ShareBack-desk` | 1400×900 | Breakout | phase=back mode=groups rooms=4 onstage=1 |
 | 27 | Poll · 1 · Set up from Plugins → Poll | `PL1Setup` | 1400×900 | Focus | layout=bar panel=poll poll=setup |
 | 28 | Poll · 2 · Answers coming in (only you see them) | `PL2Live` | 1400×900 | Focus | layout=bar panel=poll poll=live |
 | 29 | Poll · 3 · Results shown to everyone | `PL3Shown` | 1400×900 | Focus | layout=bar panel=poll poll=shown |
@@ -61,5 +61,3 @@ Export each artboard as a PNG into `docs/screenshots/` using the file stem as th
 | 12 | Phone · Annotate (pencil) | `MB12Annotate` | 390×844 | Mobile | orient=portrait sheet=none annot=on |
 | 13 | Phone · Presentation minimized | `MB13Minimized` | 390×844 | Mobile | orient=portrait sheet=none presmin=min |
 | 14 | Phone landscape · Presentation minimized | `MB14LandMin` | 844×390 | Mobile | orient=landscape sheet=none presmin=min |
-
-States marked *(inferred)* were worked out from the Breakout board's logic rather than read from the artboard. Confirm them against the canvas.

@@ -41,6 +41,11 @@ React + TypeScript (strict), Vite, Tailwind v4, React Aria Components, tailwind-
 - No hard-coded counts or names in components. Everything comes from props or the mock room state.
 - Every list handles 0, 1, 14 and 30+ items and long names (truncate with a tooltip showing the full name).
 
+### Routes and state
+- One mock room-state store (`src/mocks/`) is the single source of meeting state. Components read it through props or hooks, never their own copies.
+- Each artboard is a route: `/desktop/:artboard` and `/mobile/:artboard`, named by the file stem in `docs/artboards.md`. The artboard's props (for example `?panel=people&pfilter=low`) set the store's initial state, so every screen can be deep-linked.
+- Playwright and axe loop over one route list generated from `docs/artboards.md`; don't hand-maintain a second list.
+
 ## Component pattern
 
 Filled in during milestone 2, after the reference primitives are approved. Until then, follow the rules above and ask before inventing a pattern.

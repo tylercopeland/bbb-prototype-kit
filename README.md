@@ -21,8 +21,9 @@ Everything Claude Code needs to build the BigBlueButton 4.0 room prototype from 
 
 1. Put this folder in a new git repo: `git init && git add -A && git commit -m "Starter kit"`.
 2. Optional: export a few key artboards as PNGs into `docs/screenshots/`.
-3. Make two decisions and write them in `PLAN.md`: which people-status option (A, B or C) and which breakout setup variant.
-4. Delete the stray Assist paragraph from the low-engagement artboard on the canvas.
+3. Check `.claude/` made it into the repo. Browser uploads to GitHub skip hidden folders.
+4. Delete the stray Assist paragraph from the low-engagement artboard on the live canvas. It's already removed from the copy in `docs/canvas/project/`.
+5. Review "Open decisions" in `PLAN.md`. The token ones are needed in milestone 1; people status and breakout setup by milestone 4.
 
 ## First session
 

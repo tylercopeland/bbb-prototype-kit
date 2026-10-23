@@ -81,5 +81,8 @@ Colors the boards use repeatedly that `tokens.json` doesn't cover yet:
 - **Avatar palette** — boards use 9–10 colors; tokens have 8.
 - **10px radius** — the most-used radius on two boards; add it rather than snap to 8 or 12.
 - **15px text** on mobile — decide: add it or snap to 14/16.
+- **Control borders** — `border-strong` (#c9d2dd) is about 1.5:1 on white, below the 3:1 that X11 requires. Add a `border-control` token at neutral-500 (#7b8594, 3.7:1) or darker for inputs, switch tracks and outlined buttons.
+
+`tokens.json` also lacks values that `theme.css` already has: line heights for each text size, and the dark and `data-surface="stage"` overrides. Add these to `tokens.json` as modes (light, dark, stage) before generating the theme with Style Dictionary, or they'll be lost.
 
 Snap everything else: 12.5 / 13.5 / 14.5px text → nearest step; 30 / 34 / 38 / 42px controls → 32 / 36 / 40 / 44; radii 7 / 9 / 11 / 14 → 8 / 10 / 12 / 16; half-height pills → `full`.
