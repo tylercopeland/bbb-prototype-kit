@@ -73,16 +73,16 @@ Source boards: **Focus** (all desktop screens except breakout 2–12), **Breakou
 
 Colors the boards use repeatedly that `tokens.json` doesn't cover yet:
 
-- **Purple "insight" family** — 9 values in use (#5b3fb0, #7c5cc4, #a78bfa, #f3effa …). Add a ramp or remap insights to blue.
+- **Purple "insight" family** — 9 values in use (#5b3fb0, #7c5cc4, #a78bfa, #f3effa …). Decided: keep purple as one ramp, contrast-checked.
 - **Status tints** — light green, amber and red backgrounds (#dcf5e6, #e6f6ee, #fff3dc …).
 - **Selected on dark** — #e6eef9 / #0f1b2b and the #5b8fe0 focus/selected blue used on the stage.
-- **Text on stage** — #e6edf5 is used often; decide between it and white.
+- **Text on stage** — #e6edf5 is used often. Decided: use white (`text-on-stage`).
 - **Room palette** — breakout rooms are told apart by color; needs about 8 categorical colors that pass with white text.
 - **Avatar palette** — boards use 9–10 colors; tokens have 8.
-- **10px radius** — the most-used radius on two boards; add it rather than snap to 8 or 12.
-- **15px text** on mobile — decide: add it or snap to 14/16.
+- **10px radius** — the most-used radius on two boards. Decided: no 10px step (4px grid); snap to 8 on controls and chips, 12 on cards, tiles and sheets.
+- **15px text** on mobile. Decided: snap to 14.
 - **Control borders** — `border-strong` (#c9d2dd) is about 1.5:1 on white, below the 3:1 that X11 requires. Add a `border-control` token at neutral-500 (#7b8594, 3.7:1) or darker for inputs, switch tracks and outlined buttons.
 
 `tokens.json` also lacks values that `theme.css` already has: line heights for each text size, and the dark and `data-surface="stage"` overrides. Add these to `tokens.json` as modes (light, dark, stage) before generating the theme with Style Dictionary, or they'll be lost.
 
-Snap everything else: 12.5 / 13.5 / 14.5px text → nearest step; 30 / 34 / 38 / 42px controls → 32 / 36 / 40 / 44; radii 7 / 9 / 11 / 14 → 8 / 10 / 12 / 16; half-height pills → `full`.
+Snap everything else: 12.5 / 13.5 / 14.5px text → nearest step; 30 / 34 / 38 / 42px controls → 32 / 36 / 40 / 44; radii 6 / 7 / 9 → 8 and 10 / 11 / 14 → 12 or 16 (see above); half-height pills → `full`.

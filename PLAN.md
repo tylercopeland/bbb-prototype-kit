@@ -27,7 +27,8 @@ This is a standalone prototype. It does not need to fit into the bbb-html5 clien
 
 ## Before milestone 1
 
-- [ ] `.claude/` (the `reviewer` and `component-builder` agents, and `settings.json`) is in the repo. Browser uploads skip hidden folders, so check.
+- [x] `.claude/agents/` (the `reviewer` and `component-builder` agents) is in the repo.
+- [ ] `.claude/settings.json` (the post-edit check hook) is in the repo.
 - [ ] Optional: PNGs of key artboards in `docs/screenshots/`.
 
 ## Milestone 1 · Foundations
@@ -36,7 +37,7 @@ Build: Vite + React + TypeScript, Tailwind v4, React Aria Components, tailwind-v
 
 Also:
 - Move `docs/tokens.json` to `src/tokens/` and generate `src/tokens/tokens.css` from it with Style Dictionary (a custom Tailwind v4 `@theme` format), so `tokens.json` is the only place a value is edited. First add what `theme.css` has and `tokens.json` lacks: line heights, and light, dark and stage modes. The utilities (`focus-ring`, `hit-area`, `ring-speaking`) and base styles stay hand-written in `src/styles/theme.css`, which imports the generated file.
-- Add the token gaps the review found (see `docs/review-findings.md`, "Token gaps"): purple insight family, status tints, selected-on-dark, room palette, a 9th and 10th avatar color, 10px radius, `border-control`. Run a contrast check on every new pair.
+- Add the token gaps the review found (see `docs/review-findings.md`, "Token gaps"): purple insight family, status tints, selected-on-dark, room palette, a 9th and 10th avatar color, `border-control`. Every spacing, size, radius and line-height token is a multiple of 4px. Run a contrast check on every new pair.
 - Lint rule that rejects Tailwind arbitrary values (`bg-[#…]`, `p-[13px]`) and raw hex in TSX.
 - Icon set: Lucide (`lucide-react`), one icon per meaning (X6).
 - Self-host Source Sans 3 with `@fontsource`, so screenshots are stable and the prototype works offline.
@@ -125,10 +126,6 @@ Move each one to the decisions log once it's made.
 
 | Decision | Options | Needed by |
 |---|---|---|
-| Token: 10px radius name | Rename the scale, or add a step between `md` and `lg` | M1 |
-| Token: 15px mobile text | Add a step, or snap to 14 / 16 | M1 |
-| Token: text on stage | #e6edf5 or white | M1 |
-| Token: insight colors | Purple ramp, or remap to blue | M1 |
 | People status | Option A (grey column, color only when live), B (list order says it) or C (avatar is the status), from the `StatusList` board | M4 |
 | Breakout setup (B10) | Keep the `Breakout` board's own setup, or replace it with `BreakoutSetup` variant a, b or c | M4 |
 | Private chat | Can moderators turn off private chat for a classroom? (open question on the canvas; the DM thread note changes if so) | M5 |
@@ -142,3 +139,5 @@ Record decisions here as they're made, with the date.
 - 2026-10-23 · Standalone prototype, not integrated into bbb-html5 yet.
 - 2026-10-23 · Stack: React, TypeScript, Vite, Tailwind v4 tokens, React Aria Components.
 - 2026-10-23 · Plan review: `Tooltip` moved to M2; M4 narrowed to the room shell, store and routing; flow-specific components built in M5; Lucide icons; self-hosted font; CI from M1; screenshot comparison via Playwright baselines.
+- 2026-10-23 · 4px grid: spacing, sizes, radii and line heights are multiples of 4. Font sizes keep their scale (11 for uppercase labels, 12, 13, 14, 16, 18). Radius scale is 4 / 8 / 12 / 16 / full: the 6px step is removed and the canvas's 10px radius snaps to 8 (controls, chips) or 12 (cards, tiles, sheets). Line heights move to 16 / 20 / 24. 15px mobile text snaps to 14.
+- 2026-10-23 · Text on the stage is white. Insight highlights stay purple, as one contrast-checked ramp.
