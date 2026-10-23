@@ -68,7 +68,10 @@ export function TokenSheet() {
         <ul className="flex flex-wrap gap-4">
           {radii.map((s) => (
             <li key={s.name} className="flex flex-col items-center gap-1">
-              <div aria-hidden="true" className={`size-16 border border-border-control bg-surface-raised ${s.className}`} />
+              <div
+                aria-hidden="true"
+                className={`size-16 border border-border-control bg-surface-raised ${s.className}`}
+              />
               <span className="text-xs text-text">{s.name}</span>
             </li>
           ))}

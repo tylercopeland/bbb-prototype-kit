@@ -133,7 +133,7 @@ function formatTailwindV4({ dictionary }: { dictionary: { allTokens: Transformed
   const out: string[] = [
     '/* Do not edit directly, generated from src/tokens/tokens.json by `npm run tokens` */',
     '',
-    '/* 1. Primitives. Tailwind\'s default palette and scales are removed, so only these names produce utilities. */',
+    "/* 1. Primitives. Tailwind's default palette and scales are removed, so only these names produce utilities. */",
     '@theme {',
     ...theme,
     '}',

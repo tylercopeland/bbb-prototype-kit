@@ -17,7 +17,9 @@ const FONT_SIZES = new Set([11, 12, 13, 14, 16, 18]);
 const MODES: Mode[] = ['light', 'dark', 'stage'];
 
 const tokens = JSON.parse(await readFile(tokensJsonPath, 'utf8')) as Json;
-const contrast = JSON.parse(await readFile(path.resolve(path.dirname(tokensJsonPath), 'contrast.json'), 'utf8')) as {
+const contrast = JSON.parse(
+  await readFile(path.resolve(path.dirname(tokensJsonPath), 'contrast.json'), 'utf8'),
+) as {
   pairs: Pair[];
 };
 
@@ -110,7 +112,12 @@ function px(value: unknown): number | null {
   return m ? Number(m[1]) : null;
 }
 
-function walkDimensions(prefix: string, node: Json, fn: (path: string, value: number) => void, inherited?: string) {
+function walkDimensions(
+  prefix: string,
+  node: Json,
+  fn: (path: string, value: number) => void,
+  inherited?: string,
+) {
   const type = typeof node.$type === 'string' ? node.$type : inherited;
   for (const [key, child] of Object.entries(node)) {
     if (key.startsWith('$') || typeof child !== 'object' || child === null) continue;
@@ -139,7 +146,11 @@ for (const group of gridGroups) {
   walkDimensions(group, node, (p, n) => {
     // `full` is a pill, and the speaking ring is a 2px stroke, not layout.
     if (p === 'primitive.radius.full' || p === 'component.tile.speaking-ring') return;
-    rows.push({ ok: n % 4 === 0, what: `grid ${p}`, detail: `${n}px${n % 4 === 0 ? '' : ' is not a multiple of 4'}` });
+    rows.push({
+      ok: n % 4 === 0,
+      what: `grid ${p}`,
+      detail: `${n}px${n % 4 === 0 ? '' : ' is not a multiple of 4'}`,
+    });
     if (p.startsWith('primitive.space.') && !p.endsWith('.base')) {
       const step = Number(p.split('.').pop());
       rows.push({ ok: step * 4 === n, what: `scale ${p}`, detail: `${n}px = ${step} × 4px` });
@@ -150,7 +161,11 @@ for (const group of gridGroups) {
 const sizes = getNode('primitive.font.size');
 if (!sizes) throw new Error('Missing primitive.font.size');
 walkDimensions('primitive.font.size', sizes, (p, n) => {
-  rows.push({ ok: FONT_SIZES.has(n), what: `font size ${p}`, detail: `${n}px${FONT_SIZES.has(n) ? '' : ` is not one of ${[...FONT_SIZES].join('/')}`}` });
+  rows.push({
+    ok: FONT_SIZES.has(n),
+    what: `font size ${p}`,
+    detail: `${n}px${FONT_SIZES.has(n) ? '' : ` is not one of ${[...FONT_SIZES].join('/')}`}`,
+  });
 });
 
 const expectedCss = await buildTokensCss();
@@ -158,7 +173,10 @@ const committedCss = await readFile(tokensCssPath, 'utf8').catch(() => '');
 rows.push({
   ok: expectedCss === committedCss,
   what: 'tokens.css is current',
-  detail: expectedCss === committedCss ? 'matches tokens.json' : 'stale: run `npm run tokens` and commit the result',
+  detail:
+    expectedCss === committedCss
+      ? 'matches tokens.json'
+      : 'stale: run `npm run tokens` and commit the result',
 });
 
 // ---------- report ----------

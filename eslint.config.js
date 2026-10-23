@@ -41,7 +41,14 @@ const tokenSyntaxRules = [
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'storybook-static', 'src/tokens/tokens.css', 'playwright-report', 'test-results', 'node_modules'],
+    ignores: [
+      'dist',
+      'storybook-static',
+      'src/tokens/tokens.css',
+      'playwright-report',
+      'test-results',
+      'node_modules',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -59,6 +66,10 @@ export default tseslint.config(
   {
     files: ['src/**/*.{ts,tsx}'],
     ...reactRefresh.configs.vite,
+    rules: {
+      ...reactRefresh.configs.vite.rules,
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    },
   },
   ...storybook.configs['flat/recommended'],
   // Layer 1: Tailwind classes resolved against the real theme.
@@ -96,12 +107,6 @@ export default tseslint.config(
     ignores: ['scripts/**', 'src/tokens/*.ts', '**/*.test.ts', '**/*.test.tsx', '.storybook/**'],
     rules: {
       'no-restricted-syntax': ['error', ...tokenSyntaxRules],
-    },
-  },
-  {
-    files: ['src/**/*.{ts,tsx}', '.storybook/**/*.{ts,tsx}'],
-    rules: {
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
 );

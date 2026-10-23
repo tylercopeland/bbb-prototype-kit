@@ -20,7 +20,7 @@ export function App() {
         <ToggleButton
           isSelected={dark}
           onChange={setDark}
-          className="focus-ring h-control-md rounded-control border border-border-control bg-surface px-4 text-md font-medium text-text data-selected:bg-accent data-selected:text-on-accent"
+          className="h-control-md rounded-control border border-border-control bg-surface px-4 text-md font-medium text-text focus-ring data-selected:bg-accent data-selected:text-on-accent"
         >
           Dark theme
         </ToggleButton>
