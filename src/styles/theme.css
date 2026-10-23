@@ -11,10 +11,14 @@
 @import '@fontsource/source-sans-3/500.css';
 @import '@fontsource/source-sans-3/600.css';
 @import '@fontsource/source-sans-3/700.css';
-@import 'tailwindcss';
-@import '../tokens/tokens.css';
-/* The lint fixture strings in src/test are not sources for utilities. */
+/* Utilities come from src and .storybook only. Automatic detection would
+   also read the Markdown docs and the lint fixtures in src/test, whose
+   example classes (p-[13px], [color:red]) then leak into the CSS. */
+@import 'tailwindcss' source(none);
+@source '../';
+@source '../../.storybook';
 @source not '../test';
+@import '../tokens/tokens.css';
 
 /* ---------------------------------------------------------------
  * Shared utilities
