@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Room — improved</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #141f2c; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; color: #1f2933; display: flex; gap: 16px; padding: 16px; overflow: hidden">
+
+  <!-- ============ RAIL ============ -->
+  <nav aria-label="Meeting panels" style="width: 76px; flex-shrink: 0; background: #ffffff; border-radius: 20px; display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 6px; box-sizing: border-box">
+    <div style="display: flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; color: #141f2c; margin-bottom: 10px">
+      <svg width="14" height="12" viewBox="0 0 14 12" aria-hidden="true"><path d="M3 0h4L4 12H0z M9 0h5l-3 12H6z" fill="#141f2c"></path></svg>
+      <span>Blindside</span>
+    </div>
+
+    <button type="button" onClick="{{goProfile}}" aria-label="Settings and devices" style="width: 60px; height: 56px; border: 0; border-radius: 12px; background: {{bg.profile}}; color: {{fg.profile}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: inherit; padding: 0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="10" r="3"></circle><path d="M6.5 18.5c1.4-2.2 3.3-3.2 5.5-3.2s4.1 1 5.5 3.2"></path></svg>
+      <span style="font-size: 11px; font-weight: 600">You</span>
+    </button>
+
+    <button type="button" onClick="{{goUsers}}" aria-label="People, 9 in meeting" style="position: relative; width: 60px; height: 56px; border: 0; border-radius: 12px; background: {{bg.users}}; color: {{fg.users}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: inherit; padding: 0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M16 14.6c2.3.1 3.9 1.5 4.5 4"></path></svg>
+      <span style="font-size: 11px; font-weight: 600">People</span>
+      <span style="position: absolute; top: 4px; right: 6px; min-width: 18px; height: 18px; border-radius: 9px; background: #e3e8ef; color: #1f2933; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-sizing: border-box">9</span>
+    </button>
+
+    <button type="button" onClick="{{goChat}}" aria-label="Chat, 2 unread" style="position: relative; width: 60px; height: 56px; border: 0; border-radius: 12px; background: {{bg.chat}}; color: {{fg.chat}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: inherit; padding: 0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3.5V15H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path><path d="M18 8.5h1.5a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H19v2.5L16 19h-4.5"></path></svg>
+      <span style="font-size: 11px; font-weight: 600">Chat</span>
+      <sc-if value="{{showChatBadge}}" hint-placeholder-val="{{false}}">
+        <span style="position: absolute; top: 4px; right: 6px; min-width: 18px; height: 18px; border-radius: 9px; background: #d93a2b; color: #ffffff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-sizing: border-box">2</span>
+      </sc-if>
+    </button>
+
+    <button type="button" onClick="{{goNotes}}" aria-label="Shared notes" style="width: 60px; height: 56px; border: 0; border-radius: 12px; background: {{bg.notes}}; color: {{fg.notes}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: inherit; padding: 0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5"></path><path d="M9 12.5h7M9 16.5h5"></path></svg>
+      <span style="font-size: 11px; font-weight: 600">Notes</span>
+    </button>
+
+    <div style="width: 36px; height: 1px; background: #e3e8ef; margin: 6px 0"></div>
+
+    <button type="button" onClick="{{goApps}}" aria-label="Apps" style="width: 60px; height: 56px; border: 0; border-radius: 12px; background: {{bg.apps}}; color: {{fg.apps}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: inherit; padding: 0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"></rect><path d="M17 3.5v7M13.5 7h7"></path></svg>
+      <span style="font-size: 11px; font-weight: 600">Apps</span>
+    </button>
+  </nav>
+
+  <!-- ============ PANELS ============ -->
+
+  <!-- PEOPLE -->
+  <sc-if value="{{isUsers}}" hint-placeholder-val="{{false}}">
+  <section aria-label="People" style="width: 320px; flex-shrink: 0; background: #ffffff; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden">
+    <header style="display: flex; align-items: center; gap: 8px; padding: 14px 12px 12px 18px; border-bottom: 1px solid #e6eaef">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600; color: #111827; flex-grow: 1">People <span style="color: #5b6574; font-weight: 500">· 9</span></h2>
+      <button type="button" aria-label="Open side by side" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M11 4v16"></path></svg></button>
+      <button type="button" aria-label="Download attendee list" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg></button>
+      <button type="button" aria-label="Close panel" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </header>
+    <div style="padding: 14px 16px 6px; display: flex; flex-direction: column; gap: 10px">
+      <label style="display: flex; align-items: center; gap: 8px; height: 40px; border: 1.5px solid #c9d2dd; border-radius: 10px; padding: 0 12px; color: #5b6574">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+        <input type="search" placeholder="Search people" aria-label="Search people" style="border: 0; outline: none; font-family: inherit; font-size: 14px; color: #1f2933; flex-grow: 1; min-width: 0; background: transparent">
+      </label>
+      <div role="group" aria-label="Filter people" style="display: flex; gap: 6px; flex-wrap: wrap">
+        <button type="button" aria-pressed="true" style="height: 28px; padding: 0 10px; border-radius: 14px; border: 0; background: #1f2933; color: #ffffff; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">All 9</button>
+        <button type="button" aria-pressed="false" style="height: 28px; padding: 0 10px; border-radius: 14px; border: 1px solid #c9d2dd; background: #ffffff; color: #374151; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">On video 2</button>
+        <button type="button" aria-pressed="false" style="height: 28px; padding: 0 10px; border-radius: 14px; border: 1px solid #c9d2dd; background: #ffffff; color: #374151; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">Raised hands 0</button>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1; overflow: hidden; padding: 4px 8px 12px; display: flex; flex-direction: column">
+      <div style="font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5b6574; padding: 10px 8px 6px">Presenter &amp; moderators · 1</div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; background: #f3f8f5">
+        <div style="width: 36px; height: 36px; border-radius: 18px; background: #2f6db3; color: #ffffff; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #2fb37a">FD</div>
+        <div style="flex-grow: 1; min-width: 0">
+          <div style="font-size: 14.5px; font-weight: 600; color: #1f2933">Frederick Dixon</div>
+          <div style="display: flex; gap: 6px; align-items: center; margin-top: 2px">
+            <span style="font-size: 11px; font-weight: 700; color: #1f62d0; background: #e8f0fd; border-radius: 4px; padding: 1px 6px">Presenter</span>
+            <span style="font-size: 11px; font-weight: 700; color: #374151; background: #eef1f5; border-radius: 4px; padding: 1px 6px">Moderator</span>
+            <span style="font-size: 12px; font-weight: 600; color: #12805c">Speaking</span>
+          </div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#12805c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Microphone on"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+        <button type="button" aria-label="Actions for Frederick Dixon" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button>
+      </div>
+
+      <div style="font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5b6574; padding: 16px 8px 6px">Participants · 8</div>
+      <sc-for list="{{members}}" as="m" hint-placeholder-count="8">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px">
+          <div style="width: 36px; height: 36px; border-radius: 18px; background: {{m.av}}; color: #ffffff; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">{{m.initials}}</div>
+          <div style="flex-grow: 1; min-width: 0">
+            <div style="font-size: 14.5px; font-weight: 600; color: #1f2933; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{m.name}} <span style="color: #5b6574; font-weight: 500">{{m.youTag}}</span></div>
+            <sc-if value="{{m.hasSub}}" hint-placeholder-val="{{false}}">
+              <div style="font-size: 12.5px; color: #5b6574; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{m.sub}}</div>
+            </sc-if>
+          </div>
+          <sc-if value="{{m.video}}" hint-placeholder-val="{{false}}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f62d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Camera on"><rect x="2.5" y="6" width="13" height="12" rx="2"></rect><path d="M15.5 10.5l6-3.5v10l-6-3.5"></path></svg>
+          </sc-if>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7b8594" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Muted"><path d="M3 3l18 18"></path><path d="M9 9v3a3 3 0 0 0 5.1 2.1M15 10V5a3 3 0 0 0-5.9-.7"></path><path d="M19 11a7 7 0 0 1-1.2 3.9M5 11a7 7 0 0 0 11.1 5.6M12 18v3"></path></svg>
+          <button type="button" aria-label="Actions for {{m.name}}" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+  </sc-if>
+
+  <!-- CHAT -->
+  <sc-if value="{{isChat}}" hint-placeholder-val="{{true}}">
+  <section aria-label="Chat" style="width: 320px; flex-shrink: 0; background: #ffffff; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden">
+    <header style="display: flex; align-items: center; gap: 8px; padding: 14px 12px 12px 18px; border-bottom: 1px solid #e6eaef">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600; color: #111827; flex-grow: 1">Chat</h2>
+      <button type="button" aria-label="Open side by side" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M11 4v16"></path></svg></button>
+      <button type="button" aria-label="Chat options" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="12" cy="19" r="1.6"></circle></svg></button>
+      <button type="button" aria-label="Close panel" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </header>
+
+    <div role="tablist" aria-label="Chat type" style="margin: 12px 16px 4px; display: flex; background: #eef1f5; border-radius: 10px; padding: 3px">
+      <button type="button" role="tab" aria-selected="true" style="flex: 1; height: 32px; border: 0; border-radius: 8px; background: #ffffff; box-shadow: 0 1px 2px rgba(17,24,39,.12); color: #111827; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">Everyone</button>
+      <button type="button" role="tab" aria-selected="false" style="flex: 1; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #374151; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px">Private <span style="min-width: 18px; height: 18px; border-radius: 9px; background: #d93a2b; color: #ffffff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; box-sizing: border-box">1</span></button>
+    </div>
+
+    <div style="flex-grow: 1; overflow: hidden; padding: 8px 16px 4px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; gap: 10px; color: #5b6574; font-size: 12px; font-weight: 600"><div style="flex: 1; height: 1px; background: #e6eaef"></div>Today<div style="flex: 1; height: 1px; background: #e6eaef"></div></div>
+
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #4b5563">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M12 16v4M8 20h8"></path></svg>
+        <span style="flex-grow: 1">Frederick Dixon is now presenting</span><span>8:27</span>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="width: 28px; height: 28px; border-radius: 14px; background: #b5542e; color: #fff; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">AG</div>
+        <div style="flex-grow: 1; min-width: 0">
+          <div style="display: flex; gap: 6px; align-items: baseline"><span style="font-size: 13.5px; font-weight: 700; color: #111827">Anton Georgiev</span><span style="font-size: 11.5px; color: #5b6574">8:29</span></div>
+          <div style="font-size: 14px; color: #1f2933; margin-top: 1px">Hi all!</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="width: 28px; height: 28px; border-radius: 14px; background: #7a4fb5; color: #fff; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">MW</div>
+        <div style="flex-grow: 1; min-width: 0">
+          <div style="display: flex; gap: 6px; align-items: baseline"><span style="font-size: 13.5px; font-weight: 700; color: #111827">Michelle Winkler</span><span style="font-size: 11.5px; color: #5b6574">8:33</span></div>
+          <div style="font-size: 14px; color: #1f2933; margin-top: 1px">Hi guys</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="width: 28px; height: 28px; border-radius: 14px; background: #2b7a6f; color: #fff; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">OC</div>
+        <div style="flex-grow: 1; min-width: 0">
+          <div style="display: flex; gap: 6px; align-items: baseline"><span style="font-size: 13.5px; font-weight: 700; color: #111827">Octavio</span><span style="font-size: 11.5px; color: #5b6574">CS @ Mconf · 8:39</span></div>
+          <div style="font-size: 14px; color: #1f2933; margin-top: 1px">Long live to Piauí!</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: #9b2226; background: #fdeeee; border-radius: 8px; padding: 7px 10px">
+        <span style="width: 8px; height: 8px; border-radius: 4px; background: #d93a2b; flex-shrink: 0"></span>
+        <span style="flex-grow: 1">Recording started by Frederick Dixon</span><span style="font-weight: 500">8:40</span>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="width: 28px; height: 28px; border-radius: 14px; background: #8a5a12; color: #fff; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">TI</div>
+        <div style="flex-grow: 1; min-width: 0">
+          <div style="display: flex; gap: 6px; align-items: baseline"><span style="font-size: 13.5px; font-weight: 700; color: #111827">Timo</span><span style="font-size: 11.5px; color: #5b6574">left · 8:41</span></div>
+          <div style="font-size: 14px; color: #1f2933; margin-top: 1px">somebody started a recording now?</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="width: 28px; height: 28px; border-radius: 14px; background: #b5542e; color: #fff; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">AG</div>
+        <div style="flex-grow: 1; min-width: 0">
+          <div style="display: flex; gap: 6px; align-items: baseline"><span style="font-size: 13.5px; font-weight: 700; color: #111827">Anton Georgiev</span><span style="font-size: 11.5px; color: #5b6574">8:44</span></div>
+          <a href="https://hackmd.io/59-I1wDJQMGnTtd1MaE0dQ?view" style="margin-top: 4px; display: flex; align-items: center; gap: 10px; border: 1px solid #dbe1e8; border-radius: 10px; padding: 8px 10px; text-decoration: none">
+            <span style="width: 30px; height: 30px; border-radius: 8px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"></path><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"></path></svg></span>
+            <span style="min-width: 0; display: flex; flex-direction: column">
+              <span style="font-size: 12px; color: #5b6574">hackmd.io</span>
+              <span style="font-size: 13px; font-weight: 600; color: #1f62d0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">59-I1wDJQMGnTtd1MaE0dQ</span>
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="width: 28px; height: 28px; border-radius: 14px; background: #3d5a99; color: #fff; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">TY</div>
+        <div style="flex-grow: 1; min-width: 0">
+          <div style="display: flex; gap: 6px; align-items: baseline"><span style="font-size: 13.5px; font-weight: 700; color: #111827">Tyler</span><span style="font-size: 11.5px; color: #5b6574">You · 9:04</span></div>
+          <div style="font-size: 14px; color: #1f2933; margin-top: 1px">Claude Design and I are going to have a ton of fun this week</div>
+          <div style="display: flex; gap: 6px; margin-top: 6px">
+            <button type="button" aria-label="Thumbs up, 1" style="height: 26px; padding: 0 8px; border-radius: 13px; border: 1px solid #b9cdf2; background: #eef4fe; color: #1f62d0; font-family: inherit; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11v9H4v-9zM7 11l4-7a2 2 0 0 1 2.5 2.4L12.5 10H19a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.8 20H7"></path></svg>1</button>
+            <button type="button" aria-label="Heart, 1" style="height: 26px; padding: 0 8px; border-radius: 13px; border: 1px solid #dbe1e8; background: #ffffff; color: #374151; font-family: inherit; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"></path></svg>1</button>
+            <button type="button" aria-label="Add reaction" style="height: 26px; width: 30px; border-radius: 13px; border: 1px dashed #c9d2dd; background: #ffffff; color: #5b6574; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 4px 16px 0; font-size: 12px; color: #5b6574; height: 18px">Michelle is typing…</div>
+    <div style="padding: 8px 16px 16px">
+      <div style="border: 1.5px solid #c9d2dd; border-radius: 12px; padding: 10px 10px 8px 12px; display: flex; flex-direction: column; gap: 8px">
+        <textarea aria-label="Message everyone" placeholder="Message everyone" rows="1" style="border: 0; outline: none; resize: none; font-family: inherit; font-size: 14px; color: #1f2933; background: transparent; padding: 0"></textarea>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <button type="button" aria-label="Insert emoji" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14c.9 1.3 2 2 3.5 2s2.6-.7 3.5-2"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg></button>
+          <span style="font-size: 12px; color: #5b6574; flex-grow: 1">Enter to send · Shift + Enter for a new line</span>
+          <button type="button" aria-label="Send message" style="width: 36px; height: 36px; border: 0; border-radius: 10px; background: #1f62d0; color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"></path></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+  </sc-if>
+
+  <!-- SHARED NOTES -->
+  <sc-if value="{{isNotes}}" hint-placeholder-val="{{false}}">
+  <section aria-label="Shared notes" style="width: 320px; flex-shrink: 0; background: #ffffff; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden">
+    <header style="display: flex; align-items: center; gap: 8px; padding: 14px 12px 12px 18px; border-bottom: 1px solid #e6eaef">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600; color: #111827; flex-grow: 1">Shared notes</h2>
+      <div aria-label="3 people here" role="img" style="display: flex; align-items: center; margin-right: 4px">
+        <span style="width: 24px; height: 24px; border-radius: 12px; background: #2f6db3; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fff">FD</span>
+        <span style="width: 24px; height: 24px; border-radius: 12px; background: #b5542e; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; margin-left: -8px">AG</span>
+        <span style="width: 24px; height: 24px; border-radius: 12px; background: #3d5a99; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; margin-left: -8px">TY</span>
+      </div>
+      <button type="button" aria-label="Notes options" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="12" cy="19" r="1.6"></circle></svg></button>
+      <button type="button" aria-label="Close panel" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </header>
+
+    <div role="toolbar" aria-label="Formatting" style="display: flex; align-items: center; gap: 2px; padding: 8px 12px; border-bottom: 1px solid #e6eaef; flex-wrap: wrap">
+      <button type="button" style="height: 30px; padding: 0 8px; border: 0; border-radius: 6px; background: #eef1f5; color: #1f2933; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px; cursor: pointer">Text <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+      <span style="width: 1px; height: 18px; background: #dbe1e8; margin: 0 4px"></span>
+      <button type="button" aria-label="Bold" style="width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: #374151; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer">B</button>
+      <button type="button" aria-label="Italic" style="width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: #374151; font-family: Georgia, serif; font-size: 15px; font-style: italic; cursor: pointer">I</button>
+      <button type="button" aria-label="Underline" style="width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: #374151; font-family: inherit; font-size: 15px; text-decoration: underline; cursor: pointer">U</button>
+      <button type="button" aria-label="Strikethrough" style="width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: #374151; font-family: inherit; font-size: 15px; text-decoration: line-through; cursor: pointer">S</button>
+      <span style="width: 1px; height: 18px; background: #dbe1e8; margin: 0 4px"></span>
+      <button type="button" aria-label="Bulleted list" style="width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"></path></svg></button>
+      <button type="button" aria-label="Checklist" style="width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5l1.5 1.5 3-3M3.5 15.5l1.5 1.5 3-3M11 7h10M11 16h10"></path></svg></button>
+      <button type="button" aria-label="Insert link" style="width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"></path><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"></path></svg></button>
+      <button type="button" aria-label="Text color" style="width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: #1f62d0; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">A</button>
+    </div>
+
+    <div style="flex-grow: 1; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+      <input type="text" aria-label="Notes title" placeholder="Untitled notes" style="border: 0; outline: none; font-family: inherit; font-size: 22px; font-weight: 700; color: #111827; padding: 0; background: transparent">
+      <p style="margin: 0; font-size: 14px; color: #4b5563">Start typing, or pick a starting point. Everyone in the meeting can edit.</p>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <button type="button" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border: 1px solid #dbe1e8; border-radius: 10px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f62d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"></path></svg>Meeting agenda</button>
+        <button type="button" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border: 1px solid #dbe1e8; border-radius: 10px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f62d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5l1.5 1.5 3-3M3.5 15.5l1.5 1.5 3-3M11 7h10M11 16h10"></path></svg>Action items</button>
+        <button type="button" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border: 1px solid #dbe1e8; border-radius: 10px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f62d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>Decisions log</button>
+      </div>
+      <div style="font-size: 12.5px; color: #4b5563">Tip: type <span style="font-family: ui-monospace, Menlo, monospace; background: #eef1f5; border-radius: 4px; padding: 1px 5px; color: #1f2933">/</span> for headings, lists and checklists.</div>
+    </div>
+
+    <footer style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-top: 1px solid #e6eaef">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12805c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+      <span style="font-size: 12.5px; color: #374151; flex-grow: 1">Saved · visible to everyone</span>
+      <button type="button" style="height: 32px; padding: 0 12px; border: 1px solid #c9d2dd; border-radius: 8px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Export</button>
+    </footer>
+  </section>
+  </sc-if>
+
+  <!-- SETTINGS -->
+  <sc-if value="{{isProfile}}" hint-placeholder-val="{{false}}">
+  <section aria-label="Settings" style="width: 320px; flex-shrink: 0; background: #ffffff; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden">
+    <header style="display: flex; align-items: center; gap: 8px; padding: 14px 12px 12px 18px; border-bottom: 1px solid #e6eaef">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600; color: #111827; flex-grow: 1">You &amp; your devices</h2>
+      <button type="button" aria-label="Close panel" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </header>
+
+    <div style="flex-grow: 1; overflow: hidden; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px">
+      <div style="background: #0f1b2b; border-radius: 12px; padding: 18px 16px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px">
+        <span style="width: 40px; height: 40px; border-radius: 20px; background: #24364d; color: #cfe0f7; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="2"></rect><path d="M15.5 10.5l6-3.5v10l-6-3.5"></path></svg></span>
+        <div style="font-size: 15px; font-weight: 600; color: #ffffff">Camera access is off</div>
+        <div style="font-size: 12.5px; color: #b8c4d3; max-width: 240px">Allow access to preview your camera. Nothing is shared until you choose Start video.</div>
+        <button type="button" style="margin-top: 4px; height: 36px; padding: 0 14px; border: 0; border-radius: 8px; background: #ffffff; color: #111827; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer">Allow camera access</button>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1; min-width: 0">
+          <div style="font-size: 12px; font-weight: 600; color: #4b5563; margin-bottom: 4px">Display name</div>
+          <div style="font-size: 15px; font-weight: 700; color: #111827; height: 36px; display: flex; align-items: center">Tyler</div>
+        </div>
+        <label style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+          <span style="font-size: 12px; font-weight: 600; color: #4b5563; margin-bottom: 4px">Status</span>
+          <span style="position: relative; display: block">
+            <span style="position: absolute; left: 10px; top: 14px; width: 8px; height: 8px; border-radius: 4px; background: #2fb37a"></span>
+            <select style="width: 100%; height: 36px; appearance: none; -webkit-appearance: none; border: 1.5px solid #c9d2dd; border-radius: 8px; padding: 0 26px 0 24px; font-family: inherit; font-size: 13.5px; color: #1f2933; background: #ffffff"><option>Available</option><option>Away</option><option>Do not disturb</option></select>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; right: 10px; top: 12px; pointer-events: none"><path d="M6 9l6 6 6-6"></path></svg>
+          </span>
+        </label>
+      </div>
+
+      <div style="height: 1px; background: #e6eaef"></div>
+      <div style="font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5b6574">Audio</div>
+
+      <label style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 12px; font-weight: 600; color: #4b5563">Speaker</span>
+        <span style="display: flex; gap: 8px">
+          <span style="position: relative; display: block; flex-grow: 1; min-width: 0">
+            <select style="width: 100%; height: 36px; appearance: none; -webkit-appearance: none; border: 1.5px solid #c9d2dd; border-radius: 8px; padding: 0 26px 0 10px; font-family: inherit; font-size: 13.5px; color: #1f2933; background: #ffffff"><option>Studio Display Speakers</option></select>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; right: 10px; top: 12px; pointer-events: none"><path d="M6 9l6 6 6-6"></path></svg>
+          </span>
+          <button type="button" style="height: 36px; padding: 0 12px; border: 1px solid #c9d2dd; border-radius: 8px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Test</button>
+        </span>
+      </label>
+
+      <label style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 12px; font-weight: 600; color: #4b5563">Microphone</span>
+        <span style="position: relative; display: block">
+          <select style="width: 100%; height: 36px; appearance: none; -webkit-appearance: none; border: 1.5px solid #c9d2dd; border-radius: 8px; padding: 0 26px 0 10px; font-family: inherit; font-size: 13.5px; color: #1f2933; background: #ffffff"><option>MacBook Pro Microphone (Built-in)</option></select>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; right: 10px; top: 12px; pointer-events: none"><path d="M6 9l6 6 6-6"></path></svg>
+        </span>
+        <span role="img" aria-label="Input level, low" style="display: flex; gap: 3px; margin-top: 4px">
+          <span style="flex: 1; height: 5px; border-radius: 3px; background: #2fb37a"></span><span style="flex: 1; height: 5px; border-radius: 3px; background: #2fb37a"></span><span style="flex: 1; height: 5px; border-radius: 3px; background: #2fb37a"></span><span style="flex: 1; height: 5px; border-radius: 3px; background: #dfe4ea"></span><span style="flex: 1; height: 5px; border-radius: 3px; background: #dfe4ea"></span><span style="flex: 1; height: 5px; border-radius: 3px; background: #dfe4ea"></span><span style="flex: 1; height: 5px; border-radius: 3px; background: #dfe4ea"></span><span style="flex: 1; height: 5px; border-radius: 3px; background: #dfe4ea"></span>
+        </span>
+      </label>
+
+      <div style="height: 1px; background: #e6eaef"></div>
+      <div style="font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5b6574">Video</div>
+
+      <label style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 12px; font-weight: 600; color: #4b5563">Camera</span>
+        <span style="position: relative; display: block">
+          <select disabled style="width: 100%; height: 36px; appearance: none; -webkit-appearance: none; border: 1.5px solid #dfe4ea; border-radius: 8px; padding: 0 26px 0 10px; font-family: inherit; font-size: 13.5px; color: #5b6574; background: #f5f7f9"><option>Waiting for camera access</option></select>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7b8594" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; right: 10px; top: 12px; pointer-events: none"><path d="M6 9l6 6 6-6"></path></svg>
+        </span>
+      </label>
+
+      <label style="display: flex; align-items: center; gap: 10px">
+        <span style="font-size: 12px; font-weight: 600; color: #4b5563; width: 70px">Brightness</span>
+        <input type="range" min="0" max="100" value="50" aria-label="Brightness" style="flex-grow: 1; accent-color: #1f62d0">
+        <span style="font-size: 12.5px; color: #374151; width: 32px; text-align: right">50%</span>
+      </label>
+
+      <label style="display: flex; align-items: center; gap: 10px">
+        <input type="checkbox" role="switch" style="width: 34px; height: 20px; accent-color: #1f62d0; margin: 0">
+        <span style="display: flex; flex-direction: column">
+          <span style="font-size: 13.5px; font-weight: 600; color: #1f2933">Blur or replace background</span>
+          <span style="font-size: 12px; color: #5b6574">Quality: High · change in More options</span>
+        </span>
+      </label>
+    </div>
+
+    <footer style="padding: 12px 16px 16px; border-top: 1px solid #e6eaef; display: flex; flex-direction: column; gap: 6px">
+      <button type="button" disabled style="height: 42px; border: 0; border-radius: 10px; background: #e3e8ef; color: #4b5563; font-family: inherit; font-size: 14.5px; font-weight: 700">Start video</button>
+      <span style="font-size: 12px; color: #4b5563; text-align: center">Allow camera access first</span>
+    </footer>
+  </section>
+  </sc-if>
+
+  <!-- APPS + SPLIT -->
+  <sc-if value="{{isApps}}" hint-placeholder-val="{{false}}">
+  <section aria-label="Apps" style="width: 320px; flex-shrink: 0; background: #ffffff; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden">
+    <header style="display: flex; align-items: center; gap: 8px; padding: 14px 12px 12px 18px; border-bottom: 1px solid #e6eaef">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600; color: #111827; flex-grow: 1">Apps</h2>
+      <button type="button" aria-label="Side by side is on" aria-pressed="true" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: #e8f0fd; color: #1f62d0; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M11 4v16"></path></svg></button>
+      <button type="button" aria-label="Close panel" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </header>
+    <div style="padding: 14px 16px 0">
+      <label style="display: flex; align-items: center; gap: 8px; height: 40px; border: 1.5px solid #c9d2dd; border-radius: 10px; padding: 0 12px; color: #5b6574">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+        <input type="search" placeholder="Search apps" aria-label="Search apps" style="border: 0; outline: none; font-family: inherit; font-size: 14px; color: #1f2933; flex-grow: 1; min-width: 0; background: transparent">
+      </label>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px 28px; gap: 10px">
+      <span style="width: 56px; height: 56px; border-radius: 28px; background: #e8f0fd; color: #1f62d0; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"></rect><path d="M17 3.5v7M13.5 7h7"></path></svg></span>
+      <div style="font-size: 16px; font-weight: 700; color: #111827">No apps in this meeting yet</div>
+      <div style="font-size: 13.5px; color: #4b5563">Apps bring tools like polls, timers and games into the room. A moderator can add them; pinned apps appear in the sidebar.</div>
+      <a href="#apps" style="margin-top: 4px; font-size: 13.5px; font-weight: 600; color: #1f62d0">Learn about apps</a>
+    </div>
+  </section>
+
+  <section aria-label="Choose a second panel" style="width: 320px; flex-shrink: 0; background: #ffffff; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden">
+    <header style="display: flex; align-items: center; gap: 8px; padding: 14px 12px 12px 18px; border-bottom: 1px solid #e6eaef">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600; color: #111827; flex-grow: 1">Choose a second panel</h2>
+      <button type="button" aria-label="Cancel side by side" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </header>
+    <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; flex-grow: 1">
+      <p style="margin: 0 0 6px; font-size: 13.5px; color: #4b5563">Show another panel next to Apps.</p>
+      <button type="button" onClick="{{goChat}}" style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #dbe1e8; border-radius: 12px; background: #ffffff; font-family: inherit; cursor: pointer; text-align: left">
+        <span style="width: 36px; height: 36px; border-radius: 10px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3.5V15H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path></svg></span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-size: 14.5px; font-weight: 600; color: #111827">Chat</span><span style="font-size: 12.5px; color: #4b5563">2 unread messages</span></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </button>
+      <button type="button" onClick="{{goUsers}}" style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #dbe1e8; border-radius: 12px; background: #ffffff; font-family: inherit; cursor: pointer; text-align: left">
+        <span style="width: 36px; height: 36px; border-radius: 10px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M16 14.6c2.3.1 3.9 1.5 4.5 4"></path></svg></span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-size: 14.5px; font-weight: 600; color: #111827">People</span><span style="font-size: 12.5px; color: #4b5563">9 in the meeting</span></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </button>
+      <button type="button" onClick="{{goNotes}}" style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #dbe1e8; border-radius: 12px; background: #ffffff; font-family: inherit; cursor: pointer; text-align: left">
+        <span style="width: 36px; height: 36px; border-radius: 10px; background: #eef1f5; color: #374151; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5"></path></svg></span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-size: 14.5px; font-weight: 600; color: #111827">Shared notes</span><span style="font-size: 12.5px; color: #4b5563">Empty · everyone can edit</span></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </button>
+      <div style="flex-grow: 1"></div>
+      <button type="button" style="height: 40px; border: 1px solid #c9d2dd; border-radius: 10px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">Cancel side by side</button>
+    </div>
+  </section>
+  </sc-if>
+
+  <!-- ============ STAGE ============ -->
+  <main style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: center; gap: 10px; height: 44px">
+      <button type="button" style="display: flex; align-items: center; gap: 6px; border: 0; background: transparent; color: #ffffff; font-family: inherit; font-size: 17px; font-weight: 600; cursor: pointer; padding: 0">Hack Week: Brazil 2026 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+      <span style="font-size: 13.5px; color: #a9b6c6">9 people</span>
+      <div style="flex-grow: 1"></div>
+      <div role="status" aria-label="This meeting is being recorded, 29 minutes 36 seconds" style="display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 16px; background: #3a1619; border: 1px solid #e5484d; color: #ffffff; font-size: 13.5px; font-weight: 600">
+        <span style="width: 9px; height: 9px; border-radius: 5px; background: #ff5a5f"></span>Recording<span style="color: #f6c4c6; font-weight: 500; font-variant-numeric: tabular-nums">29:36</span>
+      </div>
+      <button type="button" aria-label="Connection: good. Show details" style="height: 32px; padding: 0 10px; border: 1px solid #2c3e55; border-radius: 16px; background: transparent; color: #cfe7dc; font-family: inherit; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 18v-3M10 18v-6M14 18V9M18 18V6"></path></svg>Good</button>
+      <button type="button" style="height: 36px; padding: 0 14px; border: 0; border-radius: 10px; background: #d93a2b; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"></path><path d="M15 16l4-4-4-4M19 12H9"></path></svg>Leave</button>
+    </div>
+
+    <sc-if value="{{isGrid}}" hint-placeholder-val="{{true}}">
+    <div style="flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <div style="grid-column: span 2; grid-row: span 2; position: relative; background: #2a3542; border: 3px solid #3ecf8e; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #8d9aab">
+        <svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4.5 4.2-7 8-7s7 2.5 8 7"></path></svg>
+        <span style="font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: #a9b6c6">Webcam placeholder</span>
+        <span style="position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 5px; background: #1f62d0; color: #ffffff; border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 700"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M12 16v4M8 20h8"></path></svg>Presenting</span>
+        <span style="position: absolute; left: 10px; bottom: 10px; display: flex; align-items: center; gap: 6px; background: rgba(4,12,24,.75); color: #ffffff; border-radius: 6px; padding: 4px 9px; font-size: 13.5px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>Frederick Dixon</span>
+      </div>
+
+      <sc-for list="{{tiles}}" as="p" hint-placeholder-count="8">
+        <div style="position: relative; background: #0b1a2e; border: 1px solid #24344a; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 0">
+          <sc-if value="{{p.video}}" hint-placeholder-val="{{false}}">
+            <div style="position: absolute; inset: 0; background: #2a3542; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #8d9aab">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4.5 4.2-7 8-7s7 2.5 8 7"></path></svg>
+              <span style="font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: #a9b6c6">Webcam</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{p.noVideo}}" hint-placeholder-val="{{true}}">
+            <div style="width: 60px; height: 60px; border-radius: 30px; background: {{p.av}}; color: #ffffff; font-size: 21px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{p.initials}}</div>
+          </sc-if>
+          <sc-if value="{{p.you}}" hint-placeholder-val="{{false}}">
+            <span style="position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,.14); color: #ffffff; border-radius: 6px; padding: 2px 7px; font-size: 11.5px; font-weight: 700">You</span>
+          </sc-if>
+          <span style="position: absolute; left: 8px; bottom: 8px; max-width: calc(100% - 16px); box-sizing: border-box; display: flex; align-items: center; gap: 5px; background: rgba(4,12,24,.75); color: #ffffff; border-radius: 6px; padding: 3px 8px; font-size: 12.5px; font-weight: 600">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c3cbd6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Muted" style="flex-shrink: 0"><path d="M3 3l18 18"></path><path d="M9 9v3a3 3 0 0 0 5.1 2.1M15 10V5a3 3 0 0 0-5.9-.7"></path><path d="M19 11a7 7 0 0 1-1.2 3.9M5 11a7 7 0 0 0 11.1 5.6M12 18v3"></path></svg>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{p.name}}</span>
+          </span>
+        </div>
+      </sc-for>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{isPres}}" hint-placeholder-val="{{false}}">
+    <div style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; gap: 8px; height: 100px; flex-shrink: 0">
+        <sc-for list="{{strip}}" as="t" hint-placeholder-count="6">
+          <div style="position: relative; width: 168px; height: 100px; flex-shrink: 0; box-sizing: border-box; background: {{t.bg}}; border: {{t.border}}; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center">
+            <sc-if value="{{t.video}}" hint-placeholder-val="{{false}}">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8d9aab" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Webcam placeholder"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4.5 4.2-7 8-7s7 2.5 8 7"></path></svg>
+            </sc-if>
+            <sc-if value="{{t.noVideo}}" hint-placeholder-val="{{true}}">
+              <div style="width: 40px; height: 40px; border-radius: 20px; background: {{t.av}}; color: #ffffff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{t.initials}}</div>
+            </sc-if>
+            <sc-if value="{{t.presenting}}" hint-placeholder-val="{{false}}">
+              <span style="position: absolute; top: 6px; left: 6px; background: #1f62d0; color: #ffffff; border-radius: 5px; padding: 1px 6px; font-size: 11px; font-weight: 700">Presenting</span>
+            </sc-if>
+            <span style="position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); box-sizing: border-box; display: flex; align-items: center; gap: 4px; background: rgba(4,12,24,.75); color: #ffffff; border-radius: 5px; padding: 2px 7px; font-size: 12px; font-weight: 600">
+              <sc-if value="{{t.speaking}}" hint-placeholder-val="{{false}}">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Speaking" style="flex-shrink: 0"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+              </sc-if>
+              <sc-if value="{{t.muted}}" hint-placeholder-val="{{true}}">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c3cbd6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Muted" style="flex-shrink: 0"><path d="M3 3l18 18"></path><path d="M9 9v3a3 3 0 0 0 5.1 2.1M15 10V5a3 3 0 0 0-5.9-.7"></path><path d="M19 11a7 7 0 0 1-1.2 3.9M5 11a7 7 0 0 0 11.1 5.6M12 18v3"></path></svg>
+              </sc-if>
+              <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.label}}</span>
+            </span>
+          </div>
+        </sc-for>
+        <button type="button" onClick="{{goUsers}}" style="width: 100px; height: 100px; flex-shrink: 0; box-sizing: border-box; border: 1px dashed #3a4d66; border-radius: 10px; background: transparent; color: #ffffff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 0">{{moreLabel}}<span style="font-size: 12px; font-weight: 500; color: #a9b6c6">See everyone</span></button>
+      </div>
+
+      <div style="flex: 1; min-height: 0; position: relative; background: #0b1626; border: 1px solid #24344a; border-radius: 12px; display: flex; align-items: center; justify-content: center">
+        <div style="position: relative; width: {{slideW}}; height: {{slideH}}; flex-shrink: 0; border-radius: 6px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,.35)">
+          <div style="position: absolute; left: 0; top: 0; transform: {{slideTransform}}; transform-origin: 0 0">
+            <dc-import name="Slide" pointer="{{isViewer}}" hint-size="1024px,576px"></dc-import>
+          </div>
+        </div>
+        <sc-if value="{{isPresenter}}" hint-placeholder-val="{{false}}">
+          <div role="toolbar" aria-label="Annotation tools" aria-orientation="vertical" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 2px; background: #ffffff; border-radius: 12px; padding: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.3)">
+            <button type="button" aria-label="Select" style="width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3l14 8-6 2-3 6z"></path></svg></button>
+            <button type="button" aria-label="Pan" style="width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v8a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L3 16.5a1.5 1.5 0 0 1 2.2-2L8 16"></path></svg></button>
+            <button type="button" aria-label="Pen" aria-pressed="true" style="width: 40px; height: 40px; border: 0; border-radius: 8px; background: #e8f0fd; color: #1f62d0; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"></path><path d="M14 7l3 3"></path></svg></button>
+            <button type="button" aria-label="Highlighter" style="width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 15l-3 3h5l1-1"></path><path d="M9 15l8-8 3 3-8 8z"></path><path d="M4 21h16"></path></svg></button>
+            <button type="button" aria-label="Eraser" style="width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 20l-4-4 10-10 6 6-8 8z"></path><path d="M8 20h12"></path></svg></button>
+            <button type="button" aria-label="Shapes" style="width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="10" height="10" rx="1.5"></rect><circle cx="16" cy="8" r="5"></circle></svg></button>
+            <button type="button" aria-label="Text" style="width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6V4h14v2M12 4v16M9 20h6"></path></svg></button>
+            <div style="height: 1px; background: #e6eaef; margin: 4px 6px"></div>
+            <button type="button" aria-label="Color: orange" style="width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><span style="width: 18px; height: 18px; border-radius: 9px; background: #e8590c; box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #c9d2dd"></span></button>
+            <button type="button" aria-label="Undo" style="width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"></path><path d="M4 9h10a6 6 0 0 1 0 12h-3"></path></svg></button>
+            <span style="position: absolute; right: 58px; top: 98px; white-space: nowrap; background: #111827; color: #ffffff; border-radius: 6px; padding: 4px 8px; font-size: 12.5px; font-weight: 600">Pen <span style="color: #a9b6c6; font-weight: 500">P</span></span>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; height: 44px; flex-shrink: 0">
+        <sc-if value="{{isViewer}}" hint-placeholder-val="{{true}}">
+          <span style="width: 28px; height: 28px; border-radius: 14px; background: #2f6db3; color: #ffffff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #141f2c, 0 0 0 4px #3ecf8e; flex-shrink: 0">FD</span>
+          <span style="font-size: 14.5px; font-weight: 600; color: #ffffff">Frederick Dixon is presenting</span>
+          <span style="font-size: 14px; color: #a9b6c6">· Slide 3 of 12</span>
+          <div style="flex-grow: 1"></div>
+          <button type="button" aria-pressed="true" style="height: 34px; padding: 0 12px; border: 1px solid #3d6aa8; border-radius: 17px; background: #1d3a5f; color: #e6eef9; font-family: inherit; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>Following presenter</button>
+          <button type="button" style="height: 34px; padding: 0 12px; border: 1px solid #2c3e55; border-radius: 17px; background: transparent; color: #dbe4ef; font-family: inherit; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg>Fit</button>
+          <div role="group" aria-label="Zoom" style="display: flex; align-items: center; height: 34px; border: 1px solid #2c3e55; border-radius: 17px; overflow: hidden">
+            <button type="button" aria-label="Zoom out" style="width: 34px; height: 34px; border: 0; background: transparent; color: #dbe4ef; font-family: inherit; font-size: 18px; cursor: pointer; padding: 0">−</button>
+            <span style="font-size: 13px; font-weight: 600; color: #dbe4ef; width: 44px; text-align: center">100%</span>
+            <button type="button" aria-label="Zoom in" style="width: 34px; height: 34px; border: 0; background: transparent; color: #dbe4ef; font-family: inherit; font-size: 18px; cursor: pointer; padding: 0">+</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{isPresenter}}" hint-placeholder-val="{{false}}">
+          <div style="flex: 1; display: flex; align-items: center; gap: 8px">
+            <button type="button" style="height: 36px; padding: 0 12px; border: 0; border-radius: 18px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="6" rx="1"></rect><rect x="13" y="3" width="8" height="6" rx="1"></rect><rect x="3" y="13" width="8" height="6" rx="1"></rect><rect x="13" y="13" width="8" height="6" rx="1"></rect></svg>All slides</button>
+            <button type="button" style="height: 36px; padding: 0 12px; border: 1px solid #2c3e55; border-radius: 18px; background: transparent; color: #dbe4ef; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">Upload</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px">
+            <button type="button" aria-label="Previous slide" style="width: 36px; height: 36px; border: 1px solid #2c3e55; border-radius: 18px; background: transparent; color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+            <span style="font-size: 14.5px; font-weight: 600; color: #ffffff; font-variant-numeric: tabular-nums">Slide 3 of 12</span>
+            <button type="button" aria-label="Next slide" style="width: 36px; height: 36px; border: 0; border-radius: 18px; background: #1f62d0; color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+          </div>
+          <div style="flex: 1; display: flex; justify-content: flex-end">
+            <button type="button" style="height: 36px; padding: 0 14px; border: 1px solid #e5484d; border-radius: 18px; background: transparent; color: #ffb3b5; font-family: inherit; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M9 8.5l6 6M15 8.5l-6 6"></path></svg>Stop presenting</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <div style="display: flex; align-items: center; gap: 8px; height: 56px">
+      <div style="flex: 1"></div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center">
+        <button type="button" style="height: 44px; padding: 0 14px; border: 0; border-radius: 22px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c42b1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M9 9v3a3 3 0 0 0 5.1 2.1M15 10V5a3 3 0 0 0-5.9-.7"></path><path d="M19 11a7 7 0 0 1-1.2 3.9M5 11a7 7 0 0 0 11.1 5.6M12 18v3"></path></svg>Unmute</button>
+        <button type="button" style="height: 44px; padding: 0 14px; border: 0; border-radius: 22px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="2"></rect><path d="M15.5 10.5l6-3.5v10l-6-3.5"></path></svg>Start video</button>
+        <button type="button" style="height: 44px; padding: 0 14px; border: 0; border-radius: 22px; background: #26364b; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4M9 10.5l3-3 3 3M12 7.5V13"></path></svg>Share screen</button>
+        <button type="button" style="height: 44px; padding: 0 14px; border: 0; border-radius: 22px; background: #26364b; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 14c.9 1.3 2 2 3.5 2s2.6-.7 3.5-2"></path><path d="M9 9.5h.01M15 9.5h.01"></path></svg>React</button>
+        <button type="button" style="height: 44px; padding: 0 14px; border: 0; border-radius: 22px; background: #26364b; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v8a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L3 16.5a1.5 1.5 0 0 1 2.2-2L8 16"></path></svg>Raise hand</button>
+        <button type="button" aria-label="More options" style="width: 44px; height: 44px; border: 0; border-radius: 22px; background: #26364b; color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"></circle><circle cx="12" cy="12" r="1.7"></circle><circle cx="19" cy="12" r="1.7"></circle></svg></button>
+      </div>
+      <div style="flex: 1; display: flex; justify-content: flex-end">
+        <button type="button" style="height: 40px; padding: 0 12px; border: 1px solid #2c3e55; border-radius: 20px; background: transparent; color: #dbe4ef; font-family: inherit; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"></rect><rect x="13" y="3" width="8" height="8" rx="1.5"></rect><rect x="3" y="13" width="8" height="8" rx="1.5"></rect><rect x="13" y="13" width="8" height="8" rx="1.5"></rect></svg>Layout</button>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"panel":{"editor":"enum","options":["none","users","chat","notes","profile","apps"],"default":"chat"},"stage":{"editor":"enum","options":["grid","presentation","presenter"],"default":"grid"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const p = st.panel || this.props.panel || 'chat';
+    const keys = ['profile', 'users', 'chat', 'notes', 'apps'];
+    const bg = {}, fg = {};
+    keys.forEach((k) => {
+      bg[k] = p === k ? '#e8f0fd' : 'transparent';
+      fg[k] = p === k ? '#1f62d0' : '#4b5563';
+    });
+    const go = (k) => () => this.setState({ panel: k });
+    const tiles = [
+      { name: 'Bruno', initials: 'BR', av: '#4e6b2a', video: true },
+      { name: 'Rafaela Monaco', initials: 'RM', av: '#a23c64' },
+      { name: 'Michelle Winkler', initials: 'MW', av: '#7a4fb5' },
+      { name: 'Anton Georgiev', initials: 'AG', av: '#b5542e' },
+      { name: 'Cibelle Maciel', initials: 'CM', av: '#2f6db3' },
+      { name: 'Ellen', initials: 'EL', av: '#8a5a12' },
+      { name: 'Octavio', initials: 'OC', av: '#2b7a6f' },
+      { name: 'Tyler', initials: 'TY', av: '#3d5a99', you: true }
+    ].map((t) => ({ ...t, video: !!t.video, noVideo: !t.video, you: !!t.you }));
+    const members = [
+      { name: 'Tyler', youTag: '(You)', initials: 'TY', av: '#3d5a99' },
+      { name: 'Anton Georgiev', initials: 'AG', av: '#b5542e' },
+      { name: 'Bruno', initials: 'BR', av: '#4e6b2a', video: true },
+      { name: 'Cibelle Maciel', initials: 'CM', av: '#2f6db3' },
+      { name: 'Ellen', initials: 'EL', av: '#8a5a12' },
+      { name: 'Michelle Winkler', sub: 'think modular', initials: 'MW', av: '#7a4fb5' },
+      { name: 'Octavio', sub: 'CS @ Mconf', initials: 'OC', av: '#2b7a6f' },
+      { name: 'Rafaela Monaco', initials: 'RM', av: '#a23c64' }
+    ].map((m) => ({ ...m, youTag: m.youTag || '', sub: m.sub || '', hasSub: !!m.sub, video: !!m.video }));
+    const stage = this.props.stage || 'grid';
+    const isPresenter = stage === 'presenter';
+    const isPres = stage !== 'grid';
+    const open = keys.indexOf(p) >= 0;
+    const k = open ? (isPresenter ? 0.8 : 0.92) : 0.98;
+    const people = isPresenter ? [
+      { label: 'Tyler (You)', initials: 'TY', av: '#3d5a99', presenting: true, speaking: true },
+      { label: 'Frederick Dixon', video: true },
+      { label: 'Bruno', video: true },
+      { label: 'Anton Georgiev', initials: 'AG', av: '#b5542e' },
+      { label: 'Michelle Winkler', initials: 'MW', av: '#7a4fb5' },
+      { label: 'Rafaela Monaco', initials: 'RM', av: '#a23c64' }
+    ] : [
+      { label: 'Frederick Dixon', video: true, presenting: true, speaking: true },
+      { label: 'Bruno', video: true },
+      { label: 'Anton Georgiev', initials: 'AG', av: '#b5542e' },
+      { label: 'Michelle Winkler', initials: 'MW', av: '#7a4fb5' },
+      { label: 'Rafaela Monaco', initials: 'RM', av: '#a23c64' },
+      { label: 'Tyler (You)', initials: 'TY', av: '#3d5a99' }
+    ];
+    const shown = open ? 4 : 6;
+    const strip = people.slice(0, shown).map((t) => ({
+      label: t.label, initials: t.initials || '', av: t.av || '#3d5a99',
+      video: !!t.video, noVideo: !t.video, presenting: !!t.presenting,
+      speaking: !!t.speaking, muted: !t.speaking,
+      bg: t.video ? '#2a3542' : '#0b1a2e',
+      border: t.speaking ? '2px solid #3ecf8e' : '1px solid #24344a'
+    }));
+    return {
+      isProfile: p === 'profile', isUsers: p === 'users', isChat: p === 'chat', isNotes: p === 'notes', isApps: p === 'apps',
+      showChatBadge: p !== 'chat',
+      isGrid: !isPres, isPres, isPresenter, isViewer: isPres && !isPresenter,
+      strip, moreLabel: '+' + (9 - shown) + ' more',
+      slideW: Math.round(1024 * k) + 'px', slideH: Math.round(576 * k) + 'px', slideTransform: 'scale(' + k + ')',
+      bg, fg,
+      goProfile: go('profile'), goUsers: go('users'), goChat: go('chat'), goNotes: go('notes'), goApps: go('apps'),
+      tiles, members
+    };
+  }
+}
+</script>
+</body>
+</html>

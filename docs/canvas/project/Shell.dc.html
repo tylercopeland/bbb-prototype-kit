@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Scalable room shell</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 12px; background: #0f1724; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; color: #e6edf5; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+
+  <div style="flex: 1; min-height: 0; display: flex; gap: 12px">
+
+    <!-- ================= STAGE ================= -->
+    <main aria-label="Stage" style="flex: 1; min-width: 0; position: relative; background: #0b1220; border-radius: 16px; overflow: hidden">
+
+      <!-- 1:1 -->
+      <sc-if value="{{isOne}}" hint-placeholder-val="{{false}}">
+        <div style="position: absolute; left: 12px; top: 12px; right: 12px; bottom: 12px; border-radius: 12px; background: #263140; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #8d9aab">
+          <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4.5 4.2-7 8-7s7 2.5 8 7"></path></svg>
+          <span style="font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #a9b6c6">Webcam placeholder</span>
+        </div>
+        <span style="position: absolute; left: 28px; bottom: 28px; display: flex; align-items: center; gap: 6px; background: rgba(4,12,24,.7); color: #ffffff; border-radius: 8px; padding: 5px 10px; font-size: 14px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>Frederick Dixon</span>
+        <div style="position: absolute; right: 28px; bottom: 28px; width: 240px; height: 135px; border-radius: 12px; background: #3a4452; border: 2px solid #0b1220; box-shadow: 0 8px 24px rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; color: #8d9aab">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4.5 4.2-7 8-7s7 2.5 8 7"></path></svg>
+          <span style="position: absolute; left: 8px; bottom: 8px; background: rgba(4,12,24,.7); color: #ffffff; border-radius: 6px; padding: 2px 8px; font-size: 12px; font-weight: 600">You</span>
+        </div>
+      </sc-if>
+
+      <!-- PRESENTATION -->
+      <sc-if value="{{isPresStage}}" hint-placeholder-val="{{true}}">
+        <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; box-sizing: border-box; padding: 12px; display: flex; gap: 12px">
+          <div style="flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center">
+            <div style="position: relative; width: {{slideW}}; height: {{slideH}}; flex-shrink: 0; border-radius: 8px; overflow: hidden">
+              <div style="position: absolute; left: 0; top: 0; transform: {{slideTransform}}; transform-origin: 0 0">
+                <dc-import name="Slide" hint-size="1024px,576px"></dc-import>
+              </div>
+            </div>
+          </div>
+          <div aria-label="Speakers" style="width: 168px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; gap: 8px">
+            <sc-for list="{{strip}}" as="t" hint-placeholder-count="5">
+              <div style="position: relative; height: 100px; box-sizing: border-box; border-radius: 10px; background: {{t.bg}}; border: {{t.border}}; overflow: hidden; display: flex; align-items: center; justify-content: center">
+                <sc-if value="{{t.video}}" hint-placeholder-val="{{false}}">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8d9aab" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Webcam placeholder"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4.5 4.2-7 8-7s7 2.5 8 7"></path></svg>
+                </sc-if>
+                <sc-if value="{{t.noVideo}}" hint-placeholder-val="{{true}}">
+                  <div style="width: 40px; height: 40px; border-radius: 20px; background: {{t.av}}; color: #ffffff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{t.initials}}</div>
+                </sc-if>
+                <sc-if value="{{t.hand}}" hint-placeholder-val="{{false}}">
+                  <span role="img" aria-label="Hand raised" style="position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 11px; background: #f5a524; color: #1f1300; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v8a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L3 16.5a1.5 1.5 0 0 1 2.2-2L8 16"></path></svg></span>
+                </sc-if>
+                <span style="position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); box-sizing: border-box; background: rgba(4,12,24,.75); color: #ffffff; border-radius: 5px; padding: 2px 7px; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.label}}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{showMore}}" hint-placeholder-val="{{false}}">
+              <button type="button" onClick="{{openPeople}}" aria-label="Show everyone, 25 more" style="height: 56px; border: 1px dashed #3a4d66; border-radius: 10px; background: transparent; color: #ffffff; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">+25</button>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- BREAKOUT ROOM (participant) -->
+      <sc-if value="{{isRoom}}" hint-placeholder-val="{{false}}">
+        <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; box-sizing: border-box; padding: 72px 12px 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <sc-for list="{{roomTiles}}" as="t" hint-placeholder-count="4">
+            <div style="position: relative; border-radius: 12px; background: {{t.bg}}; border: {{t.border}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+              <sc-if value="{{t.video}}" hint-placeholder-val="{{false}}">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#8d9aab" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Webcam placeholder"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4.5 4.2-7 8-7s7 2.5 8 7"></path></svg>
+              </sc-if>
+              <sc-if value="{{t.noVideo}}" hint-placeholder-val="{{true}}">
+                <div style="width: 84px; height: 84px; border-radius: 42px; background: {{t.av}}; color: #ffffff; font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{t.initials}}</div>
+              </sc-if>
+              <span style="position: absolute; left: 12px; bottom: 12px; background: rgba(4,12,24,.75); color: #ffffff; border-radius: 6px; padding: 3px 9px; font-size: 13.5px; font-weight: 600">{{t.label}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 8px 0 16px; border-radius: 22px; background: #16233a; border: 1px solid #2c3e55; white-space: nowrap">
+          <span style="font-size: 14.5px; font-weight: 700; color: #ffffff">Room 3</span>
+          <span style="font-size: 14px; color: #a9b6c6">Critique the chat panel</span>
+          <span style="font-size: 14px; font-weight: 600; color: #ffd59a; font-variant-numeric: tabular-nums">08:12 left</span>
+          <button type="button" style="height: 32px; padding: 0 12px; border: 1px solid #3a4d66; border-radius: 16px; background: transparent; color: #e6edf5; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">Ask for help</button>
+          <button type="button" style="height: 32px; padding: 0 12px; border: 0; border-radius: 16px; background: #e6edf5; color: #0f1b2b; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer">Return to main room</button>
+        </div>
+      </sc-if>
+
+      <!-- CONTEXT OVERLAYS -->
+      <sc-if value="{{showHands}}" hint-placeholder-val="{{false}}">
+        <button type="button" onClick="{{openPeople}}" style="position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px 0 8px; border-radius: 20px; background: rgba(22,35,58,.94); border: 1px solid #f5a524; color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">
+          <span style="display: flex">
+            <span style="width: 26px; height: 26px; border-radius: 13px; background: #a23c64; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #16233a">RM</span>
+            <span style="width: 26px; height: 26px; border-radius: 13px; background: #4e6b2a; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #16233a; margin-left: -8px">BR</span>
+            <span style="width: 26px; height: 26px; border-radius: 13px; background: #2f6db3; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #16233a; margin-left: -8px">CM</span>
+          </span>
+          3 hands raised
+        </button>
+      </sc-if>
+      <sc-if value="{{showBreakoutChip}}" hint-placeholder-val="{{false}}">
+        <div role="status" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 16px; border-radius: 20px; background: rgba(22,35,58,.94); border: 1px solid #2c3e55; color: #ffffff; font-size: 14px; font-weight: 600; white-space: nowrap">
+          <span style="width: 8px; height: 8px; border-radius: 4px; background: #3ecf8e"></span>Breakouts running · 5 rooms<span style="color: #ffd59a; font-variant-numeric: tabular-nums">08:12 left</span>
+        </div>
+      </sc-if>
+    </main>
+
+    <!-- ================= SIDE SHEET ================= -->
+    <sc-if value="{{isPeople}}" hint-placeholder-val="{{false}}">
+    <aside aria-label="People" style="width: 340px; flex-shrink: 0; background: #ffffff; color: #1f2933; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden">
+      <header style="display: flex; align-items: center; gap: 4px; padding: 14px 10px 12px 18px; border-bottom: 1px solid #e6eaef">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600; color: #111827; flex-grow: 1">People <span style="color: #5b6574; font-weight: 500">· 28</span></h2>
+        <button type="button" aria-label="Mute everyone" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{icons.micOff}}"></path></svg></button>
+        <button type="button" aria-label="More people options" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="{{icons.more}}"></path></svg></button>
+        <button type="button" onClick="{{closePanel}}" aria-label="Close" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="{{icons.close}}"></path></svg></button>
+      </header>
+      <div style="padding: 12px 16px 4px">
+        <label style="display: flex; align-items: center; gap: 8px; height: 38px; border: 1.5px solid #c9d2dd; border-radius: 10px; padding: 0 12px; color: #5b6574">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+          <input type="search" placeholder="Search 28 people" aria-label="Search people" style="border: 0; outline: none; font-family: inherit; font-size: 14px; color: #1f2933; flex-grow: 1; min-width: 0; background: transparent">
+        </label>
+      </div>
+      <div style="flex: 1; min-height: 0; overflow: hidden; padding: 0 8px 12px">
+        <div style="font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #8a5a00; padding: 12px 8px 6px">Raised hands · 3</div>
+        <sc-for list="{{hands}}" as="h" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; background: #fff8eb; margin-bottom: 4px">
+            <span style="width: 16px; font-size: 12.5px; font-weight: 700; color: #8a5a00; text-align: center">{{h.n}}</span>
+            <span style="width: 32px; height: 32px; border-radius: 16px; background: {{h.av}}; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">{{h.initials}}</span>
+            <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600; color: #1f2933">{{h.name}}</span><span style="font-size: 12px; color: #5b6574">{{h.ago}}</span></span>
+            <button type="button" aria-label="Let {{h.name}} speak" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: #e8f0fd; color: #1f62d0; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{icons.mic}}"></path></svg></button>
+            <button type="button" aria-label="Lower {{h.name}}’s hand" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="{{icons.close}}"></path></svg></button>
+          </div>
+        </sc-for>
+        <div style="font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5b6574; padding: 14px 8px 6px">Teaching · 2</div>
+        <sc-for list="{{teachers}}" as="p" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 5px 8px">
+            <span style="width: 32px; height: 32px; border-radius: 16px; background: {{p.av}}; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">{{p.initials}}</span>
+            <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600; color: #1f2933">{{p.name}}</span><span style="font-size: 12px; color: #5b6574">{{p.sub}}</span></span>
+          </div>
+        </sc-for>
+        <div style="font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5b6574; padding: 14px 8px 6px">Students · 23</div>
+        <sc-for list="{{students}}" as="p" hint-placeholder-count="5">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 5px 8px">
+            <span style="width: 32px; height: 32px; border-radius: 16px; background: {{p.av}}; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">{{p.initials}}</span>
+            <span style="flex-grow: 1; font-size: 14px; font-weight: 600; color: #1f2933">{{p.name}}</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7b8594" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Muted"><path d="{{icons.micOff}}"></path></svg>
+          </div>
+        </sc-for>
+        <button type="button" style="margin: 6px 8px 0; height: 32px; padding: 0; border: 0; background: transparent; color: #1f62d0; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">Show 18 more</button>
+      </div>
+    </aside>
+    </sc-if>
+
+    <sc-if value="{{isBreakouts}}" hint-placeholder-val="{{false}}">
+    <aside aria-label="Breakout rooms" style="width: 340px; flex-shrink: 0; background: #ffffff; color: #1f2933; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden">
+      <header style="display: flex; align-items: center; gap: 8px; padding: 14px 10px 12px 18px; border-bottom: 1px solid #e6eaef">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600; color: #111827; flex-grow: 1">Breakout rooms</h2>
+        <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #fff3dc; color: #8a5a00; font-size: 13px; font-weight: 700; display: flex; align-items: center; font-variant-numeric: tabular-nums">08:12 left</span>
+        <button type="button" onClick="{{closePanel}}" aria-label="Close" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="{{icons.close}}"></path></svg></button>
+      </header>
+      <div style="padding: 10px 18px 4px; font-size: 13px; color: #4b5563">5 rooms · 23 students · assigned automatically</div>
+      <div style="flex: 1; min-height: 0; overflow: hidden; padding: 8px 12px; display: flex; flex-direction: column; gap: 8px">
+        <sc-for list="{{rooms}}" as="r" hint-placeholder-count="5">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 12px; border-radius: 12px; border: {{r.border}}; background: {{r.bg}}">
+            <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+              <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 14.5px; font-weight: 700; color: #111827">{{r.name}}</span>
+                <sc-if value="{{r.help}}" hint-placeholder-val="{{false}}"><span style="height: 20px; padding: 0 8px; border-radius: 10px; background: #f5a524; color: #1f1300; font-size: 11.5px; font-weight: 700; display: flex; align-items: center">Help requested</span></sc-if>
+              </span>
+              <span style="display: flex; align-items: center">
+                <sc-for list="{{r.people}}" as="a" hint-placeholder-count="3">
+                  <span style="width: 24px; height: 24px; border-radius: 12px; background: {{a.c}}; color: #fff; font-size: 9.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid {{r.bg}}; margin-right: -6px">{{a.i}}</span>
+                </sc-for>
+                <span style="margin-left: 12px; font-size: 12.5px; color: #4b5563">{{r.count}}</span>
+              </span>
+            </span>
+            <button type="button" aria-label="Join {{r.name}}" style="width: 36px; height: 36px; border: 1px solid #c9d2dd; border-radius: 10px; background: #ffffff; color: #1f2933; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{icons.enter}}"></path></svg></button>
+          </div>
+        </sc-for>
+      </div>
+      <footer style="display: flex; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid #e6eaef">
+        <button type="button" style="flex: 1; height: 40px; border: 1px solid #c9d2dd; border-radius: 10px; background: #ffffff; color: #1f2933; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Message all rooms</button>
+        <button type="button" style="flex: 1; height: 40px; border: 1px solid #e5484d; border-radius: 10px; background: #ffffff; color: #b42318; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">End all rooms</button>
+      </footer>
+    </aside>
+    </sc-if>
+
+    <sc-if value="{{isChat}}" hint-placeholder-val="{{false}}">
+    <aside aria-label="Chat" style="width: 340px; flex-shrink: 0; background: #ffffff; color: #1f2933; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden">
+      <header style="display: flex; align-items: center; gap: 4px; padding: 14px 10px 12px 18px; border-bottom: 1px solid #e6eaef">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600; color: #111827; flex-grow: 1">Chat</h2>
+        <button type="button" onClick="{{closePanel}}" aria-label="Close" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="{{icons.close}}"></path></svg></button>
+      </header>
+      <div style="flex: 1; min-height: 0; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; justify-content: flex-end">
+        <div style="display: flex; gap: 10px"><span style="width: 28px; height: 28px; border-radius: 14px; background: #b5542e; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">AG</span><span><span style="font-size: 13.5px; font-weight: 700; color: #111827">Anton Georgiev</span> <span style="font-size: 11.5px; color: #5b6574">8:29</span><br><span style="font-size: 14px">Hi all!</span></span></div>
+        <div style="display: flex; gap: 10px"><span style="width: 28px; height: 28px; border-radius: 14px; background: #3d5a99; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">TY</span><span><span style="font-size: 13.5px; font-weight: 700; color: #111827">Tyler</span> <span style="font-size: 11.5px; color: #5b6574">You · 9:04</span><br><span style="font-size: 14px">Claude Design and I are going to have a ton of fun this week</span></span></div>
+      </div>
+      <div style="padding: 8px 16px 16px">
+        <div style="display: flex; align-items: center; gap: 8px; border: 1.5px solid #c9d2dd; border-radius: 12px; padding: 6px 6px 6px 12px">
+          <input type="text" aria-label="Message everyone" placeholder="Message everyone" style="flex: 1; min-width: 0; border: 0; outline: none; font-family: inherit; font-size: 14px; background: transparent">
+          <button type="button" aria-label="Send" style="width: 34px; height: 34px; border: 0; border-radius: 9px; background: #1f62d0; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"></path></svg></button>
+        </div>
+      </div>
+    </aside>
+    </sc-if>
+  </div>
+
+  <!-- ================= DOCK ================= -->
+  <nav aria-label="Meeting controls" style="height: 64px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 8px">
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 15px; font-weight: 600; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{title}}</span>
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #a9b6c6; font-variant-numeric: tabular-nums">
+        <sc-if value="{{rec}}" hint-placeholder-val="{{false}}"><span role="img" aria-label="Recording" style="display: flex; align-items: center; gap: 5px; color: #ff8a8f; font-weight: 700"><span style="width: 8px; height: 8px; border-radius: 4px; background: #ff5a5f"></span>REC</span></sc-if>
+        {{meta}}
+      </span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 8px">
+      <sc-for list="{{av}}" as="b" hint-placeholder-count="6">
+        <button type="button" aria-label="{{b.label}}" style="position: relative; width: 48px; height: 48px; border: 0; border-radius: 24px; background: {{b.bg}}; color: {{b.fg}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{{b.sw}}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{b.d}}"></path></svg>
+          <sc-if value="{{b.tip}}" hint-placeholder-val="{{false}}">
+            <span style="position: absolute; bottom: 58px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: #ffffff; color: #111827; border-radius: 8px; padding: 6px 10px; font-family: inherit; font-size: 13px; font-weight: 600; box-shadow: 0 6px 18px rgba(0,0,0,.35); display: flex; align-items: center; gap: 8px">{{b.tipName}}<span style="border: 1px solid #c9d2dd; border-radius: 4px; padding: 0 5px; font-size: 12px; color: #374151">{{b.tipKey}}</span></span>
+          </sc-if>
+        </button>
+      </sc-for>
+      <button type="button" aria-label="Leave" style="width: 64px; height: 48px; border: 0; border-radius: 24px; background: #d93a2b; color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{icons.leave}}"></path></svg></button>
+    </div>
+
+    <div style="flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 8px">
+      <sc-for list="{{panelButtons}}" as="b" hint-placeholder-count="3">
+        <button type="button" onClick="{{b.onClick}}" aria-label="{{b.label}}" aria-pressed="{{b.pressed}}" style="position: relative; width: 44px; height: 44px; border: 0; border-radius: 12px; background: {{b.bg}}; color: {{b.fg}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{b.d}}"></path></svg>
+          <sc-if value="{{b.hasBadge}}" hint-placeholder-val="{{false}}">
+            <span style="position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; box-sizing: border-box; padding: 0 5px; border-radius: 9px; background: {{b.badgeBg}}; color: {{b.badgeFg}}; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #0f1724">{{b.badge}}</span>
+          </sc-if>
+        </button>
+      </sc-for>
+      <sc-if value="{{isMod}}" hint-placeholder-val="{{false}}">
+        <span style="width: 1px; height: 28px; background: #2c3e55; margin: 0 4px"></span>
+        <button type="button" aria-label="Manage room (moderators)" style="width: 44px; height: 44px; border: 1px solid #5a4a26; border-radius: 12px; background: #221d12; color: #ffd59a; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{icons.manage}}"></path></svg></button>
+      </sc-if>
+    </div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"scale":{"editor":"enum","options":["one","group","class","breakout"],"default":"group"},"mode":{"editor":"enum","options":["participant","moderator"],"default":"participant"},"panel":{"editor":"enum","options":["none","people","chat","breakouts"],"default":"none"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const scale = this.props.scale || 'group';
+    const isMod = (this.props.mode || 'participant') === 'moderator';
+    const panel = st.panel !== undefined ? st.panel : (this.props.panel || 'none');
+    const open = ['people', 'chat', 'breakouts'].indexOf(panel) >= 0;
+    const toggle = (k) => () => this.setState({ panel: panel === k ? 'none' : k });
+    const I = {
+      mic: 'M9 6a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z M5 11a7 7 0 0 0 14 0 M12 18v3',
+      micOff: 'M3 3l18 18 M9 9v3a3 3 0 0 0 5.1 2.1 M15 10V5a3 3 0 0 0-5.9-.7 M19 11a7 7 0 0 1-1.2 3.9 M5 11a7 7 0 0 0 11.1 5.6 M12 18v3',
+      cam: 'M2.5 7.5a1.5 1.5 0 0 1 1.5-1.5h10a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H4a1.5 1.5 0 0 1-1.5-1.5z M15.5 10.5l6-3.5v10l-6-3.5',
+      share: 'M3 5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z M8 21h8 M12 17v4 M9 10.5l3-3 3 3 M12 7.5V13',
+      react: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M8.5 14c.9 1.3 2 2 3.5 2s2.6-.7 3.5-2 M9 9.5h.01 M15 9.5h.01',
+      hand: 'M8 13V5.5a1.5 1.5 0 0 1 3 0V11 M11 10V4.5a1.5 1.5 0 0 1 3 0V11 M14 10.5V6a1.5 1.5 0 0 1 3 0v8a7 7 0 0 1-7 7h-.5a6 6 0 0 1-4.6-2.2L3 16.5a1.5 1.5 0 0 1 2.2-2L8 16',
+      more: 'M5 12h.01 M12 12h.01 M19 12h.01',
+      leave: 'M3 14.5c5-4.7 13-4.7 18 0l-2.2 2.6-3.6-1.4v-2.6c-2.1-.6-4.3-.6-6.4 0v2.6l-3.6 1.4z',
+      people: 'M9 5a3 3 0 1 0 0 6a3 3 0 1 0 0-6 M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6 M17 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5 M16 14.6c2.3.1 3.9 1.5 4.5 4',
+      chat: 'M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-5 4v-4H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z',
+      activities: 'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M17 14v6 M14 17h6',
+      breakouts: 'M3 4h7v7H3z M14 4h7v7h-7z M3 14h7v6H3z M14 14h7v6h-7z',
+      manage: 'M12 3l7 3v5c0 4.5-3 8-7 10c-4-2-7-5.5-7-10V6z M9 12l2 2 4-4',
+      close: 'M6 6l12 12 M18 6L6 18',
+      enter: 'M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4 M10 16l4-4-4-4 M14 12H4'
+    };
+    const N = { bg: '#1c2738', fg: '#e6edf5', sw: '1.9' };
+    const av = [
+      { label: 'Unmute (M)', d: I.micOff, bg: '#4a1d22', fg: '#ffb3b5', sw: '1.9', tip: scale === 'one', tipName: 'Unmute', tipKey: 'M' },
+      { label: 'Turn camera on (V)', d: I.cam },
+      { label: 'Share screen', d: I.share },
+      { label: 'React', d: I.react },
+      scale !== 'one' ? { label: 'Raise hand (H)', d: I.hand } : null,
+      { label: 'More options', d: I.more, sw: '3' }
+    ].filter(Boolean).map((b) => ({ bg: N.bg, fg: N.fg, sw: N.sw, tip: false, tipName: '', tipKey: '', ...b }));
+
+    const isClassish = scale === 'class' || scale === 'breakout';
+    const pb = [];
+    if (scale !== 'one') {
+      const cnt = scale === 'group' ? '9' : (scale === 'breakout' && !isMod ? '4' : '28');
+      const hands = scale === 'class' && isMod;
+      pb.push({ k: 'people', label: hands ? 'People, 3 hands raised' : 'People, ' + cnt, d: I.people, badge: hands ? '3' : cnt, badgeBg: hands ? '#f5a524' : '#3a4d66', badgeFg: hands ? '#1f1300' : '#ffffff' });
+    }
+    pb.push({ k: 'chat', label: 'Chat', d: I.chat, badge: scale === 'one' ? '' : '2', badgeBg: '#d93a2b', badgeFg: '#ffffff' });
+    if (scale !== 'one') pb.push({ k: 'activities', label: 'Notes, polls and apps', d: I.activities, badge: '' });
+    if (scale === 'breakout' && isMod) pb.push({ k: 'breakouts', label: 'Breakout rooms', d: I.breakouts, badge: '!', badgeBg: '#f5a524', badgeFg: '#1f1300' });
+    const panelButtons = pb.map((b) => {
+      const active = panel === b.k;
+      return {
+        ...b,
+        pressed: active ? 'true' : 'false',
+        hasBadge: !!b.badge && !(active && b.k === 'chat'),
+        bg: active ? '#e6eef9' : '#1c2738',
+        fg: active ? '#0f1b2b' : '#e6edf5',
+        onClick: toggle(b.k)
+      };
+    });
+
+    const isOne = scale === 'one';
+    const isRoom = scale === 'breakout' && !isMod;
+    const k = open ? 0.82 : 1.16;
+    const tile = (t) => ({
+      label: t.label, initials: t.initials || '', av: t.av || '#3d5a99',
+      video: !!t.video, noVideo: !t.video, hand: !!t.hand,
+      bg: t.video ? '#2a3542' : '#131f31',
+      border: t.speaking ? '2px solid #3ecf8e' : '1px solid #22324a'
+    });
+    const strip = (isClassish ? [
+      { label: 'Marta Ribeiro', video: true, speaking: true },
+      { label: 'Rafaela Monaco', initials: 'RM', av: '#a23c64', hand: isMod },
+      { label: 'You', initials: 'TY', av: '#3d5a99' }
+    ] : [
+      { label: 'Frederick Dixon', video: true, speaking: true },
+      { label: 'Bruno', video: true },
+      { label: 'Anton Georgiev', initials: 'AG', av: '#b5542e' },
+      { label: 'Michelle Winkler', initials: 'MW', av: '#7a4fb5' },
+      { label: 'You', initials: 'TY', av: '#3d5a99' }
+    ]).map(tile);
+    const roomTiles = [
+      { label: 'Anton Georgiev', video: true },
+      { label: 'Ellen', initials: 'EL', av: '#8a5a12', speaking: true },
+      { label: 'Michelle Winkler', initials: 'MW', av: '#7a4fb5' },
+      { label: 'You', initials: 'TY', av: '#3d5a99' }
+    ].map(tile);
+
+    const titles = { one: 'Frederick Dixon', group: 'Hack Week: Brazil 2026', class: 'Interaction Design 201', breakout: 'Interaction Design 201' };
+    const metas = { one: '1:1 · 14:22', group: '9 people · 29:36', class: 'Week 4 · 41:08', breakout: isMod ? 'Week 4 · 52:40' : 'Room 3 of 5 · 52:40' };
+
+    const C = ['#2f6db3', '#a23c64', '#4e6b2a', '#7a4fb5', '#b5542e', '#2b7a6f', '#8a5a12', '#3d5a99'];
+    const ppl = (arr) => arr.map((i, n) => ({ i, c: C[(i.charCodeAt(0) + n) % C.length] }));
+    const rooms = [
+      { name: 'Room 1', people: ['JS', 'PK', 'LM'], count: '5 people' },
+      { name: 'Room 2', people: ['AO', 'DV', 'RT'], count: '5 people' },
+      { name: 'Room 3', people: ['AG', 'EL', 'MW'], count: '4 people', help: true },
+      { name: 'Room 4', people: ['CS', 'NB', 'HF'], count: '5 people' },
+      { name: 'Room 5', people: ['IW', 'GQ', 'YU'], count: '4 people' }
+    ].map((r) => ({ ...r, help: !!r.help, people: ppl(r.people), bg: r.help ? '#fff8eb' : '#ffffff', border: r.help ? '1px solid #f5c26b' : '1px solid #e1e6ec' }));
+
+    return {
+      icons: I, av, panelButtons, isMod,
+      isOne, isRoom, isPresStage: !isOne && !isRoom,
+      strip, roomTiles, showMore: isClassish,
+      slideW: Math.round(1024 * k) + 'px', slideH: Math.round(576 * k) + 'px', slideTransform: 'scale(' + k + ')',
+      showHands: scale === 'class' && isMod && panel !== 'people',
+      showBreakoutChip: scale === 'breakout' && isMod,
+      isPeople: panel === 'people', isChat: panel === 'chat', isBreakouts: panel === 'breakouts',
+      openPeople: () => this.setState({ panel: 'people' }),
+      closePanel: () => this.setState({ panel: 'none' }),
+      title: titles[scale], meta: metas[scale], rec: scale !== 'one',
+      hands: [
+        { n: '1', name: 'Rafaela Monaco', initials: 'RM', av: '#a23c64', ago: 'Raised 2 min ago' },
+        { n: '2', name: 'Bruno', initials: 'BR', av: '#4e6b2a', ago: 'Raised 1 min ago' },
+        { n: '3', name: 'Cibelle Maciel', initials: 'CM', av: '#2f6db3', ago: 'Just now' }
+      ],
+      teachers: [
+        { name: 'Marta Ribeiro', initials: 'MR', av: '#2b7a6f', sub: 'Host · Presenting' },
+        { name: 'Tyler (You)', initials: 'TY', av: '#3d5a99', sub: 'Co-host' }
+      ],
+      students: [
+        { name: 'Anton Georgiev', initials: 'AG', av: '#b5542e' },
+        { name: 'Ellen', initials: 'EL', av: '#8a5a12' },
+        { name: 'Michelle Winkler', initials: 'MW', av: '#7a4fb5' },
+        { name: 'Octavio', initials: 'OC', av: '#2b7a6f' },
+        { name: 'Rafaela Monaco', initials: 'RM', av: '#a23c64' }
+      ],
+      rooms
+    };
+  }
+}
+</script>
+</body>
+</html>

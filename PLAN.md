@@ -131,6 +131,7 @@ Move each one to the decisions log once it's made.
 | Token: insight colors | Purple ramp, or remap to blue | M1 |
 | People status | Option A (grey column, color only when live), B (list order says it) or C (avatar is the status), from the `StatusList` board | M4 |
 | Breakout setup (B10) | Keep the `Breakout` board's own setup, or replace it with `BreakoutSetup` variant a, b or c | M4 |
+| Private chat | Can moderators turn off private chat for a classroom? (open question on the canvas; the DM thread note changes if so) | M5 |
 | P9 mobile states | Build, or log as out of scope | M6 |
 | Deploy host | GitHub Pages (no new account; private repos need a paid plan), Vercel or Netlify | M7 |
 
