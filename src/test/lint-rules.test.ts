@@ -109,6 +109,23 @@ const rejected: Fixture[] = [
     attrs: 'className="data-[focus-visible]:bg-[#fff]"',
     message: /Raw hex color/,
   },
+  { name: 'a numeric opacity modifier', attrs: 'className="text-text/13"', message: /Opacity modifier/ },
+  {
+    name: 'the CSS variable shorthand',
+    attrs: 'className="bg-(--bbb-x)"',
+    rule: 'better-tailwindcss/no-restricted-classes',
+  },
+  {
+    name: 'the typed CSS variable shorthand',
+    attrs: 'className="bg-(color:--x)"',
+    message: /Arbitrary Tailwind value/,
+  },
+  {
+    name: 'a handler in an inline spread',
+    attrs: '{...{ onClick: () => 1 }}',
+    message: /no pointer or keyboard handlers/,
+  },
+  { name: 'mt-px', attrs: 'className="mt-px"', message: /Raw pixel length/ },
 ];
 
 const accepted: Fixture[] = [
@@ -124,10 +141,7 @@ const accepted: Fixture[] = [
     attrs: "style={{ width: 'var(--spacing-panel)', margin: 0 }}",
   },
   { name: 'onClick on a button', attrs: 'onClick={() => {}}', tag: 'button' },
-  {
-    name: 'opacity, spacing, breakpoints and sizes',
-    attrs: 'className="bg-accent/50 p-2 sm:grid-cols-4 size-16"',
-  },
+  { name: 'spacing, breakpoints and sizes', attrs: 'className="p-2 sm:grid-cols-4 size-16"' },
 ];
 
 describe('token lint rules reject', () => {

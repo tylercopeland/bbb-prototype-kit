@@ -23,6 +23,10 @@ const ARBITRARY_PROPERTY = '(?:^|\\s)\\[[a-z-]+:[^\\]]*\\]';
 const OPACITY_MODIFIER = '\\/\\[';
 const COLOR_FUNCTION = '\\b(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\\(';
 const PX_LENGTH = '\\b\\d+(?:\\.\\d+)?px\\b';
+// Class-shaped escapes: `/N` opacity on a utility, the `-(--var)` shorthand and `-px`.
+const OPACITY_NUMBER = '(?:^|\\s)[a-z][a-z0-9-]*-[a-z0-9-]+\\/\\d+(?=\\s|$)';
+const VARIABLE_SHORTHAND = '[a-z][a-z0-9-]*-\\(';
+const PX_UTILITY = '(?:^|\\s)[a-z][a-z0-9-]*-px(?=\\s|$)';
 const URL_ATTRIBUTE = 'JSXAttribute[name.name=/^(href|to|id|htmlFor|src)$/]';
 const NON_INTERACTIVE =
   'JSXOpeningElement[name.name=/^[a-z]/]:not([name.name=/^(button|a|input|select|textarea|label|summary)$/])';
@@ -37,6 +41,7 @@ const messages = {
   arbitrary: 'Arbitrary Tailwind value. Add a token to src/tokens/tokens.json.',
   colorFn: 'Raw color function. Use a token utility, or add a token to src/tokens/tokens.json.',
   px: 'Raw pixel length. Use a spacing or size token.',
+  opacity: 'Opacity modifier on a color. Add a semantic color token instead.',
   style: 'Inline style values must be CSS variables (var(--…)) or 0; everything else needs a token utility.',
   handler: 'Use a React Aria component; no pointer or keyboard handlers on non-interactive elements.',
 };
@@ -51,6 +56,9 @@ const tokenSyntaxRules = [
   ...forStrings(ARBITRARY, messages.arbitrary),
   ...forStrings(ARBITRARY_PROPERTY, messages.arbitrary),
   ...forStrings(OPACITY_MODIFIER, messages.arbitrary),
+  ...forStrings(OPACITY_NUMBER, messages.opacity),
+  ...forStrings(VARIABLE_SHORTHAND, messages.arbitrary),
+  ...forStrings(PX_UTILITY, messages.px),
   ...forStrings(COLOR_FUNCTION, messages.colorFn),
   ...forStrings(PX_LENGTH, messages.px),
   {
@@ -60,6 +68,10 @@ const tokenSyntaxRules = [
   { selector: `${STYLE_OBJECT} > :not(Property)`, message: messages.style },
   { selector: `${STYLE_OBJECT} > Property:not(${CSS_VARIABLE}):not(${ZERO})`, message: messages.style },
   { selector: `${NON_INTERACTIVE} > ${POINTER_HANDLER}`, message: messages.handler },
+  {
+    selector: `${NON_INTERACTIVE} > JSXSpreadAttribute > ObjectExpression > Property[key.name=/^on(Click|DoubleClick|ContextMenu|Mouse\\w+|Pointer\\w+|Touch\\w+|Key\\w+)$/]`,
+    message: messages.handler,
+  },
 ];
 
 export default tseslint.config(
@@ -116,6 +128,13 @@ export default tseslint.config(
             { pattern: '^(?:[^\\s:]+:)*\\[[a-z-]+:.+\\]$', message: messages.arbitrary },
             { pattern: '/\\[.+\\]$', message: messages.arbitrary },
             {
+              pattern:
+                '^(?:[^\\s:]+:)*(?:bg|text|border|ring|outline|fill|stroke|accent|caret|decoration|divide|placeholder|shadow|from|via|to)-[a-z0-9-]+/\\d+$',
+              message: messages.opacity,
+            },
+            { pattern: '-\\(.+\\)$', message: messages.arbitrary },
+            { pattern: '-px$', message: messages.px },
+            {
               pattern: '-\\d+\\.\\d+$',
               message: 'Off-grid fractional spacing. Use whole steps of the 4px scale.',
             },
@@ -129,8 +148,8 @@ export default tseslint.config(
   },
   // Layers 2 and 3: raw hex, arbitrary values in any string, handlers on div/span.
   {
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: ['scripts/**', 'src/tokens/*.ts', '**/*.test.ts', '**/*.test.tsx', '.storybook/**'],
+    files: ['src/**/*.{ts,tsx}', '.storybook/**/*.tsx'],
+    ignores: ['scripts/**', 'src/tokens/*.ts', '**/*.test.ts', '**/*.test.tsx'],
     rules: {
       'no-restricted-syntax': ['error', ...tokenSyntaxRules],
     },

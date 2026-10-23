@@ -40,3 +40,16 @@ test.describe('token sheet', () => {
     expect(shadow).toContain(hexToRgb(await token(page, '--bbb-ring-offset')));
   });
 });
+
+test.describe('token sheet in forced colors', () => {
+  test.use({ contextOptions: { forcedColors: 'active' } });
+
+  test('shows an outline only on the focused element', async ({ page }) => {
+    await page.goto('/');
+    const toggle = page.getByRole('button', { name: 'Dark theme' });
+    expect(await toggle.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('none');
+    await page.keyboard.press('Tab');
+    await expect(toggle).toBeFocused();
+    expect(await toggle.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('solid');
+  });
+});

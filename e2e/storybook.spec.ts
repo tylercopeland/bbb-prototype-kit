@@ -17,9 +17,9 @@ const stories = Object.values(index.entries).filter((e) => e.type === 'story');
 // a11y.manual:!true stops the addon's own axe run, which would collide with
 // the one below ("Axe is already running").
 const modes = [
-  { name: 'light', globals: 'theme:light;surface:panel;a11y.manual:!true' },
-  { name: 'dark', globals: 'theme:dark;surface:panel;a11y.manual:!true' },
-  { name: 'stage', globals: 'theme:light;surface:stage;a11y.manual:!true' },
+  { name: 'light', globals: 'theme:light;surface:panel;a11y.manual:!true', stage: false },
+  { name: 'dark', globals: 'theme:dark;surface:panel;a11y.manual:!true', stage: false },
+  { name: 'stage', globals: 'theme:light;surface:stage;a11y.manual:!true', stage: true },
 ];
 
 test.describe('stories', () => {
@@ -28,23 +28,31 @@ test.describe('stories', () => {
   });
 
   for (const story of stories) {
-    for (const mode of modes) {
-      test(`${story.title} › ${story.name} [${mode.name}] has no WCAG 2.1 AA violations`, async ({
-        page,
-      }) => {
-        const url = `${storybookUrl}/iframe.html?id=${story.id}&viewMode=story&globals=${encodeURIComponent(mode.globals)}`;
-        await page.goto(url);
-        const root = page.locator('#storybook-root');
-        await expect(root).not.toBeEmpty();
-        // A story's own `globals` win over the URL; assert on what actually applied.
+    test(`${story.title} › ${story.name} has no WCAG 2.1 AA violations in any mode`, async ({ page }) => {
+      // A story's own `globals` win over the URL, so the same state can come
+      // up under two modes; each effective theme and surface is scanned once.
+      const scanned = new Set<string>();
+      for (const mode of modes) {
+        await page.goto(
+          `${storybookUrl}/iframe.html?id=${story.id}&viewMode=story&globals=${encodeURIComponent(mode.globals)}`,
+        );
+        await expect(page.locator('#storybook-root')).not.toBeEmpty();
         await expect(page.locator('html')).toHaveAttribute('data-theme', /light|dark/);
         await page.waitForFunction(() => !(window as { axe?: { _running?: boolean } }).axe?._running);
+        const theme = await page.locator('html').getAttribute('data-theme');
+        const onStage = (await page.locator('[data-surface="stage"]').count()) > 0;
+        if (mode.stage) expect(onStage, 'stage mode wraps the story in data-surface="stage"').toBe(true);
+        const state = `${theme}/${onStage ? 'stage' : 'panel'}`;
+        if (scanned.has(state)) continue;
+        scanned.add(state);
+        // The whole page, so overlays that portal to <body> are scanned too.
         const results = await new AxeBuilder({ page })
-          .include('#storybook-root')
+          .exclude('#storybook-docs')
           .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
           .analyze();
-        expect(results.violations).toEqual([]);
-      });
-    }
+        expect(results.violations, `${mode.name} mode (${state})`).toEqual([]);
+      }
+      expect(scanned.size).toBeGreaterThan(0);
+    });
   }
 });

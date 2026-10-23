@@ -28,10 +28,11 @@
    reads on white panels and on the dark stage. The transparent outline
    becomes visible in forced-colors mode, where box-shadow is dropped. */
 @utility focus-ring {
-  outline: 2px solid transparent;
-  outline-offset: 2px;
+  outline: none;
   &:focus-visible,
   &[data-focus-visible] {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow:
       0 0 0 2px var(--bbb-ring-offset),
       0 0 0 4px var(--bbb-focus-ring);
