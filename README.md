@@ -31,7 +31,7 @@ Everything Claude Code needs to build the BigBlueButton 4.0 room prototype from 
 
 Node 22 (`.nvmrc`), then `npm ci`. `npm run dev` serves the prototype, `npm run storybook` the design system, and `npm run check` runs lint, typecheck, unit tests and the token gate. `npm run test:e2e` needs a Chromium (`npx playwright install chromium`, or a pre-installed one at `/opt/pw-browsers/chromium` or `CHROMIUM_EXECUTABLE`). Every script is described in `CLAUDE.md` › Scripts.
 
-## First session (done: milestone 1)
+## First session (milestone 1: built, in review)
 
 Open the folder in Claude Code, switch to plan mode, and send:
 

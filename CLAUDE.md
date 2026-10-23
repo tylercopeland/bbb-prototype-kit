@@ -22,7 +22,7 @@ React + TypeScript (strict), Vite, Tailwind v4, React Aria Components, tailwind-
 
 ### Tokens
 - Use token utilities only: `bg-surface`, `text-text-muted`, `rounded-md`, `h-control-md`.
-- Never write arbitrary values (`bg-[#…]`, `w-[13px]`) or raw hex in components. If a value is missing, add it to `tokens.json` with a contrast check and note it in `PLAN.md` › Decisions log.
+- Never write arbitrary values (`bg-[#…]`, `w-[13px]`, `[color:red]`, `text-text/[0.13]`, `p-3.25`), raw hex, color functions or `px` lengths in components, and no inline `style` except `var(--…)` values. If a value is missing, add it to `tokens.json` with a contrast check (a pair in `contrast.json`) and note it in `PLAN.md` › Decisions log.
 - Anything on the dark video area sits inside `data-surface="stage"`.
 
 ### Accessibility
@@ -68,10 +68,10 @@ src/components/IconButton/
 | `npm run lint` | ESLint: token rules (arbitrary values, raw hex, unknown classes, handlers on `div`/`span`), hooks, Storybook |
 | `npm run typecheck` | `tsc -b` over `src`, `.storybook`, `scripts` and the configs |
 | `npm test` | Vitest (jsdom): unit tests plus `src/test/lint-rules.test.ts`, which proves the lint rules fire |
-| `npm run test:e2e` | Builds, then Playwright with axe (`wcag2a`, `wcag2aa`, `wcag21aa`) against `vite preview` |
+| `npm run test:e2e` | Builds the app and Storybook, then Playwright with axe (`wcag2a`, `wcag2aa`, `wcag21aa`) on `/` in light and dark, and on every story in light, dark and stage |
 | `npm run storybook` / `build-storybook` | Storybook on port 6006 with the a11y panel and the theme and surface toolbars |
 | `npm run tokens` | Regenerates `src/tokens/tokens.css` from `tokens.json` (commit the result) |
-| `npm run tokens:check` | Contrast pairs from `contrast.json` in light, dark and stage; 4px grid; `tokens.css` is current |
+| `npm run tokens:check` | Contrast pairs from `contrast.json` in light, dark and stage, the required color families in every mode, the 4px grid, and that `tokens.css` is current |
 | `npm run format` | Prettier (with the Tailwind class sorter) |
 | `npm run check` | `lint`, `typecheck`, `test`, `tokens:check`. The post-edit hook runs it after every edit (about 6 s) |
 
