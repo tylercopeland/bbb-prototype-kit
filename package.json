@@ -15,7 +15,8 @@
     "build-storybook": "storybook build",
     "tokens": "tsx scripts/build-tokens.ts",
     "tokens:check": "tsx scripts/tokens-check.ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run tokens:check"
   },
   "dependencies": {
     "@fontsource/source-sans-3": "5.3.1",

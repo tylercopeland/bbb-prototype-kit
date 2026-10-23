@@ -12,7 +12,7 @@ A live prototype and design system for the redesigned BigBlueButton room. Read `
 - `docs/screenshots/` — optional PNGs of key artboards, named by file stem, for visual comparison.
 - `docs/review-findings.md` — problems found in the design. Treat them as requirements: build the fixed version, not the flawed one.
 - The canvas source uses about 200 off-token values. Never copy a raw value from it: map it to the nearest token, or add a token with a contrast check.
-- `docs/tokens.json` (later `src/tokens/tokens.json`) — the only source of colors, type, radii and sizes.
+- `src/tokens/tokens.json` — the only source of colors, type, radii and sizes. `npm run tokens` generates `src/tokens/tokens.css` from it (never edit the CSS); `src/tokens/contrast.json` lists the color pairs that `npm run tokens:check` verifies, so add a pair there for every new color.
 
 ## Stack
 
@@ -59,6 +59,21 @@ src/components/IconButton/
   IconButton.test.tsx    keyboard and role tests
   index.ts
 -->
+
+## Scripts
+
+| Script | What it does |
+|---|---|
+| `npm run dev` / `build` / `preview` | Vite dev server, production build (`tsc -b` first), preview of `dist/` |
+| `npm run lint` | ESLint: token rules (arbitrary values, raw hex, unknown classes, handlers on `div`/`span`), hooks, Storybook |
+| `npm run typecheck` | `tsc -b` over `src`, `.storybook`, `scripts` and the configs |
+| `npm test` | Vitest (jsdom): unit tests plus `src/test/lint-rules.test.ts`, which proves the lint rules fire |
+| `npm run test:e2e` | Builds, then Playwright with axe (`wcag2a`, `wcag2aa`, `wcag21aa`) against `vite preview` |
+| `npm run storybook` / `build-storybook` | Storybook on port 6006 with the a11y panel and the theme and surface toolbars |
+| `npm run tokens` | Regenerates `src/tokens/tokens.css` from `tokens.json` (commit the result) |
+| `npm run tokens:check` | Contrast pairs from `contrast.json` in light, dark and stage; 4px grid; `tokens.css` is current |
+| `npm run format` | Prettier (with the Tailwind class sorter) |
+| `npm run check` | `lint`, `typecheck`, `test`, `tokens:check`. The post-edit hook runs it after every edit (about 6 s) |
 
 ## Working
 
