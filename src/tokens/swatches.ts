@@ -1,0 +1,140 @@
+/**
+ * Token swatches for the foundations page and the Tokens story.
+ * Class names are literal so Tailwind can see them; lint checks that
+ * each one exists in the theme.
+ */
+export type Swatch = { name: string; className: string; note?: string };
+
+export const semanticColors: Swatch[] = [
+  { name: 'surface', className: 'bg-surface' },
+  { name: 'surface-sunken', className: 'bg-surface-sunken' },
+  { name: 'surface-raised', className: 'bg-surface-raised' },
+  { name: 'surface-stage', className: 'bg-surface-stage' },
+  { name: 'surface-tile', className: 'bg-surface-tile' },
+  { name: 'surface-overlay', className: 'bg-surface-overlay' },
+  { name: 'border', className: 'bg-border' },
+  { name: 'border-strong', className: 'bg-border-strong' },
+  { name: 'border-control', className: 'bg-border-control' },
+  { name: 'text', className: 'bg-text' },
+  { name: 'text-secondary', className: 'bg-text-secondary' },
+  { name: 'text-muted', className: 'bg-text-muted' },
+  { name: 'text-on-stage', className: 'bg-text-on-stage' },
+  { name: 'text-on-stage-muted', className: 'bg-text-on-stage-muted' },
+  { name: 'icon', className: 'bg-icon' },
+  { name: 'icon-subtle', className: 'bg-icon-subtle' },
+  { name: 'accent', className: 'bg-accent' },
+  { name: 'accent-soft', className: 'bg-accent-soft' },
+  { name: 'on-accent', className: 'bg-on-accent' },
+  { name: 'focus-ring', className: 'bg-focus-ring' },
+  { name: 'selected', className: 'bg-selected' },
+  { name: 'selected-text', className: 'bg-selected-text' },
+  { name: 'selected-border', className: 'bg-selected-border' },
+  { name: 'insight', className: 'bg-insight' },
+  { name: 'on-insight', className: 'bg-on-insight' },
+  { name: 'insight-text', className: 'bg-insight-text' },
+  { name: 'insight-soft', className: 'bg-insight-soft' },
+  { name: 'status-live', className: 'bg-status-live' },
+  { name: 'status-live-text', className: 'bg-status-live-text' },
+  { name: 'status-live-soft', className: 'bg-status-live-soft' },
+  { name: 'status-hand', className: 'bg-status-hand' },
+  { name: 'status-hand-text', className: 'bg-status-hand-text' },
+  { name: 'status-hand-soft', className: 'bg-status-hand-soft' },
+  { name: 'danger', className: 'bg-danger' },
+  { name: 'danger-text', className: 'bg-danger-text' },
+  { name: 'danger-soft', className: 'bg-danger-soft' },
+];
+
+export const primitiveColors: Swatch[] = [
+  { name: 'neutral-0', className: 'bg-neutral-0' },
+  { name: 'neutral-50', className: 'bg-neutral-50' },
+  { name: 'neutral-100', className: 'bg-neutral-100' },
+  { name: 'neutral-200', className: 'bg-neutral-200' },
+  { name: 'neutral-300', className: 'bg-neutral-300' },
+  { name: 'neutral-400', className: 'bg-neutral-400' },
+  { name: 'neutral-500', className: 'bg-neutral-500' },
+  { name: 'neutral-600', className: 'bg-neutral-600' },
+  { name: 'neutral-700', className: 'bg-neutral-700' },
+  { name: 'neutral-800', className: 'bg-neutral-800' },
+  { name: 'neutral-900', className: 'bg-neutral-900' },
+  { name: 'neutral-950', className: 'bg-neutral-950' },
+  { name: 'stage-500', className: 'bg-stage-500' },
+  { name: 'stage-600', className: 'bg-stage-600' },
+  { name: 'stage-700', className: 'bg-stage-700' },
+  { name: 'stage-800', className: 'bg-stage-800' },
+  { name: 'stage-900', className: 'bg-stage-900' },
+  { name: 'blue-50', className: 'bg-blue-50' },
+  { name: 'blue-100', className: 'bg-blue-100' },
+  { name: 'blue-300', className: 'bg-blue-300' },
+  { name: 'blue-400', className: 'bg-blue-400', note: 'border and ring only' },
+  { name: 'blue-600', className: 'bg-blue-600' },
+  { name: 'green-50', className: 'bg-green-50' },
+  { name: 'green-300', className: 'bg-green-300' },
+  { name: 'green-500', className: 'bg-green-500' },
+  { name: 'green-700', className: 'bg-green-700' },
+  { name: 'amber-50', className: 'bg-amber-50' },
+  { name: 'amber-400', className: 'bg-amber-400' },
+  { name: 'amber-700', className: 'bg-amber-700' },
+  { name: 'amber-950', className: 'bg-amber-950' },
+  { name: 'red-50', className: 'bg-red-50' },
+  { name: 'red-300', className: 'bg-red-300' },
+  { name: 'red-500', className: 'bg-red-500' },
+  { name: 'red-700', className: 'bg-red-700' },
+  { name: 'purple-50', className: 'bg-purple-50' },
+  { name: 'purple-100', className: 'bg-purple-100' },
+  { name: 'purple-300', className: 'bg-purple-300' },
+  { name: 'purple-500', className: 'bg-purple-500' },
+  { name: 'purple-600', className: 'bg-purple-600' },
+  { name: 'purple-700', className: 'bg-purple-700' },
+];
+
+export const avatarColors: Swatch[] = [
+  { name: 'avatar-1', className: 'bg-avatar-1' },
+  { name: 'avatar-2', className: 'bg-avatar-2' },
+  { name: 'avatar-3', className: 'bg-avatar-3' },
+  { name: 'avatar-4', className: 'bg-avatar-4' },
+  { name: 'avatar-5', className: 'bg-avatar-5' },
+  { name: 'avatar-6', className: 'bg-avatar-6' },
+  { name: 'avatar-7', className: 'bg-avatar-7' },
+  { name: 'avatar-8', className: 'bg-avatar-8' },
+  { name: 'avatar-9', className: 'bg-avatar-9' },
+  { name: 'avatar-10', className: 'bg-avatar-10' },
+];
+
+export const roomColors: Swatch[] = [
+  { name: 'room-1', className: 'bg-room-1' },
+  { name: 'room-2', className: 'bg-room-2' },
+  { name: 'room-3', className: 'bg-room-3' },
+  { name: 'room-4', className: 'bg-room-4' },
+  { name: 'room-5', className: 'bg-room-5' },
+  { name: 'room-6', className: 'bg-room-6' },
+  { name: 'room-7', className: 'bg-room-7' },
+  { name: 'room-8', className: 'bg-room-8' },
+];
+
+export const textSizes: Swatch[] = [
+  { name: '2xs · 11/16', className: 'text-2xs uppercase', note: 'uppercase section labels only' },
+  { name: 'xs · 12/16', className: 'text-xs' },
+  { name: 'sm · 13/20', className: 'text-sm' },
+  { name: 'md · 14/20', className: 'text-md' },
+  { name: 'lg · 16/24', className: 'text-lg' },
+  { name: 'xl · 18/24', className: 'text-xl' },
+];
+
+export const radii: Swatch[] = [
+  { name: 'xs · 4', className: 'rounded-xs' },
+  { name: 'md · 8', className: 'rounded-md' },
+  { name: 'lg · 12', className: 'rounded-lg' },
+  { name: 'xl · 16', className: 'rounded-xl' },
+  { name: 'full', className: 'rounded-full' },
+  { name: 'control', className: 'rounded-control' },
+  { name: 'tile', className: 'rounded-tile' },
+  { name: 'panel', className: 'rounded-panel' },
+];
+
+export const controlSizes: Swatch[] = [
+  { name: 'control-sm · 32', className: 'h-control-sm' },
+  { name: 'control-md · 36', className: 'h-control-md' },
+  { name: 'control-lg · 40', className: 'h-control-lg' },
+  { name: 'control-touch · 44', className: 'h-control-touch' },
+  { name: 'row · 44', className: 'h-row' },
+];
