@@ -53,7 +53,7 @@ Source boards: **Focus** (all desktop screens except breakout 2–12), **Breakou
 | B7 | Solo setup cards say "Room N", live cards use the student's name; solo live cards have no Join or preview. | BO4, BO7 | One naming rule; same actions in both modes. | 5 |
 | B8 | Message fields are not real inputs; Send, Join and close-panel have no handlers. | BO6, BO8 | Real `TextField` and wired buttons. | 5 |
 | B9 | Avatar initials at 8.5–9px; first-name-only pills make two "Ana"s indistinguishable. | BO2–BO4 | 12px minimum; disambiguate duplicate names. | 4 |
-| B10 | Three setup variants exist (wizard, sentence, toolbar) with different controls. | BreakoutSetup | Pick one before milestone 5. | — |
+| B10 | Three setup variants exist (wizard, sentence, toolbar) with different controls. | BreakoutSetup | Decided: keep the Breakout board's setup panel (see `PLAN.md` › Decisions log). | — |
 
 ## Mobile (Mobile board)
 
