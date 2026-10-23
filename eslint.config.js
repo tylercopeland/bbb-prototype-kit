@@ -12,31 +12,54 @@ import storybook from 'eslint-plugin-storybook';
 import betterTailwindcss from 'eslint-plugin-better-tailwindcss';
 import globals from 'globals';
 
-const HEX = '#[0-9a-fA-F]{3,8}\\b';
-const ARBITRARY = '\\b[a-z-]+-\\[[^\\]]+\\]';
+// A color hex token. Fragments such as href="#feed" are exempted by the
+// parent check in the selectors below, since they cannot be told apart lexically.
+const HEX = '#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})(?![0-9a-zA-Z_-])';
+// `utility-[…]` anywhere in a string, including an unclosed `bg-[#` quasi of a
+// template literal. A bracket group followed by `:` is a variant
+// (data-[focus-visible]:, aria-[pressed=true]:) and is allowed.
+const ARBITRARY = '[a-z][a-z0-9-]*-\\[(?:[^\\]]*$|[^\\]]*\\](?!:))';
+const ARBITRARY_PROPERTY = '(?:^|\\s)\\[[a-z-]+:[^\\]]*\\]';
+const OPACITY_MODIFIER = '\\/\\[';
+const COLOR_FUNCTION = '\\b(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\\(';
+const PX_LENGTH = '\\b\\d+(?:\\.\\d+)?px\\b';
+const URL_ATTRIBUTE = 'JSXAttribute[name.name=/^(href|to|id|htmlFor|src)$/]';
+const NON_INTERACTIVE =
+  'JSXOpeningElement[name.name=/^[a-z]/]:not([name.name=/^(button|a|input|select|textarea|label|summary)$/])';
+const POINTER_HANDLER =
+  'JSXAttribute[name.name=/^on(Click|DoubleClick|ContextMenu|Mouse\\w+|Pointer\\w+|Touch\\w+|Key\\w+)$/]';
+const STYLE_OBJECT = 'JSXAttribute[name.name="style"] > JSXExpressionContainer > ObjectExpression';
+const CSS_VARIABLE = '[value.type="Literal"][value.value=/^var\\(--[a-zA-Z0-9-]+\\)$/]';
+const ZERO = '[value.type="Literal"][value.value=0]';
+
+const messages = {
+  hex: 'Raw hex color. Use a token utility, or add a token to src/tokens/tokens.json.',
+  arbitrary: 'Arbitrary Tailwind value. Add a token to src/tokens/tokens.json.',
+  colorFn: 'Raw color function. Use a token utility, or add a token to src/tokens/tokens.json.',
+  px: 'Raw pixel length. Use a spacing or size token.',
+  style: 'Inline style values must be CSS variables (var(--…)) or 0; everything else needs a token utility.',
+  handler: 'Use a React Aria component; no pointer or keyboard handlers on non-interactive elements.',
+};
+
+const forStrings = (pattern, message) => [
+  { selector: `Literal[value=/${pattern}/]:not(${URL_ATTRIBUTE} > Literal)`, message },
+  { selector: `TemplateElement[value.raw=/${pattern}/]`, message },
+];
 
 const tokenSyntaxRules = [
+  ...forStrings(HEX, messages.hex),
+  ...forStrings(ARBITRARY, messages.arbitrary),
+  ...forStrings(ARBITRARY_PROPERTY, messages.arbitrary),
+  ...forStrings(OPACITY_MODIFIER, messages.arbitrary),
+  ...forStrings(COLOR_FUNCTION, messages.colorFn),
+  ...forStrings(PX_LENGTH, messages.px),
   {
-    selector: `Literal[value=/${HEX}/]`,
-    message: 'Raw hex color. Use a token utility, or add a token to src/tokens/tokens.json.',
+    selector: 'JSXAttribute[name.name="style"] > JSXExpressionContainer > :not(ObjectExpression)',
+    message: messages.style,
   },
-  {
-    selector: `TemplateElement[value.raw=/${HEX}/]`,
-    message: 'Raw hex color. Use a token utility, or add a token to src/tokens/tokens.json.',
-  },
-  {
-    selector: `Literal[value=/${ARBITRARY}/]`,
-    message: 'Arbitrary Tailwind value. Add a token to src/tokens/tokens.json.',
-  },
-  {
-    selector: `TemplateElement[value.raw=/${ARBITRARY}/]`,
-    message: 'Arbitrary Tailwind value. Add a token to src/tokens/tokens.json.',
-  },
-  {
-    selector:
-      'JSXOpeningElement[name.name=/^(div|span)$/] > JSXAttribute[name.name=/^on(Click|MouseDown|MouseUp|KeyDown|KeyUp|KeyPress)$/]',
-    message: 'Use a React Aria component; no handlers on div or span.',
-  },
+  { selector: `${STYLE_OBJECT} > :not(Property)`, message: messages.style },
+  { selector: `${STYLE_OBJECT} > Property:not(${CSS_VARIABLE}):not(${ZERO})`, message: messages.style },
+  { selector: `${NON_INTERACTIVE} > ${POINTER_HANDLER}`, message: messages.handler },
 ];
 
 export default tseslint.config(
@@ -89,9 +112,12 @@ export default tseslint.config(
         'error',
         {
           restrict: [
+            { pattern: '^(?:[^\\s:]+:)*[a-z-]+-\\[.+\\]$', message: messages.arbitrary },
+            { pattern: '^(?:[^\\s:]+:)*\\[[a-z-]+:.+\\]$', message: messages.arbitrary },
+            { pattern: '/\\[.+\\]$', message: messages.arbitrary },
             {
-              pattern: '^(?:[a-z-]+:)*[a-z-]+-\\[.+\\]$',
-              message: 'Arbitrary Tailwind value. Add a token to src/tokens/tokens.json.',
+              pattern: '-\\d+\\.\\d+$',
+              message: 'Off-grid fractional spacing. Use whole steps of the 4px scale.',
             },
           ],
         },

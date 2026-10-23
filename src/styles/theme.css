@@ -13,6 +13,8 @@
 @import '@fontsource/source-sans-3/700.css';
 @import 'tailwindcss';
 @import '../tokens/tokens.css';
+/* The lint fixture strings in src/test are not sources for utilities. */
+@source not '../test';
 
 /* ---------------------------------------------------------------
  * Shared utilities

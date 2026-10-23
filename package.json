@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "test": "vitest run --reporter=dot",
-    "test:e2e": "vite build && playwright test",
+    "test:e2e": "vite build && storybook build --quiet && playwright test",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "tokens": "tsx scripts/build-tokens.ts",
