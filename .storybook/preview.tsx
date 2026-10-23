@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useLayoutEffect, type ReactNode } from 'react';
 import type { Decorator, Preview } from '@storybook/react-vite';
 import '../src/styles/theme.css';
 
@@ -7,7 +7,8 @@ type Surface = 'panel' | 'stage';
 
 /** Applies the theme to <html> and, on the stage, wraps the story in the dark video area. */
 function ThemeFrame({ theme, surface, children }: { theme: Theme; surface: Surface; children: ReactNode }) {
-  useEffect(() => {
+  // Layout effect: the theme is on <html> before the story paints, so axe and screenshots see it.
+  useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 

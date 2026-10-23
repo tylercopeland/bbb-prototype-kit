@@ -14,13 +14,13 @@ export function App() {
   }, [dark]);
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-8 p-6">
+    <main className="mx-auto flex max-w-page flex-col gap-8 p-6">
       <header className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold text-text">BigBlueButton 4.0 prototype · tokens</h1>
         <ToggleButton
           isSelected={dark}
           onChange={setDark}
-          className="h-control-md rounded-control border border-border-control bg-surface px-4 text-md font-medium text-text focus-ring data-selected:bg-accent data-selected:text-on-accent"
+          className="hit-area h-control-md rounded-control border border-border-control bg-surface px-4 text-md font-medium text-text focus-ring data-selected:bg-accent data-selected:text-on-accent"
         >
           Dark theme
         </ToggleButton>

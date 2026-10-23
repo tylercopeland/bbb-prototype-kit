@@ -19,13 +19,15 @@
  * ------------------------------------------------------------- */
 
 /* One focus style for every interactive element: a gap ring that
-   reads on white panels and on the dark stage. */
+   reads on white panels and on the dark stage. The transparent outline
+   becomes visible in forced-colors mode, where box-shadow is dropped. */
 @utility focus-ring {
-  outline: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   &:focus-visible,
   &[data-focus-visible] {
     box-shadow:
-      0 0 0 2px var(--bbb-surface),
+      0 0 0 2px var(--bbb-ring-offset),
       0 0 0 4px var(--bbb-focus-ring);
   }
 }
@@ -48,8 +50,8 @@
 /* Speaking ring for avatars and tiles. Always pair it with an icon or badge. */
 @utility ring-speaking {
   box-shadow:
-    0 0 0 2px var(--bbb-surface),
-    0 0 0 4px var(--bbb-status-live);
+    0 0 0 var(--spacing-speaking-ring) var(--bbb-ring-offset),
+    0 0 0 calc(var(--spacing-speaking-ring) * 2) var(--bbb-status-live);
 }
 
 @layer base {

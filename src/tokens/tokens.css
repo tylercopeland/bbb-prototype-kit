@@ -6,6 +6,13 @@
   --radius-*: initial;
   --text-*: initial;
   --font-*: initial;
+  --font-weight-*: initial;
+  --leading-*: initial;
+  --tracking-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --container-*: initial;
 
   --color-white: #ffffff;
   --color-transparent: transparent;
@@ -96,6 +103,7 @@
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+  --tracking-label: 0.04em;
 
   --radius-xs: 4px;
   --radius-md: 8px;
@@ -118,6 +126,7 @@
   --radius-tile: var(--radius-lg);
   --spacing-speaking-ring: 2px;
   --spacing-row: 44px;
+  --container-page: 1152px;
 }
 
 /* 2. Semantic tokens. Runtime CSS variables, so themes swap without rebuilding. `inline` makes utilities read the variable. */
@@ -130,6 +139,7 @@
   --color-surface-overlay: var(--bbb-surface-overlay);
   --color-border: var(--bbb-border);
   --color-border-strong: var(--bbb-border-strong);
+  --color-ring-offset: var(--bbb-ring-offset);
   --color-border-control: var(--bbb-border-control);
   --color-text: var(--bbb-text);
   --color-text-secondary: var(--bbb-text-secondary);
@@ -171,6 +181,7 @@
   --bbb-surface-overlay: rgb(4 12 24 / 0.75);
   --bbb-border: var(--color-neutral-200);
   --bbb-border-strong: var(--color-neutral-300);
+  --bbb-ring-offset: var(--color-neutral-0);
   --bbb-border-control: var(--color-neutral-500);
   --bbb-text: var(--color-neutral-950);
   --bbb-text-secondary: var(--color-neutral-800);
@@ -209,6 +220,7 @@
   --bbb-border: var(--color-stage-600);
   --bbb-border-strong: var(--color-stage-500);
   --bbb-border-control: var(--color-neutral-400);
+  --bbb-ring-offset: var(--color-stage-700);
   --bbb-text: var(--color-neutral-0);
   --bbb-text-secondary: var(--color-neutral-300);
   --bbb-text-muted: var(--color-neutral-400);
@@ -234,6 +246,12 @@
 }
 
 [data-surface="stage"] {
+  --bbb-surface: var(--color-stage-700);
+  --bbb-surface-sunken: var(--color-stage-800);
+  --bbb-surface-raised: var(--color-stage-600);
+  --bbb-border: var(--color-stage-600);
+  --bbb-border-strong: var(--color-stage-500);
+  --bbb-ring-offset: var(--color-stage-900);
   --bbb-text: var(--color-neutral-0);
   --bbb-text-secondary: var(--color-neutral-300);
   --bbb-text-muted: var(--color-neutral-400);
@@ -241,14 +259,20 @@
   --bbb-icon-subtle: var(--color-neutral-400);
   --bbb-border-control: var(--color-neutral-400);
   --bbb-accent: var(--color-blue-300);
+  --bbb-accent-soft: var(--color-stage-600);
+  --bbb-on-accent: var(--color-stage-900);
   --bbb-focus-ring: var(--color-blue-300);
   --bbb-selected: var(--color-blue-100);
   --bbb-selected-text: var(--color-stage-800);
   --bbb-selected-border: var(--color-blue-400);
   --bbb-insight: var(--color-purple-500);
   --bbb-insight-text: var(--color-purple-300);
+  --bbb-insight-soft: var(--color-stage-600);
   --bbb-status-live: var(--color-green-300);
   --bbb-status-live-text: var(--color-green-300);
+  --bbb-status-live-soft: var(--color-stage-600);
   --bbb-status-hand-text: var(--color-amber-400);
+  --bbb-status-hand-soft: var(--color-stage-600);
   --bbb-danger-text: var(--color-red-300);
+  --bbb-danger-soft: var(--color-stage-600);
 }

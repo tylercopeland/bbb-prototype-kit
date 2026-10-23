@@ -88,8 +88,44 @@ export function contrastRatio(fg: string, bg: string): number {
 type Row = { ok: boolean; what: string; detail: string };
 const rows: Row[] = [];
 
+const isSemantic = (p: string) => p.startsWith('semantic.color.');
+
+// Families that must be declared in every mode, so a mode override cannot
+// silently break them (e.g. a tint that stays light while its text turns white).
+const semanticNames = Object.keys(getNode('semantic.color') ?? {}).filter((k) => !k.startsWith('$'));
+const required: Array<[string, string]> = [];
+for (const fg of semanticNames.filter((n) => /^text(-secondary|-muted)?$/.test(n))) {
+  for (const bg of ['surface', 'surface-sunken', 'surface-raised']) required.push([fg, bg]);
+}
+for (const fg of semanticNames.filter((n) => n.startsWith('text-on-stage'))) {
+  for (const bg of ['surface-stage', 'surface-tile']) required.push([fg, bg]);
+}
+for (const n of semanticNames) {
+  if (n.startsWith('on-') && semanticNames.includes(n.slice(3))) required.push([n, n.slice(3)]);
+  if (n.endsWith('-text') && semanticNames.includes(n.replace(/-text$/, '-soft'))) {
+    required.push([n, n.replace(/-text$/, '-soft')]);
+  }
+}
+if (semanticNames.includes('selected-text')) required.push(['selected-text', 'selected']);
+
+for (const [fg, bg] of required) {
+  const declared = new Set<string>();
+  for (const pair of contrast.pairs) {
+    if (pair.fg === `semantic.color.${fg}` && pair.bg === `semantic.color.${bg}`) {
+      for (const m of pair.modes ?? MODES) declared.add(m);
+    }
+  }
+  const missing = MODES.filter((m) => !declared.has(m));
+  rows.push({
+    ok: missing.length === 0,
+    what: `declared ${fg} on ${bg}`,
+    detail:
+      missing.length === 0 ? 'in every mode' : `not declared in contrast.json for: ${missing.join(', ')}`,
+  });
+}
+
 for (const pair of contrast.pairs) {
-  const modes = pair.modes ?? ['light'];
+  const modes = pair.modes ?? (isSemantic(pair.fg) || isSemantic(pair.bg) ? MODES : ['light']);
   for (const mode of modes) {
     if (!MODES.includes(mode)) throw new Error(`Unknown mode "${mode}" for ${pair.fg} on ${pair.bg}`);
     const fg = colorIn(pair.fg, mode);
@@ -188,5 +224,19 @@ for (const r of rows) {
     console.log(`${r.ok ? 'PASS' : 'FAIL'}  ${r.what.padEnd(width)}  ${r.detail}`);
   }
 }
-console.log(`${rows.length - failures.length}/${rows.length} token checks passed`);
+const counts = {
+  contrast: rows.filter(
+    (r) =>
+      !r.what.startsWith('grid') &&
+      !r.what.startsWith('scale') &&
+      !r.what.startsWith('font size') &&
+      !r.what.startsWith('declared') &&
+      !r.what.startsWith('tokens.css'),
+  ).length,
+  declared: rows.filter((r) => r.what.startsWith('declared')).length,
+  grid: rows.filter((r) => /^(grid|scale|font size)/.test(r.what)).length,
+};
+console.log(
+  `${rows.length - failures.length}/${rows.length} token checks passed (${counts.contrast} contrast pairs by mode, ${counts.declared} required families, ${counts.grid} grid and size checks, 1 freshness check)`,
+);
 if (failures.length > 0) process.exit(1);

@@ -12,7 +12,7 @@ import {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-2xs font-semibold tracking-wide text-text-muted uppercase">{title}</h2>
+      <h2 className="text-2xs font-semibold tracking-label text-text-muted uppercase">{title}</h2>
       {children}
     </section>
   );

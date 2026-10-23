@@ -10,6 +10,8 @@
  *   primitive.font.family.X    --font-X
  *   primitive.font.size.X      --text-X (+ --text-X--line-height from lineHeight.X)
  *   primitive.font.weight.X    --font-weight-X
+ *   primitive.font.letterSpacing.X --tracking-X
+ *   component.page.max-width   --container-page (max-w-page)
  *   primitive.radius.X         --radius-X
  *   primitive.space.base       --spacing
  *   component.control.sm       --spacing-control-sm
@@ -44,6 +46,7 @@ export function tailwindName(p: string[]): string {
       if (sub === 'size') return `text-${tail.join('-')}`;
       if (sub === 'lineHeight') return `text-${tail.join('-')}--line-height`;
       if (sub === 'weight') return `font-weight-${tail.join('-')}`;
+      if (sub === 'letterSpacing') return `tracking-${tail.join('-')}`;
     }
     if (group === 'radius') return `radius-${[sub, ...tail].join('-')}`;
     if (group === 'space') return sub === 'base' ? 'spacing' : `space-${[sub, ...tail].join('-')}`;
@@ -55,6 +58,7 @@ export function tailwindName(p: string[]): string {
     if (comp === 'row' && key === 'height') return 'spacing-row';
     if (comp === 'panel' && key === 'width') return 'spacing-panel';
     if (comp === 'tile' && key === 'speaking-ring') return 'spacing-speaking-ring';
+    if (comp === 'page' && key === 'max-width') return 'container-page';
     return `spacing-${comp}-${key}`;
   }
   if (tier === 'modes') {
@@ -86,6 +90,13 @@ function formatTailwindV4({ dictionary }: { dictionary: { allTokens: Transformed
     '  --radius-*: initial;',
     '  --text-*: initial;',
     '  --font-*: initial;',
+    '  --font-weight-*: initial;',
+    '  --leading-*: initial;',
+    '  --tracking-*: initial;',
+    '  --shadow-*: initial;',
+    '  --inset-shadow-*: initial;',
+    '  --drop-shadow-*: initial;',
+    '  --container-*: initial;',
     '',
     '  --color-white: #ffffff;',
     '  --color-transparent: transparent;',
