@@ -28,7 +28,7 @@ This is a standalone prototype. It does not need to fit into the bbb-html5 clien
 ## Before milestone 1
 
 - [x] `.claude/agents/` (the `reviewer` and `component-builder` agents) is in the repo.
-- [ ] `.claude/settings.json` (the post-edit check hook) is in the repo.
+- [x] `.claude/settings.json` (the post-edit check hook) is in the repo.
 - [ ] Optional: PNGs of key artboards in `docs/screenshots/`.
 
 ## Milestone 1 · Foundations
