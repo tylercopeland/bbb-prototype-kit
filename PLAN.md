@@ -72,7 +72,7 @@ Exit:
 
 ## Milestone 4 · Room shell and state
 
-Decide first: the people-status option and the breakout setup variant (see "Open decisions").
+Decide first: the breakout setup variant (see "Open decisions").
 
 Build:
 - The mock room-state store (`src/mocks/`): participants, chat, DMs, presentation, plugins and breakouts, with actions (raise hand, send message, move student, open and close rooms). Port the breakout phases, moves and closing countdown from `docs/canvas/project/Breakout.dc.html`. Fixtures for 1, 4, 14 and 30 participants, long names, duplicate first names and an empty chat.
@@ -126,7 +126,6 @@ Move each one to the decisions log once it's made.
 
 | Decision | Options | Needed by |
 |---|---|---|
-| People status | Option A (grey column, color only when live), B (list order says it) or C (avatar is the status), from the `StatusList` board | M4 |
 | Breakout setup (B10) | Keep the `Breakout` board's own setup, or replace it with `BreakoutSetup` variant a, b or c | M4 |
 | Private chat | Can moderators turn off private chat for a classroom? (open question on the canvas; the DM thread note changes if so) | M5 |
 | P9 mobile states | Build, or log as out of scope | M6 |
@@ -140,4 +139,5 @@ Record decisions here as they're made, with the date.
 - 2026-10-23 · Stack: React, TypeScript, Vite, Tailwind v4 tokens, React Aria Components.
 - 2026-10-23 · Plan review: `Tooltip` moved to M2; M4 narrowed to the room shell, store and routing; flow-specific components built in M5; Lucide icons; self-hosted font; CI from M1; screenshot comparison via Playwright baselines.
 - 2026-10-23 · 4px grid: spacing, sizes, radii and line heights are multiples of 4. Font sizes keep their scale (11 for uppercase labels, 12, 13, 14, 16, 18). Radius scale is 4 / 8 / 12 / 16 / full: the 6px step is removed and the canvas's 10px radius snaps to 8 (controls, chips) or 12 (cards, tiles, sheets). Line heights move to 16 / 20 / 24. 15px mobile text snaps to 14.
+- 2026-10-23 · People status: Option A, as drawn in the Focus board's People panel (`O2StudentActions`): fixed mic and camera columns, grey except a live mic (green) or speaking (green badge and ring), and a second line only for raised hand or presenting. Muted and listening-only need clearly different icons (the `StatusList` board notes they look alike). Reference: `docs/screenshots/O2StudentActions.png` (cropped to the People panel).
 - 2026-10-23 · Text on the stage is white. Insight highlights stay purple, as one contrast-checked ramp.
