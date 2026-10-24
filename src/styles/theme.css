@@ -1,0 +1,80 @@
+/*
+ * BigBlueButton 4.0 prototype: Tailwind v4 theme.
+ * Tokens live in src/tokens/tokens.json and are generated into
+ * src/tokens/tokens.css by `npm run tokens`. Only utilities and base
+ * styles are hand-written here.
+ *
+ * Usage: bg-surface, text-text-muted, border-border-control, rounded-md,
+ *        h-control-md, bg-status-live, text-sm, bg-avatar-3 …
+ */
+@import '@fontsource/source-sans-3/400.css';
+@import '@fontsource/source-sans-3/500.css';
+@import '@fontsource/source-sans-3/600.css';
+@import '@fontsource/source-sans-3/700.css';
+/* Utilities come from src and .storybook only. Automatic detection would
+   also read the Markdown docs and the lint fixtures in src/test, whose
+   example classes (p-[13px], [color:red]) then leak into the CSS. */
+@import 'tailwindcss' source(none);
+@source '../';
+@source '../../.storybook';
+@source not '../test';
+@import '../tokens/tokens.css';
+
+/* ---------------------------------------------------------------
+ * Shared utilities
+ * ------------------------------------------------------------- */
+
+/* One focus style for every interactive element: a gap ring that
+   reads on white panels and on the dark stage. The transparent outline
+   becomes visible in forced-colors mode, where box-shadow is dropped. */
+@utility focus-ring {
+  outline: none;
+  &:focus-visible,
+  &[data-focus-visible] {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow:
+      0 0 0 2px var(--bbb-ring-offset),
+      0 0 0 4px var(--bbb-focus-ring);
+  }
+}
+
+/* Keeps a 32–40px control visually compact but gives touch a 44px target. */
+@utility hit-area {
+  position: relative;
+  @media (pointer: coarse) {
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: max(100%, var(--spacing-control-touch));
+      height: max(100%, var(--spacing-control-touch));
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+/* Speaking ring for avatars and tiles. Always pair it with an icon or badge. */
+@utility ring-speaking {
+  box-shadow:
+    0 0 0 var(--spacing-speaking-ring) var(--bbb-ring-offset),
+    0 0 0 calc(var(--spacing-speaking-ring) * 2) var(--bbb-status-live);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    font-size: var(--text-md);
+    color: var(--bbb-text);
+    background: var(--bbb-surface-sunken);
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

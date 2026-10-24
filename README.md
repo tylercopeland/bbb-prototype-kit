@@ -13,7 +13,9 @@ Everything Claude Code needs to build the BigBlueButton 4.0 room prototype from 
 | `.claude/settings.json` | Hook that runs `npm run check` after every edit once the project exists |
 | `docs/artboards.md` | All 47 screens to reproduce, with the state each shows |
 | `docs/review-findings.md` | Design and accessibility issues, as requirements with IDs |
-| `docs/tokens.json`, `docs/theme.css` | Token source and the Tailwind v4 theme |
+| `src/tokens/tokens.json` | Token source (DTCG, with light, dark and stage modes). `npm run tokens` generates `src/tokens/tokens.css`; `contrast.json` lists the checked color pairs |
+| `src/styles/theme.css` | Tailwind v4 entry: fonts, the generated tokens, and the hand-written utilities and base styles |
+| `docs/plans/` | The approved implementation plan for each milestone |
 | `docs/canvas/project/` | Source of every artboard on the two prototype pages, plus the boards they render |
 | `docs/screenshots/` | Optional PNGs for visual comparison |
 
@@ -25,7 +27,11 @@ Everything Claude Code needs to build the BigBlueButton 4.0 room prototype from 
 4. Delete the stray Assist paragraph from the low-engagement artboard on the live canvas. It's already removed from the copy in `docs/canvas/project/`.
 5. Review "Open decisions" in `PLAN.md`. The token ones are needed in milestone 1; people status and breakout setup by milestone 4.
 
-## First session
+## Running it
+
+Node 22 (`.nvmrc`), then `npm ci`. `npm run dev` serves the prototype, `npm run storybook` the design system, and `npm run check` runs lint, typecheck, unit tests and the token gate. `npm run test:e2e` needs a Chromium (`npx playwright install chromium`, or a pre-installed one at `/opt/pw-browsers/chromium` or `CHROMIUM_EXECUTABLE`). Every script is described in `CLAUDE.md` › Scripts.
+
+## First session (milestone 1: done)
 
 Open the folder in Claude Code, switch to plan mode, and send:
 

@@ -1,22 +1,18 @@
-/*
- * BigBlueButton 4.0 prototype: Tailwind v4 theme.
- * Mirrors tokens.json. Edit tokens.json first, then this file
- * (or generate it from tokens.json with Style Dictionary once the set settles).
- *
- * Usage: bg-surface, text-text-muted, border-border, rounded-md,
- *        h-control-md, bg-status-live, text-sm, bg-avatar-3 …
- */
-@import "tailwindcss";
+/* Do not edit directly, generated from src/tokens/tokens.json by `npm run tokens` */
 
-/* ---------------------------------------------------------------
- * 1. Primitives. Tailwind's default palette and scales are removed,
- *    so only these names produce utilities.
- * ------------------------------------------------------------- */
+/* 1. Primitives. Tailwind's default palette and scales are removed, so only these names produce utilities. */
 @theme {
   --color-*: initial;
   --radius-*: initial;
   --text-*: initial;
   --font-*: initial;
+  --font-weight-*: initial;
+  --leading-*: initial;
+  --tracking-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --container-*: initial;
 
   --color-white: #ffffff;
   --color-transparent: transparent;
@@ -35,25 +31,39 @@
   --color-neutral-900: #1f2933;
   --color-neutral-950: #111827;
 
-  --color-stage-900: #0b1220;
-  --color-stage-800: #0f1724;
-  --color-stage-700: #16233a;
-  --color-stage-600: #26364b;
   --color-stage-500: #2c3e55;
+  --color-stage-600: #26364b;
+  --color-stage-700: #16233a;
+  --color-stage-800: #0f1724;
+  --color-stage-900: #0b1220;
 
   --color-blue-50: #e8f0fd;
+  --color-blue-100: #e6eef9;
   --color-blue-300: #8ab8ff;
+  --color-blue-400: #5b8fe0;
   --color-blue-600: #1f62d0;
+
+  --color-green-50: #edf9f2;
   --color-green-300: #3ecf8e;
   --color-green-500: #12a150;
   --color-green-700: #12805c;
+
   --color-amber-50: #fff8eb;
   --color-amber-400: #f5a524;
   --color-amber-700: #9a5b00;
   --color-amber-950: #1f1300;
+
+  --color-red-50: #fdecea;
   --color-red-300: #ff8f8f;
   --color-red-500: #d93a2b;
   --color-red-700: #b42318;
+
+  --color-purple-50: #f3effa;
+  --color-purple-100: #e6def7;
+  --color-purple-300: #a78bfa;
+  --color-purple-500: #7c5cc4;
+  --color-purple-600: #5b3fb0;
+  --color-purple-700: #4a3290;
 
   --color-avatar-1: #b5542e;
   --color-avatar-2: #3d5a99;
@@ -63,16 +73,37 @@
   --color-avatar-6: #2b7a6f;
   --color-avatar-7: #4e6b2a;
   --color-avatar-8: #8a5a12;
+  --color-avatar-9: #006d8f;
+  --color-avatar-10: #556b8a;
+
+  --color-room-1: #2a63c8;
+  --color-room-2: #0f7b7b;
+  --color-room-3: #2e7d32;
+  --color-room-4: #806000;
+  --color-room-5: #b4531c;
+  --color-room-6: #c0392b;
+  --color-room-7: #a8327a;
+  --color-room-8: #6457c4;
 
   --font-sans: "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   --font-mono: ui-monospace, Menlo, monospace;
-
-  --text-2xs: 11px;  --text-2xs--line-height: 16px;
-  --text-xs: 12px;   --text-xs--line-height: 16px;
-  --text-sm: 13px;   --text-sm--line-height: 20px;
-  --text-md: 14px;   --text-md--line-height: 20px;
-  --text-lg: 16px;   --text-lg--line-height: 24px;
-  --text-xl: 18px;   --text-xl--line-height: 24px;
+  --text-2xs: 11px;
+  --text-2xs--line-height: 16px;
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 20px;
+  --text-md: 14px;
+  --text-md--line-height: 20px;
+  --text-lg: 16px;
+  --text-lg--line-height: 24px;
+  --text-xl: 18px;
+  --text-xl--line-height: 24px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --tracking-label: 0.04em;
 
   --radius-xs: 4px;
   --radius-md: 8px;
@@ -82,22 +113,23 @@
 
   --spacing: 4px;
 
-  /* Component sizes: h-control-md, size-avatar-md, w-panel … */
   --spacing-control-sm: 32px;
   --spacing-control-md: 36px;
   --spacing-control-lg: 40px;
   --spacing-control-touch: 44px;
+  --radius-control: var(--radius-md);
   --spacing-avatar-sm: 24px;
   --spacing-avatar-md: 32px;
   --spacing-avatar-lg: 40px;
-  --spacing-row: 44px;
   --spacing-panel: 360px;
+  --radius-panel: var(--radius-xl);
+  --radius-tile: var(--radius-lg);
+  --spacing-speaking-ring: 2px;
+  --spacing-row: 44px;
+  --container-page: 1152px;
 }
 
-/* ---------------------------------------------------------------
- * 2. Semantic tokens. Runtime CSS variables, so themes swap
- *    without rebuilding. `inline` makes utilities read the variable.
- * ------------------------------------------------------------- */
+/* 2. Semantic tokens. Runtime CSS variables, so themes swap without rebuilding. `inline` makes utilities read the variable. */
 @theme inline {
   --color-surface: var(--bbb-surface);
   --color-surface-sunken: var(--bbb-surface-sunken);
@@ -107,6 +139,8 @@
   --color-surface-overlay: var(--bbb-surface-overlay);
   --color-border: var(--bbb-border);
   --color-border-strong: var(--bbb-border-strong);
+  --color-ring-offset: var(--bbb-ring-offset);
+  --color-border-control: var(--bbb-border-control);
   --color-text: var(--bbb-text);
   --color-text-secondary: var(--bbb-text-secondary);
   --color-text-muted: var(--bbb-text-muted);
@@ -118,13 +152,22 @@
   --color-accent-soft: var(--bbb-accent-soft);
   --color-on-accent: var(--bbb-on-accent);
   --color-focus-ring: var(--bbb-focus-ring);
+  --color-selected: var(--bbb-selected);
+  --color-selected-text: var(--bbb-selected-text);
+  --color-selected-border: var(--bbb-selected-border);
+  --color-insight: var(--bbb-insight);
+  --color-on-insight: var(--bbb-on-insight);
+  --color-insight-text: var(--bbb-insight-text);
+  --color-insight-soft: var(--bbb-insight-soft);
   --color-status-live: var(--bbb-status-live);
   --color-status-live-text: var(--bbb-status-live-text);
+  --color-status-live-soft: var(--bbb-status-live-soft);
   --color-status-hand: var(--bbb-status-hand);
   --color-status-hand-text: var(--bbb-status-hand-text);
   --color-status-hand-soft: var(--bbb-status-hand-soft);
   --color-danger: var(--bbb-danger);
   --color-danger-text: var(--bbb-danger-text);
+  --color-danger-soft: var(--bbb-danger-soft);
 }
 
 :root,
@@ -138,6 +181,8 @@
   --bbb-surface-overlay: rgb(4 12 24 / 0.75);
   --bbb-border: var(--color-neutral-200);
   --bbb-border-strong: var(--color-neutral-300);
+  --bbb-ring-offset: var(--color-neutral-0);
+  --bbb-border-control: var(--color-neutral-500);
   --bbb-text: var(--color-neutral-950);
   --bbb-text-secondary: var(--color-neutral-800);
   --bbb-text-muted: var(--color-neutral-600);
@@ -149,17 +194,24 @@
   --bbb-accent-soft: var(--color-blue-50);
   --bbb-on-accent: var(--color-neutral-0);
   --bbb-focus-ring: var(--color-blue-600);
+  --bbb-selected: var(--color-blue-50);
+  --bbb-selected-text: var(--color-blue-600);
+  --bbb-selected-border: var(--color-blue-600);
+  --bbb-insight: var(--color-purple-600);
+  --bbb-on-insight: var(--color-neutral-0);
+  --bbb-insight-text: var(--color-purple-700);
+  --bbb-insight-soft: var(--color-purple-50);
   --bbb-status-live: var(--color-green-500);
   --bbb-status-live-text: var(--color-green-700);
+  --bbb-status-live-soft: var(--color-green-50);
   --bbb-status-hand: var(--color-amber-400);
   --bbb-status-hand-text: var(--color-amber-700);
   --bbb-status-hand-soft: var(--color-amber-50);
   --bbb-danger: var(--color-red-500);
   --bbb-danger-text: var(--color-red-700);
+  --bbb-danger-soft: var(--color-red-50);
 }
 
-/* Dark theme: panels move onto the stage ramp. Not drawn on the canvas yet;
-   these are starting values that pass contrast and need a design pass. */
 [data-theme="dark"] {
   color-scheme: dark;
   --bbb-surface: var(--color-stage-700);
@@ -167,6 +219,8 @@
   --bbb-surface-raised: var(--color-stage-600);
   --bbb-border: var(--color-stage-600);
   --bbb-border-strong: var(--color-stage-500);
+  --bbb-border-control: var(--color-neutral-400);
+  --bbb-ring-offset: var(--color-stage-700);
   --bbb-text: var(--color-neutral-0);
   --bbb-text-secondary: var(--color-neutral-300);
   --bbb-text-muted: var(--color-neutral-400);
@@ -176,71 +230,49 @@
   --bbb-accent-soft: var(--color-stage-600);
   --bbb-on-accent: var(--color-stage-900);
   --bbb-focus-ring: var(--color-blue-300);
+  --bbb-selected: var(--color-stage-600);
+  --bbb-selected-text: var(--color-neutral-0);
+  --bbb-selected-border: var(--color-blue-300);
+  --bbb-insight: var(--color-purple-500);
+  --bbb-insight-text: var(--color-purple-300);
+  --bbb-insight-soft: var(--color-stage-600);
   --bbb-status-live: var(--color-green-300);
   --bbb-status-live-text: var(--color-green-300);
+  --bbb-status-live-soft: var(--color-stage-600);
   --bbb-status-hand-text: var(--color-amber-400);
   --bbb-status-hand-soft: var(--color-stage-600);
   --bbb-danger-text: var(--color-red-300);
+  --bbb-danger-soft: var(--color-stage-600);
 }
 
-/* Anything sitting on the stage (control bar, tiles, slide chrome)
-   gets stage-safe accents in either theme. */
 [data-surface="stage"] {
+  --bbb-surface: var(--color-stage-700);
+  --bbb-surface-sunken: var(--color-stage-800);
+  --bbb-surface-raised: var(--color-stage-600);
+  --bbb-border: var(--color-stage-600);
+  --bbb-border-strong: var(--color-stage-500);
+  --bbb-ring-offset: var(--color-stage-900);
   --bbb-text: var(--color-neutral-0);
+  --bbb-text-secondary: var(--color-neutral-300);
   --bbb-text-muted: var(--color-neutral-400);
   --bbb-icon: var(--color-neutral-300);
+  --bbb-icon-subtle: var(--color-neutral-400);
+  --bbb-border-control: var(--color-neutral-400);
   --bbb-accent: var(--color-blue-300);
+  --bbb-accent-soft: var(--color-stage-600);
+  --bbb-on-accent: var(--color-stage-900);
   --bbb-focus-ring: var(--color-blue-300);
+  --bbb-selected: var(--color-blue-100);
+  --bbb-selected-text: var(--color-stage-800);
+  --bbb-selected-border: var(--color-blue-400);
+  --bbb-insight: var(--color-purple-500);
+  --bbb-insight-text: var(--color-purple-300);
+  --bbb-insight-soft: var(--color-stage-600);
   --bbb-status-live: var(--color-green-300);
+  --bbb-status-live-text: var(--color-green-300);
+  --bbb-status-live-soft: var(--color-stage-600);
+  --bbb-status-hand-text: var(--color-amber-400);
+  --bbb-status-hand-soft: var(--color-stage-600);
   --bbb-danger-text: var(--color-red-300);
-}
-
-/* ---------------------------------------------------------------
- * 3. Shared utilities
- * ------------------------------------------------------------- */
-
-/* One focus style for every interactive element: a gap ring that
-   reads on white panels and on the dark stage. */
-@utility focus-ring {
-  outline: none;
-  &:focus-visible,
-  &[data-focus-visible] {
-    box-shadow: 0 0 0 2px var(--bbb-surface), 0 0 0 4px var(--bbb-focus-ring);
-  }
-}
-
-/* Keeps a 32–40px control visually compact but gives touch a 44px target. */
-@utility hit-area {
-  position: relative;
-  @media (pointer: coarse) {
-    &::after {
-      content: "";
-      position: absolute;
-      inset: 50% auto auto 50%;
-      width: max(100%, var(--spacing-control-touch));
-      height: max(100%, var(--spacing-control-touch));
-      transform: translate(-50%, -50%);
-    }
-  }
-}
-
-/* Speaking ring for avatars and tiles. Always pair it with an icon or badge. */
-@utility ring-speaking {
-  box-shadow: 0 0 0 2px var(--bbb-surface), 0 0 0 4px var(--bbb-status-live);
-}
-
-@layer base {
-  html {
-    font-family: var(--font-sans);
-    font-size: var(--text-md);
-    color: var(--bbb-text);
-    background: var(--bbb-surface-sunken);
-    -webkit-font-smoothing: antialiased;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
+  --bbb-danger-soft: var(--color-stage-600);
 }
