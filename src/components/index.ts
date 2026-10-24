@@ -12,6 +12,7 @@ export * from './Menu';
 export * from './Popover';
 export * from './SessionHeader';
 export * from './Sheet';
+export * from './Stage';
 export * from './Stepper';
 export * from './Surface';
 export * from './Switch';
