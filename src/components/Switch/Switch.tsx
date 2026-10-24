@@ -30,7 +30,8 @@ export const switchTextStyles = tv({
  * off and accent on (both at least 3:1 on the surface), and the thumb moves
  * 16px, so the state is a position as well as a color. The focus ring draws
  * on the track through `group-focus-ring`, since the label holds the focus
- * state. In forced colors the on state keeps a Highlight border.
+ * state. In forced colors the track gets a current-color border and the
+ * thumb a current-color fill, so the position still reads.
  */
 export const switchTrackStyles = tv({
   slots: {

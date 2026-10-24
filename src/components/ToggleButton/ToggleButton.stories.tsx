@@ -117,6 +117,23 @@ export const Disabled: Story = {
   ),
 };
 
+/** A count over the corner: the badge describes the button ("Chat, 2 unread"); the name stays "Chat". */
+export const WithBadge: Story = {
+  args: { label: 'Chat', icon: 'chat', selectedIcon: undefined, shortcut: undefined },
+  render: (args) => (
+    <>
+      <ToggleButton {...args} badge={{ count: 2, label: '2 unread' }} />
+      <ToggleButton {...args} badge={{ count: 120, label: '120 unread' }} defaultSelected />
+      <ToggleButton
+        {...args}
+        label="People"
+        icon="people"
+        badge={{ count: 3, label: '3 help requests', tone: 'urgent' }}
+      />
+    </>
+  ),
+};
+
 /** The action bar uses `touch`; the smaller sizes are for dense chrome. */
 export const Sizes: Story = {
   render: (args) => (
@@ -142,8 +159,8 @@ export const Stage: Story = {
 
 /**
  * The whole action bar as the Focus board draws it (lines 45–62, 801–858):
- * the panel toggles (People selected), then Mic, Camera, Share media, React,
- * Raise hand, then Leave. Count badges arrive in milestone 3.
+ * the panel toggles (People selected, Chat with its unread count), then Mic,
+ * Camera, Share media, React, Raise hand, then Leave.
  */
 export const ActionBarOnStage: Story = {
   globals: { surface: 'stage' },
@@ -157,7 +174,14 @@ export const ActionBarOnStage: Story = {
         shortcut={undefined}
         defaultSelected
       />
-      <ToggleButton {...args} label="Chat" icon="chat" selectedIcon={undefined} shortcut={undefined} />
+      <ToggleButton
+        {...args}
+        label="Chat"
+        icon="chat"
+        selectedIcon={undefined}
+        shortcut={undefined}
+        badge={{ count: 2, label: '2 unread' }}
+      />
       <ToggleButton
         {...args}
         label="Shared notes"

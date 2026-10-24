@@ -8,6 +8,7 @@ import {
 import { Icon, type IconName } from '../../icons';
 import { useAriaKeyshortcuts, type ShortcutId } from '../../shortcuts';
 import { tv, type VariantProps } from '../../styles/tv';
+import { Badge, type BadgeProps } from '../Badge';
 import { iconSizeFor, type ControlSize } from '../Button';
 import { disabledDomProps, iconButtonStyles } from '../IconButton';
 import { Tooltip, type TooltipPlacement } from '../Tooltip';
@@ -42,6 +43,16 @@ export const toggleButtonStyles = tv({
 
 export type ToggleButtonSelectedTone = NonNullable<VariantProps<typeof toggleButtonStyles>['selectedTone']>;
 
+/**
+ * The count on a panel button (Focus.dc.html 49): over the top-right
+ * corner, with a 2px border in the ring-offset color (the stage behind the
+ * action bar) so it separates from the button. 24px outside, 20px inside
+ * the border.
+ */
+export const toggleBadgeStyles = tv({
+  base: 'absolute -top-1 -right-1 h-6 min-w-6 border-2 border-ring-offset',
+});
+
 export interface ToggleButtonProps extends Omit<
   RacToggleButtonProps,
   'className' | 'children' | 'aria-label' | 'isDisabled'
@@ -63,6 +74,8 @@ export interface ToggleButtonProps extends Omit<
   isSpeaking?: boolean;
   /** `hand` colors the selected state amber, for Raise hand. @default 'accent' */
   selectedTone?: ToggleButtonSelectedTone;
+  /** A count over the corner (unread on Chat, raised hands on People). Its label describes the button. */
+  badge?: Pick<BadgeProps, 'count' | 'label' | 'tone'>;
   /** @default 'top' */
   tooltipPlacement?: TooltipPlacement;
   /** Disabled toggles stay focusable and hoverable (`aria-disabled`) so their tooltip still names them. */
@@ -92,6 +105,7 @@ export function ToggleButton({
   shortcut,
   isSpeaking = false,
   selectedTone,
+  badge,
   tooltipPlacement,
   isDisabled = false,
   className,
@@ -100,20 +114,36 @@ export function ToggleButton({
 }: ToggleButtonProps) {
   const buttonRef = useAriaKeyshortcuts<HTMLButtonElement>(shortcut, ref);
   const speakingId = useId();
-  // Keep a caller's description and add "Speaking" to it, never replace it.
+  const badgeId = useId();
+  // Keep a caller's description and add the badge and "Speaking" to it, never replace it.
   const describedBy =
-    [props['aria-describedby'], isSpeaking ? speakingId : undefined].filter(Boolean).join(' ') ||
-    undefined;
+    [props['aria-describedby'], badge ? badgeId : undefined, isSpeaking ? speakingId : undefined]
+      .filter(Boolean)
+      .join(' ') || undefined;
   const glyphFor = (selected: boolean) => (
-    <Icon
-      name={isSpeaking ? 'speaking' : selected ? (selectedIcon ?? icon) : icon}
-      size={iconSizeFor(size)}
-    />
+    <>
+      <Icon
+        name={isSpeaking ? 'speaking' : selected ? (selectedIcon ?? icon) : icon}
+        size={iconSizeFor(size)}
+      />
+      {badge && <Badge {...badge} className={toggleBadgeStyles()} />}
+    </>
   );
-  const status = isSpeaking && (
-    <span id={speakingId} hidden>
-      Speaking
-    </span>
+  // The badge's label and "Speaking" describe the button through hidden text
+  // (not live regions); a referenced role="img" would read its digits only.
+  const status = (
+    <>
+      {badge && (
+        <span id={badgeId} hidden>
+          {badge.label}
+        </span>
+      )}
+      {isSpeaking && (
+        <span id={speakingId} hidden>
+          Speaking
+        </span>
+      )}
+    </>
   );
 
   if (isDisabled) {
