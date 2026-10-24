@@ -138,15 +138,17 @@ export function ParticipantList({
   const othersTitle = filter === 'low' ? 'Low engagement' : 'Everyone';
   return (
     <div {...props} ref={rootRef} tabIndex={-1} className={styles.root({ className })}>
+      {/* Compact, so the three chips stay on one row at the panel width (Focus.dc.html 580–584). */}
       <ChipGroup
         label="Filter people"
         labelHidden
+        density="compact"
         value={filter}
         onChange={(v) => onFilterChange?.(v as PeopleFilter)}
         className={styles.filters()}
       >
         {(['all', 'hands', 'low'] as const).map((f) => (
-          <Chip key={f} value={f} badge={{ count: counts[f], label: `${counts[f]} people` }}>
+          <Chip key={f} value={f} density="compact" badge={{ count: counts[f], label: `${counts[f]} people` }}>
             {filterLabels[f]}
           </Chip>
         ))}

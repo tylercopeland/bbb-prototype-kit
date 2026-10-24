@@ -57,8 +57,8 @@ const panelTitles: Record<Exclude<Panel, 'none'>, string> = {
  * A `complementary` landmark named after the open panel. People and Chat
  * are one `Tabs` (D3: the tabs sit above their panels), controlled by the
  * room so the action bar's buttons and the tabs agree; the counts describe
- * the tabs ("People, 4 raised hands"). Every panel has the visible close
- * button (X1).
+ * the tabs ("People, 4 raised hands"), and the Chat count hides while Chat
+ * is the open tab. Every panel has the visible close button (X1).
  */
 export function SidePanel({
   panel,
@@ -99,7 +99,8 @@ export function SidePanel({
             <Tab id="people" badge={raisedHands > 0 ? { count: raisedHands, label: `${raisedHands} raised hands` } : undefined}>
               People
             </Tab>
-            <Tab id="chat" badge={unread > 0 ? { count: unread, label: `${unread} unread` } : undefined}>
+            {/* The unread count hides while Chat is open: the messages are on screen (Focus.dc.html 418). */}
+            <Tab id="chat" badge={unread > 0 && panel !== 'chat' ? { count: unread, label: `${unread} unread` } : undefined}>
               Chat
             </Tab>
           </TabList>

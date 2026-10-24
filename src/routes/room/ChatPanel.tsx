@@ -36,12 +36,14 @@ const chatPanelStyles = tv({
     panel: 'flex min-h-0 flex-1 flex-col',
     messages: 'flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4',
     bubbles: 'flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-4',
+    /** The first item pushes the rest to the bottom (Focus.dc.html 484: messages sit above the composer), and the list still scrolls. */
+    first: 'mt-auto',
     empty: 'mt-auto text-center text-sm text-text-muted',
     threadHeader: 'flex items-center gap-2 border-b border-border px-3 py-2',
     threadName: 'flex min-w-0 flex-1 flex-col',
     name: 'truncate text-md font-bold text-text',
     kind: 'flex items-center gap-1 text-xs text-text-muted',
-    note: 'mx-auto max-w-64 pb-1 text-center text-xs leading-4 text-text-muted',
+    note: 'mx-auto mt-auto max-w-64 pb-1 text-center text-xs leading-4 text-text-muted',
   },
 });
 
@@ -124,13 +126,14 @@ function EveryoneMessages() {
   return (
     <ol ref={ref} aria-label="Messages to everyone" className={styles.messages()}>
       {messages.length === 0 && <li className={styles.empty()}>No messages yet. Say hello!</li>}
-      {messages.map((m: Message) => (
+      {messages.map((m: Message, i) => (
         <ChatMessage
           key={m.id}
           name={names.get(m.from) ?? 'Someone who left'}
           participantId={m.from}
           time={formatTimeOfDay(m.sentAt)}
           isSelf={m.from === me}
+          className={i === 0 ? styles.first() : undefined}
         >
           {m.text}
         </ChatMessage>

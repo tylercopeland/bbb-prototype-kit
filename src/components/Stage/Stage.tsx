@@ -13,17 +13,26 @@ import { DEFAULT_MAX_TILES, WebcamStrip } from '../WebcamStrip';
  * webcam strip in the presentation layouts, or a grid of everyone when the
  * presentation is minimized or there is none. Everything here sits inside
  * `<Surface kind="stage">`, so the tokens resolve to the stage ramp.
+ *
+ * With the strip beside the slide (`side`), the slide column fills the
+ * stage and the slide fits by height inside its own size container, while
+ * the strip starts at the canvas's offset below the top of the stage
+ * (Focus.dc.html 870: 162px from the room's top, 98px into the stage). With
+ * the strip above (`top`), the stage is the size container and the strip
+ * and the slide are centred together as one block (883–884).
  */
 export const stageStyles = tv({
   slots: {
     root: 'relative flex min-h-0 min-w-0 flex-1 gap-3 bg-surface-stage p-3',
-    /** The slide column: the chrome row, then the slide, centred in what is left. */
-    presentation: 'flex min-h-0 min-w-0 flex-1 flex-col gap-3',
+    /** The slide column: the chrome row, then the slide. */
+    presentation: 'flex min-h-0 min-w-0 flex-col gap-3',
     chrome: 'flex min-h-control-md items-center justify-between gap-3',
-    /** A size container, so the slide can fit by height (`slide-fit`). */
-    fit: '@container flex min-h-0 min-w-0 flex-1 items-center justify-center',
+    /** The box the slide fits in. */
+    fit: 'flex min-h-0 min-w-0 items-center justify-center',
+    /** The webcam strip. */
+    strip: '',
     /** The shared screen's frame: fitted like the slide. */
-    screen: 'slide-fit relative flex items-center justify-center overflow-hidden rounded-tile border border-border bg-surface-tile text-text shadow-overlay',
+    screen: 'relative flex items-center justify-center overflow-hidden rounded-tile border border-border bg-surface-tile text-text shadow-overlay',
     screenNote: 'flex items-center gap-2 text-md font-semibold',
     screenDot: 'size-2 rounded-full bg-danger-text',
     /** The "What everyone sees" tabs in the chrome row. */
@@ -35,23 +44,41 @@ export const stageStyles = tv({
   },
   variants: {
     webcams: {
-      side: { root: 'flex-row' },
-      top: { root: 'flex-col' },
+      side: {
+        root: 'flex-row',
+        presentation: 'flex-1',
+        fit: '@container flex-1',
+        strip: 'mt-21',
+        screen: 'slide-fit',
+      },
+      top: {
+        root: '@container flex-col items-center justify-center',
+        presentation: 'w-full flex-none',
+        fit: 'flex-none',
+        screen: 'slide-fit-stacked',
+      },
     },
   },
   defaultVariants: { webcams: 'side' },
 });
 
-/** The slide placeholder: white paper in every mode (`slide` / `on-slide`), 16:9, fitted to its container. */
+/** The slide placeholder: white paper in every mode (`slide` / `on-slide`), 16:9, fitted like the stage says. */
 export const slideStyles = tv({
   slots: {
-    root: 'slide-fit relative flex flex-col justify-between overflow-hidden rounded-tile bg-slide p-6 text-on-slide shadow-overlay',
+    root: 'relative flex flex-col justify-between overflow-hidden rounded-tile bg-slide p-6 text-on-slide shadow-overlay',
     deck: 'text-sm font-semibold tracking-label uppercase',
     title: 'text-xl font-bold text-balance',
     number: 'self-end text-sm font-semibold tabular-nums',
     /** "Slide" before the number, for assistive technology only. */
     numberLabel: 'sr-only',
   },
+  variants: {
+    webcams: {
+      side: { root: 'slide-fit' },
+      top: { root: 'slide-fit-stacked' },
+    },
+  },
+  defaultVariants: { webcams: 'side' },
 });
 
 /**
@@ -176,6 +203,7 @@ export function Stage({
       max={maxTiles}
       direction={webcams === 'top' ? 'row' : 'column'}
       onShowAll={onShowAll}
+      className={styles.strip()}
     />
   );
   return (
@@ -201,9 +229,9 @@ export function Stage({
             </div>
             <div className={styles.fit()}>
               {layout === 'presenter' && share?.showing === 'screen' ? (
-                <ScreenFrame kind={share.kind} />
+                <ScreenFrame kind={share.kind} webcams={webcams} />
               ) : (
-                <Slide {...presentation} />
+                <Slide {...presentation} webcams={webcams} />
               )}
             </div>
           </section>
@@ -215,8 +243,8 @@ export function Stage({
   );
 }
 
-function Slide({ deckName, slideTitle, slideNumber, slideCount }: StagePresentation) {
-  const styles = slideStyles();
+function Slide({ deckName, slideTitle, slideNumber, slideCount, webcams }: StagePresentation & { webcams: StageWebcams }) {
+  const styles = slideStyles({ webcams });
   return (
     <div className={styles.root()}>
       <p className={styles.deck()}>{deckName}</p>
@@ -230,8 +258,8 @@ function Slide({ deckName, slideTitle, slideNumber, slideCount }: StagePresentat
 }
 
 /** What everyone sees while the screen is on stage: a dark frame with the live note. */
-function ScreenFrame({ kind }: { kind: ScreenKind }) {
-  const styles = stageStyles();
+function ScreenFrame({ kind, webcams }: { kind: ScreenKind; webcams: StageWebcams }) {
+  const styles = stageStyles({ webcams });
   return (
     <div className={styles.screen()}>
       <p className={styles.screenNote()}>

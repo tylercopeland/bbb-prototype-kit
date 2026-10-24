@@ -170,6 +170,21 @@
   max-height: 100%;
 }
 
+/* The same fit when the webcam strip sits above the slide and the two are
+   centred as one block (the canvas's camTop case, Focus.dc.html 880–883).
+   The stage itself is then the size container, so the slide's height is
+   what the stage leaves after the strip (24 steps), the chrome row and the
+   two gaps of 3 steps around it. Never below 40% of the width, so a very
+   short stage overflows rather than losing the slide. */
+@utility slide-fit-stacked {
+  aspect-ratio: 16 / 9;
+  width: clamp(
+    40%,
+    calc((100cqh - var(--spacing) * 24 - var(--spacing) * 6 - var(--spacing-control-md)) * 16 / 9),
+    100%
+  );
+}
+
 /* Keeps a 32–40px control visually compact but gives touch a 44px target. */
 @utility hit-area {
   position: relative;

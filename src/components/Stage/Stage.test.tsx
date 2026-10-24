@@ -28,12 +28,18 @@ describe('Stage', () => {
     expect(screen.getByRole('button', { name: 'Minimize presentation' })).toBeInTheDocument();
   });
 
-  it('puts the strip above the slide with webcams="top"', () => {
-    const { container } = render(<Stage layout="presentation" webcams="top" {...forFixture('class')} />);
+  it('puts the strip above the slide with webcams="top", centred as one block; beside it, the column starts lower', () => {
+    const { container, rerender } = render(<Stage layout="presentation" webcams="top" {...forFixture('class')} />);
     const root = container.querySelector('[data-surface="stage"]')!;
-    expect(root).toHaveClass('flex-col');
+    expect(root).toHaveClass('flex-col', 'justify-center', 'items-center', '@container');
     expect(root.firstElementChild).toHaveAttribute('aria-label', 'Webcams');
     expect(screen.getByRole('list', { name: 'Webcams' })).toHaveClass('flex-row');
+    expect(screen.getByRole('list', { name: 'Webcams' })).not.toHaveClass('mt-21');
+    expect(screen.getByRole('heading', { level: 2 }).parentElement).toHaveClass('slide-fit-stacked');
+    rerender(<Stage layout="presentation" webcams="side" {...forFixture('class')} />);
+    expect(root).toHaveClass('flex-row');
+    expect(screen.getByRole('list', { name: 'Webcams' })).toHaveClass('flex-col', 'mt-21');
+    expect(screen.getByRole('heading', { level: 2 }).parentElement).toHaveClass('slide-fit');
   });
 
   it('minimized: a grid of everyone plus the presentation tile, with data-driven columns', async () => {

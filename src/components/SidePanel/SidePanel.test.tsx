@@ -69,6 +69,13 @@ describe('SidePanel', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
+  it('hides the Chat count while Chat is the open tab, and keeps the People count', () => {
+    render(<Subject panel="chat" raisedHands={4} unread={2} />);
+    expect(screen.getByRole('tab', { name: 'Chat' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'People 4 raised hands' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: '2 unread' })).not.toBeInTheDocument();
+  });
+
   it('shows a plain title and the children for Notes and Poll', () => {
     render(
       <Subject panel="notes">
