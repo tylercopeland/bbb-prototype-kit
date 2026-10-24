@@ -87,6 +87,20 @@ const entries: Record<IconName, Entry> = {
   shapes: { meaning: 'Shapes tool', used: 'Whiteboard tools (ToggleGroup)' },
   text: { meaning: 'Text tool', used: 'Whiteboard tools (ToggleGroup)' },
   eraser: { meaning: 'Eraser tool', used: 'Whiteboard tools (ToggleGroup)' },
+  person: {
+    meaning: 'Webcam placeholder',
+    used: 'VideoTile with the camera on',
+    note: 'The prototype has no real video; the glyph stands in for the picture',
+  },
+  back: { meaning: 'Back', used: 'DM thread header (back to the Direct list)' },
+  private: {
+    meaning: 'Private conversation',
+    used: 'DM thread header, DM composer',
+    note: 'A different meaning from lockChat (a moderator locking public chat), so a different glyph',
+  },
+  question: { meaning: 'Question asked in chat', used: 'AlertPill (session header)' },
+  minimize: { meaning: 'Minimize presentation', used: 'Stage (presentation controls)' },
+  restore: { meaning: 'Restore presentation', used: 'Stage (minimized presentation tile)' },
 };
 
 const names = Object.keys(icons) as IconName[];

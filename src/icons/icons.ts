@@ -9,6 +9,7 @@ import {
   Blocks,
   Captions,
   ChartColumn,
+  ChevronLeft,
   ChevronRight,
   CircleAlert,
   CircleX,
@@ -27,10 +28,14 @@ import {
   LayoutGrid,
   Lightbulb,
   Lock,
+  LockKeyhole,
   LogOut,
+  Maximize2,
+  MessageCircleQuestionMark,
   MessageSquare,
   Mic,
   MicOff,
+  Minimize2,
   Minus,
   MousePointer2,
   Pencil,
@@ -45,6 +50,7 @@ import {
   SquarePlus,
   Timer,
   Type,
+  User,
   Users,
   Video,
   VideoOff,
@@ -99,6 +105,16 @@ export const icons = {
   shapes: Square,
   text: Type,
   eraser: Eraser,
+  /** The webcam placeholder on a tile with the camera on (no real video in the prototype). */
+  person: User,
+  /** "Back to direct messages" in a thread header. */
+  back: ChevronLeft,
+  /** A private conversation: the lock in the thread header and the composer. `lockChat` is the moderator action. */
+  private: LockKeyhole,
+  /** The question alert pill ("Rafaela asked"). */
+  question: MessageCircleQuestionMark,
+  minimize: Minimize2,
+  restore: Maximize2,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

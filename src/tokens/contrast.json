@@ -366,6 +366,20 @@
       "modes": ["light", "dark", "stage"]
     },
     {
+      "fg": "semantic.color.on-slide",
+      "bg": "semantic.color.slide",
+      "min": 4.5,
+      "modes": ["light", "dark", "stage"],
+      "note": "The slide placeholder: neutral-950 on white in every mode (the slide is content, never themed)"
+    },
+    {
+      "fg": "semantic.color.text-muted",
+      "bg": "semantic.color.slide",
+      "min": 4.5,
+      "modes": ["light"],
+      "note": "The deck name on the slide placeholder is read in light values only (the slide stays white): neutral-600 on white 7.0"
+    },
+    {
       "fg": "semantic.color.text-on-stage-muted",
       "bg": "semantic.color.surface-stage",
       "min": 4.5,
