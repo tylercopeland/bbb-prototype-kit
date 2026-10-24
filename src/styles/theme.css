@@ -61,6 +61,33 @@
   }
 }
 
+/* The same focus ring, drawn on a box around a field: the chat composer's
+   border rings when the textarea inside it has keyboard focus, as the
+   canvas draws its blue composer border (Focus.dc.html 474). The Send
+   button inside the box has its own focus-ring and does not ring the box. */
+@utility focus-ring-within {
+  &:has(:is(textarea, input)[data-focus-visible]) {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow:
+      0 0 0 2px var(--bbb-ring-offset),
+      0 0 0 4px var(--bbb-focus-ring);
+  }
+}
+
+/* The same focus ring on a child of a `group` that is focus-visible: a
+   Switch is a <label> around a hidden input, so React Aria marks the label
+   and the ring belongs on the track inside it. */
+@utility group-focus-ring {
+  .group:is(:focus-visible, [data-focus-visible]) & {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow:
+      0 0 0 2px var(--bbb-ring-offset),
+      0 0 0 4px var(--bbb-focus-ring);
+  }
+}
+
 /* The non-color cue of a selected toggle: an inset 2px ring in
    selected-ring, which is at least 3:1 on the selected fill and on the
    unselected (raised) fill in every mode. In forced colors, where
