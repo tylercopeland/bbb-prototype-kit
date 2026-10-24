@@ -94,12 +94,19 @@ export const WithIcon: Story = {
   ),
 };
 
-/** A label longer than its button truncates instead of wrapping or growing. */
+/**
+ * A label longer than its button truncates instead of wrapping or growing,
+ * and hover or focus shows the full text in a tooltip (the first button is
+ * autofocused here). A label that fits opens nothing.
+ */
 export const LongLabel: Story = {
+  tags: ['wait-for-tooltip'],
   args: { variant: 'secondary', icon: 'shareMedia' },
   render: (args) => (
     <div className="flex w-48 flex-col gap-4">
-      <Button {...args}>Share media: slides, a video, your screen, audio or a link</Button>
+      <Button {...args} autoFocus>
+        Share media: slides, a video, your screen, audio or a link
+      </Button>
       <Button {...args} variant="primary" icon={undefined} iconEnd="externalLink">
         Open the learning analytics dashboard
       </Button>

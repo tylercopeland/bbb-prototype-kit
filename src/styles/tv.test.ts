@@ -27,6 +27,12 @@ describe('tv merge config', () => {
     expect(text({ className: 'tracking-label' })).toBe('font-semibold max-w-64 tracking-label');
   });
 
+  it('merges the shadow token scale', () => {
+    const card = tv({ base: 'shadow-overlay bg-surface' });
+    expect(card({ className: 'shadow-none' })).toBe('bg-surface shadow-none');
+    expect(tv({ base: 'shadow-none' })({ className: 'shadow-overlay' })).toBe('shadow-overlay');
+  });
+
   it('resolves conflicts between extended variants', () => {
     const base = tv({ variants: { size: { sm: 'h-control-sm px-3' } } });
     const extended = tv({ extend: base, variants: { size: { sm: 'w-control-sm p-0' } } });

@@ -114,6 +114,8 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
 
+  --shadow-overlay: 0 16px 40px rgb(2 8 18 / 0.35);
+
   --spacing: 4px;
 
   --spacing-control-sm: 32px;
@@ -144,6 +146,7 @@
   --color-surface-stage: var(--bbb-surface-stage);
   --color-surface-tile: var(--bbb-surface-tile);
   --color-surface-overlay: var(--bbb-surface-overlay);
+  --color-scrim: var(--bbb-scrim);
   --color-border: var(--bbb-border);
   --color-border-strong: var(--bbb-border-strong);
   --color-ring-offset: var(--bbb-ring-offset);
@@ -193,6 +196,7 @@
   --bbb-surface-stage: var(--color-stage-900);
   --bbb-surface-tile: var(--color-stage-700);
   --bbb-surface-overlay: rgb(4 12 24 / 0.75);
+  --bbb-scrim: rgb(2 8 18 / 0.55);
   --bbb-border: var(--color-neutral-200);
   --bbb-border-strong: var(--color-neutral-300);
   --bbb-ring-offset: var(--color-neutral-0);

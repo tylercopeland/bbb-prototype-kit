@@ -1,8 +1,9 @@
-import type { ReactElement, ReactNode } from 'react';
+import { useMemo, type ContextType, type ReactElement, type ReactNode, type RefObject } from 'react';
 import {
   Keyboard,
   Tooltip as RacTooltip,
   TooltipTrigger,
+  TooltipTriggerStateContext,
   composeRenderProps,
   type TooltipTriggerComponentProps,
 } from 'react-aria-components';
@@ -33,8 +34,15 @@ export interface TooltipProps extends Pick<
   TooltipTriggerComponentProps,
   'delay' | 'closeDelay' | 'isOpen' | 'defaultOpen' | 'onOpenChange' | 'isDisabled'
 > {
-  /** The trigger: a focusable React Aria element, or one wrapped in `Focusable`. */
-  children: ReactElement;
+  /**
+   * The trigger: a focusable React Aria element, or one wrapped in
+   * `Focusable`. Leave it out and pass `triggerRef` instead for a control
+   * that owns its hover and focus state (a Chip or a Tab, through
+   * `useTruncationTooltip`); the tooltip is then controlled by `isOpen`.
+   */
+  children?: ReactElement;
+  /** Without `children`: the element the tooltip is positioned against. */
+  triggerRef?: RefObject<Element | null>;
   /** For icon buttons, this equals their `aria-label`. */
   label: ReactNode;
   /**
@@ -59,10 +67,13 @@ export interface TooltipProps extends Pick<
  * repeats them.
  *
  * It portals to <body>, so it takes `useSurfaceProps()` to stay on the
- * stage ramp when its trigger is on the stage.
+ * stage ramp when its trigger is on the stage. Inside an overlay, which
+ * always draws as a panel, the overlay's `SurfaceProvider` makes it a
+ * panel tooltip.
  */
 export function Tooltip({
   children,
+  triggerRef,
   label,
   labelHidden = false,
   shortcut,
@@ -70,26 +81,55 @@ export function Tooltip({
   delay = 600,
   closeDelay = 100,
   className,
-  ...trigger
+  isOpen,
+  defaultOpen,
+  onOpenChange,
+  isDisabled,
 }: TooltipProps) {
   const surfaceProps = useSurfaceProps();
+  // Standalone (no trigger element), the tooltip is controlled by `isOpen`. React Aria's
+  // Tooltip reads its state from TooltipTriggerStateContext, which only TooltipTrigger
+  // provides, so the controlled state is provided here in the same shape.
+  const standaloneState = useMemo<NonNullable<ContextType<typeof TooltipTriggerStateContext>>>(
+    () => ({
+      isOpen: isOpen ?? false,
+      open: () => onOpenChange?.(true),
+      close: () => onOpenChange?.(false),
+      shouldSkipAnimation: false,
+    }),
+    [isOpen, onOpenChange],
+  );
+  const tooltip = (
+    <RacTooltip
+      {...surfaceProps}
+      triggerRef={children ? undefined : triggerRef}
+      placement={placement}
+      offset={TOOLTIP_OFFSET}
+      className={composeRenderProps(className, (cls) => tooltipStyles({ className: cls }))}
+    >
+      <span aria-hidden={labelHidden || undefined}>{label}</span>
+      {shortcut && (
+        <>
+          {' '}
+          <Keyboard className={tooltipKeyStyles()}>{formatShortcut(shortcut)}</Keyboard>
+        </>
+      )}
+    </RacTooltip>
+  );
+  if (!children) {
+    return <TooltipTriggerStateContext.Provider value={standaloneState}>{tooltip}</TooltipTriggerStateContext.Provider>;
+  }
   return (
-    <TooltipTrigger delay={delay} closeDelay={closeDelay} {...trigger}>
+    <TooltipTrigger
+      delay={delay}
+      closeDelay={closeDelay}
+      isOpen={isOpen}
+      defaultOpen={defaultOpen}
+      onOpenChange={onOpenChange}
+      isDisabled={isDisabled}
+    >
       {children}
-      <RacTooltip
-        {...surfaceProps}
-        placement={placement}
-        offset={TOOLTIP_OFFSET}
-        className={composeRenderProps(className, (cls) => tooltipStyles({ className: cls }))}
-      >
-        <span aria-hidden={labelHidden || undefined}>{label}</span>
-        {shortcut && (
-          <>
-            {' '}
-            <Keyboard className={tooltipKeyStyles()}>{formatShortcut(shortcut)}</Keyboard>
-          </>
-        )}
-      </RacTooltip>
+      {tooltip}
     </TooltipTrigger>
   );
 }

@@ -21,6 +21,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      # The unit tests share one jsdom (isolate: false); a shuffled order proves
+      # that src/test/setup.ts resets everything a test can leave behind.
+      - run: npx vitest run --reporter=dot --sequence.shuffle --sequence.seed=${{ github.run_number }}
 
   e2e:
     runs-on: ubuntu-24.04

@@ -13,6 +13,7 @@
  *   primitive.font.letterSpacing.X --tracking-X
  *   component.page.max-width   --container-page (max-w-page)
  *   primitive.radius.X         --radius-X
+ *   primitive.shadow.X         --shadow-X (shadow-X)
  *   primitive.space.base       --spacing
  *   component.control.sm       --spacing-control-sm
  *   component.X.radius         --radius-X
@@ -49,6 +50,7 @@ export function tailwindName(p: string[]): string {
       if (sub === 'letterSpacing') return `tracking-${tail.join('-')}`;
     }
     if (group === 'radius') return `radius-${[sub, ...tail].join('-')}`;
+    if (group === 'shadow') return `shadow-${[sub, ...tail].join('-')}`;
     if (group === 'space') return sub === 'base' ? 'spacing' : `space-${[sub, ...tail].join('-')}`;
   }
   if (tier === 'semantic' && rest[0] === 'color') return `color-${rest.slice(1).join('-')}`;

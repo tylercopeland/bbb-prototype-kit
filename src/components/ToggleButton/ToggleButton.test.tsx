@@ -179,6 +179,36 @@ describe('ToggleButton', () => {
     expect(toggle).toHaveAccessibleDescription('Hint Speaking');
   });
 
+  it('shows a count badge that describes the button, with the name unchanged', () => {
+    render(<ToggleButton label="Chat" icon="chat" badge={{ count: 2, label: '2 unread' }} />);
+    const toggle = screen.getByRole('button', { name: 'Chat' });
+    expect(toggle).toHaveAccessibleDescription('2 unread');
+    const badge = screen.getByRole('img', { name: '2 unread' });
+    expect(toggle).toContainElement(badge);
+    expect(badge).toHaveTextContent('2');
+    expect(badge).toHaveClass('absolute', 'border-ring-offset');
+  });
+
+  it('joins the badge with Speaking and a caller description, enabled or disabled', () => {
+    const { rerender } = render(
+      <>
+        <span id="hint">Hint</span>
+        <Microphone aria-describedby="hint" isSpeaking badge={{ count: 3, label: '3 raised hands' }} />
+      </>,
+    );
+    const toggle = screen.getByRole('button', { name: 'Microphone' });
+    expect(toggle).toHaveAccessibleDescription('Hint 3 raised hands Speaking');
+    rerender(
+      <>
+        <span id="hint">Hint</span>
+        <Microphone aria-describedby="hint" isDisabled badge={{ count: 3, label: '3 raised hands' }} />
+      </>,
+    );
+    expect(screen.getByRole('button', { name: 'Microphone' })).toHaveAccessibleDescription(
+      'Hint 3 raised hands',
+    );
+  });
+
   it('keeps DOM props such as id and aria-controls when disabled', () => {
     render(<Microphone isDisabled id="mic" aria-controls="audio-menu" data-slot="mic" />);
     const toggle = screen.getByRole('button', { name: 'Microphone' });

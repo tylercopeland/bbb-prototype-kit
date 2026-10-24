@@ -12,13 +12,30 @@ export function useSurface(): SurfaceKind {
 
 /**
  * The `data-surface` attribute for an element that portals out of its
- * Surface (Tooltip, later Popover and Dialog): spread it on the portaled
- * element so it keeps the stage colors. Nothing else writes `data-surface`
- * by hand; lint enforces it.
+ * Surface and must keep the stage colors: the Tooltip. Popover, Dialog,
+ * Sheet, Menu and Toast do not use it; they always render as panels (owner
+ * decision 2026-10-24) and wrap their content in `SurfaceProvider` instead.
+ * Nothing else writes `data-surface` by hand; lint enforces it.
  */
 export function useSurfaceProps(): { 'data-surface'?: 'stage' } {
   const kind = useSurface();
   return kind === 'stage' ? { 'data-surface': 'stage' } : {};
+}
+
+export interface SurfaceProviderProps {
+  kind: SurfaceKind;
+  children?: ReactNode;
+}
+
+/**
+ * Declares the surface through context alone, with no element of its own.
+ * An overlay that always draws as a panel wraps its content in
+ * `<SurfaceProvider kind="panel">`, so a Tooltip on its close button renders
+ * as a panel tooltip even when the overlay was opened from the stage. To
+ * draw the stage itself, use `Surface`.
+ */
+export function SurfaceProvider({ kind, children }: SurfaceProviderProps) {
+  return <SurfaceContext.Provider value={kind}>{children}</SurfaceContext.Provider>;
 }
 
 export const surfaceStyles = tv({ base: '' });

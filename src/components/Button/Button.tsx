@@ -1,4 +1,4 @@
-import type { ReactNode, Ref } from 'react';
+import { useRef, useState, type ReactNode, type Ref } from 'react';
 import {
   Button as RacButton,
   composeRenderProps,
@@ -6,6 +6,7 @@ import {
 } from 'react-aria-components';
 import { Icon, type IconName, type IconSize } from '../../icons';
 import { tv, type VariantProps } from '../../styles/tv';
+import { Tooltip } from '../Tooltip';
 
 /**
  * Text button styles. The variants come from a survey of every board
@@ -98,6 +99,12 @@ export interface ButtonProps extends Omit<RacButtonProps, 'className' | 'childre
  * A text button on React Aria's Button. Icon-only controls use IconButton
  * instead. A disabled Button is natively disabled (it has text, so it needs
  * no tooltip to be understood).
+ *
+ * When the label is cut off (the button is narrower than its text), hover
+ * and keyboard focus show the full text in a Tooltip, which also describes
+ * the button while open. A label that fits opens nothing: the trigger asks
+ * to open and the button answers by measuring the label at that moment, so
+ * no observer runs while idle.
  */
 export function Button({
   variant,
@@ -109,16 +116,26 @@ export function Button({
   className,
   ...props
 }: ButtonProps) {
+  const labelRef = useRef<HTMLSpanElement>(null);
+  const [isTooltipOpen, setTooltipOpen] = useState(false);
+  const onTooltipOpenChange = (open: boolean) => {
+    const label = labelRef.current;
+    setTooltipOpen(open && label !== null && label.scrollWidth > label.clientWidth);
+  };
   return (
-    <RacButton
-      {...props}
-      className={composeRenderProps(className, (cls) =>
-        buttonStyles({ variant, tone, size, className: cls }),
-      )}
-    >
-      {icon && <Icon name={icon} size={iconSizeFor(size)} />}
-      <span className={buttonLabelStyles()}>{children}</span>
-      {iconEnd && <Icon name={iconEnd} size={iconSizeFor(size)} />}
-    </RacButton>
+    <Tooltip label={children} isOpen={isTooltipOpen} onOpenChange={onTooltipOpenChange}>
+      <RacButton
+        {...props}
+        className={composeRenderProps(className, (cls) =>
+          buttonStyles({ variant, tone, size, className: cls }),
+        )}
+      >
+        {icon && <Icon name={icon} size={iconSizeFor(size)} />}
+        <span ref={labelRef} className={buttonLabelStyles()}>
+          {children}
+        </span>
+        {iconEnd && <Icon name={iconEnd} size={iconSizeFor(size)} />}
+      </RacButton>
+    </Tooltip>
   );
 }

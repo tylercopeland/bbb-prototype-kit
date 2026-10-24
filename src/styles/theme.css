@@ -61,6 +61,33 @@
   }
 }
 
+/* The same focus ring, drawn on a box around a field: the chat composer's
+   border rings when the textarea inside it has keyboard focus, as the
+   canvas draws its blue composer border (Focus.dc.html 474). The Send
+   button inside the box has its own focus-ring and does not ring the box. */
+@utility focus-ring-within {
+  &:has(:is(textarea, input)[data-focus-visible]) {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow:
+      0 0 0 2px var(--bbb-ring-offset),
+      0 0 0 4px var(--bbb-focus-ring);
+  }
+}
+
+/* The same focus ring on a child of a `group` that is focus-visible: a
+   Switch is a <label> around a hidden input, so React Aria marks the label
+   and the ring belongs on the track inside it. */
+@utility group-focus-ring {
+  .group:is(:focus-visible, [data-focus-visible]) & {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow:
+      0 0 0 2px var(--bbb-ring-offset),
+      0 0 0 4px var(--bbb-focus-ring);
+  }
+}
+
 /* The non-color cue of a selected toggle: an inset 2px ring in
    selected-ring, which is at least 3:1 on the selected fill and on the
    unselected (raised) fill in every mode. In forced colors, where
@@ -78,6 +105,50 @@
    which is 8.9:1 on status-hand in every mode. Use together with selected-ring. */
 @utility selected-ring-hand {
   --bbb-selected-ring: var(--bbb-on-status-hand);
+}
+
+/* Forced colors drop background colors, so a switch would lose its thumb
+   and its on/off difference. These opt the track and thumb out of the
+   override and draw them in system colors: off is a Canvas track with a
+   CanvasText outline and a CanvasText thumb; on is a Highlight track with a
+   HighlightText thumb. The outline sits inside the track so the geometry
+   does not change. Switch (through group-data-selected:) and the menu's
+   checkbox items use them. */
+@utility forced-colors-track {
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: Canvas;
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+  }
+}
+@utility forced-colors-track-on {
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
+@utility forced-colors-thumb {
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+}
+@utility forced-colors-thumb-on {
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: HighlightText;
+  }
+}
+
+/* A selected chip inverts its fill, which forced colors drop; give it the
+   Highlight border a selected toggle has, so the choice still reads. */
+@utility forced-colors-selected {
+  @media (forced-colors: active) {
+    border: 2px solid Highlight;
+  }
 }
 
 /* aria-disabled controls are not natively disabled, so forced-colors mode
@@ -112,6 +183,99 @@
     0 0 0 calc(var(--spacing-speaking-ring) * 2) var(--bbb-status-live);
   --bbb-ring-base: calc(var(--spacing-speaking-ring) * 2);
   box-shadow: var(--bbb-shadow-selected, 0 0 0 0 transparent), var(--bbb-shadow-speaking);
+}
+
+/* ---------------------------------------------------------------
+ * Motion: overlay enter and exit. The canvas's bbbPopIn and bbbFade
+ * (Focus.dc.html line 12) and the mobile sheet slide, as @theme animations
+ * so they are utilities (animate-overlay-in …). React Aria sets
+ * data-entering / data-exiting and waits for animationend before it
+ * unmounts. Under prefers-reduced-motion the rule in @layer base shortens
+ * every animation to 0.01ms, so overlays then appear and disappear at once;
+ * nothing else is needed per component.
+ * ------------------------------------------------------------- */
+@theme {
+  --animate-overlay-in: bbb-overlay-in 0.2s var(--ease-out) both;
+  --animate-overlay-out: bbb-overlay-out 0.15s var(--ease-in) both;
+  --animate-fade-in: bbb-fade-in 0.2s var(--ease-out) both;
+  --animate-fade-out: bbb-fade-out 0.15s var(--ease-in) both;
+  --animate-sheet-in-bottom: bbb-sheet-in-bottom 0.26s var(--ease-out) both;
+  --animate-sheet-out-bottom: bbb-sheet-out-bottom 0.2s var(--ease-in) both;
+  --animate-sheet-in-end: bbb-sheet-in-end 0.26s var(--ease-out) both;
+  --animate-sheet-out-end: bbb-sheet-out-end 0.2s var(--ease-in) both;
+
+  @keyframes bbb-overlay-in {
+    from {
+      opacity: 0;
+      translate: 0 8px;
+      scale: 0.97;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+  }
+  @keyframes bbb-overlay-out {
+    from {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+    to {
+      opacity: 0;
+      translate: 0 8px;
+      scale: 0.97;
+    }
+  }
+  @keyframes bbb-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes bbb-fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes bbb-sheet-in-bottom {
+    from {
+      translate: 0 100%;
+    }
+    to {
+      translate: 0 0;
+    }
+  }
+  @keyframes bbb-sheet-out-bottom {
+    from {
+      translate: 0 0;
+    }
+    to {
+      translate: 0 100%;
+    }
+  }
+  @keyframes bbb-sheet-in-end {
+    from {
+      translate: 100% 0;
+    }
+    to {
+      translate: 0 0;
+    }
+  }
+  @keyframes bbb-sheet-out-end {
+    from {
+      translate: 0 0;
+    }
+    to {
+      translate: 100% 0;
+    }
+  }
 }
 
 @layer base {

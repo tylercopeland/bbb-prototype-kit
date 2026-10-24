@@ -107,10 +107,11 @@ for (const n of semanticNames) {
   }
 }
 if (semanticNames.includes('selected-text')) required.push(['selected-text', 'selected']);
-// The inset ring is the non-color cue of a selected toggle, so it must read
-// against the selected fill and against the unselected (raised) fill.
+// The inset ring is the non-color cue of a selected toggle and a selected tab,
+// so it must read against the selected fill, the unselected (raised) fill and
+// the surface a selected tab lifts to.
 if (semanticNames.includes('selected-ring')) {
-  required.push(['selected-ring', 'selected'], ['selected-ring', 'surface-raised']);
+  required.push(['selected-ring', 'selected'], ['selected-ring', 'surface-raised'], ['selected-ring', 'surface']);
 }
 
 for (const [fg, bg] of required) {

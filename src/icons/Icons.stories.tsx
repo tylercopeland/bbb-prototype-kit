@@ -77,6 +77,16 @@ const entries: Record<IconName, Entry> = {
   moderator: { meaning: 'Moderator', used: 'Student actions menu' },
   lockChat: { meaning: 'Lock public chat', used: 'Student actions menu' },
   removeFromSession: { meaning: 'Remove from session', used: 'Student actions menu' },
+  submenu: { meaning: 'Opens a submenu', used: 'Menu items with a submenu ("Move to…")' },
+  info: { meaning: 'Information', used: 'Neutral toasts' },
+  error: { meaning: 'Error or warning', used: 'Danger toasts' },
+  send: { meaning: 'Send a message', used: 'Chat composer (TextArea)' },
+  increase: { meaning: 'More / increase by one', used: 'Stepper (+)' },
+  decrease: { meaning: 'Fewer / decrease by one', used: 'Stepper (−)' },
+  select: { meaning: 'Select tool', used: 'Whiteboard tools (ToggleGroup)' },
+  shapes: { meaning: 'Shapes tool', used: 'Whiteboard tools (ToggleGroup)' },
+  text: { meaning: 'Text tool', used: 'Whiteboard tools (ToggleGroup)' },
+  eraser: { meaning: 'Eraser tool', used: 'Whiteboard tools (ToggleGroup)' },
 };
 
 const names = Object.keys(icons) as IconName[];

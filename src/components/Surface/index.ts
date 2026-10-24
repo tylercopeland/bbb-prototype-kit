@@ -1,2 +1,2 @@
-export { Surface, surfaceStyles, useSurface, useSurfaceProps } from './Surface';
-export type { SurfaceKind, SurfaceProps } from './Surface';
+export { Surface, SurfaceProvider, surfaceStyles, useSurface, useSurfaceProps } from './Surface';
+export type { SurfaceKind, SurfaceProps, SurfaceProviderProps } from './Surface';
