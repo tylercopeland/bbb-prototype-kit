@@ -70,3 +70,24 @@ The live canvas is unchanged (version 1792788314-4b91).
 - `npm run check`, `npm run build` and `npm run test:e2e` pass. axe runs on every story in light, dark and stage, including the open overlays. CI is green.
 - The overlay tests prove focus trap, Escape and focus return; this is milestone 3's second exit box.
 - `PLAN.md`: milestone 3 boxes ticked, and decisions logged.
+
+## Build notes (2026-10-24, batch A)
+
+Deviations from the plan above, each the smallest fix that keeps the intent. The full list, with the new tokens, is in `PLAN.md` › Decisions log.
+
+- **Tokens:** `shadow-overlay` (the one elevation), `scrim` (no contrast pair: translucent, nothing drawn on it) and the `animate-*` overlay motion in `theme.css`. The base reduced-motion rule covers every overlay; verified by reading it, nothing added per component.
+- **Popover:** `DialogTrigger` + `Popover` + `Dialog`. `title` is required and `titleHidden` keeps it as the accessible name while only the close button is drawn (Share media). `OverlayHeader` is exported from here and reused by Dialog and Sheet.
+- **Dialog:** `ModalOverlay` + `Modal` + `Dialog`, `trigger` optional so routes can drive it from state. `ConfirmDialog` is the `alertdialog` for Leave, Remove and Open rooms: Cancel autofocused, confirming action primary in `tone`, scrim click does not dismiss, Escape does.
+- **Sheet:** `ModalOverlay` + `Modal` + `Dialog` as planned, not React Aria's new `Sheet` (scroll-driven animation, `IntersectionObserver`, `ResizeObserver`; none in jsdom; swipe not needed yet). `position="bottom" | "end"`. A Sheet inside a Sheet keeps one scrim through a depth context (P4).
+- **Menu:** no `label` prop, because React Aria names the menu by its trigger. Checkbox items are a `MenuSection selectionMode="multiple"`; the switch glyph is decoration and the menu stays open while toggling. `Submenu` is "Move to…". `onAction` is `(key, value)` in 1.22.1.
+- **Toast:** React Aria's `UNSTABLE_Toast*` and `ToastQueue` are usable, so they are used, minus `ToastContent` (`role="alert"`, always assertive). Announcements go through `Announcer`. Min timeout 5 s; actions never time out.
+- **Announcer:** `Announcer` provider + `useAnnouncer()`; outside a provider `announce` is a no-op so other components can call it freely. The docblock lists the polite and assertive events and the no-ticking-clock rule.
+- **e2e:** `wait-for-overlay` tag in `e2e/stories.ts`, the same mechanism as `wait-for-tooltip`.
+
+### Owner decisions needed (batch A)
+
+1. **Overlays on the stage.** CLAUDE.md says everything that portals spreads `useSurfaceProps()`, so a popover, dialog, sheet or menu opened from the stage renders on the stage ramp (dark). The canvas draws the Plugins and Share media pickers, the student actions menu and every confirmation **white** over the dark stage. Keep the rule (consistent with tooltips), or make overlays always panels?
+2. **Landscape sheet.** Built as a full-height side sheet at the end (`w-panel`), per the plan and the canvas notes ("sheets open from the right half so the slide stays visible"). The canvas itself draws a 380px bottom-anchored sheet on the right half (Mobile.dc.html 402). Confirm the side sheet for M6.
+3. **Swipe to dismiss** on sheets: not built. React Aria's `Sheet` would give it; decide before M6.
+4. **Toast position**: above the action bar, bottom center (`bottom-24`). The canvas has no toast; its "updates" pills live in the session header (M4's `AlertPill`).
+5. **Dialog width** 416px (`max-w-104`) for the canvas's 420, and the dialog title at `text-lg` (16px) for the canvas's 22px, which is off the type scale.
