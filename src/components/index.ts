@@ -13,4 +13,5 @@ export * from './Surface';
 export * from './Tabs';
 export * from './Toast';
 export * from './ToggleButton';
+export * from './ToggleGroup';
 export * from './Tooltip';
