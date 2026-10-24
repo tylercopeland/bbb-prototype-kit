@@ -3,6 +3,7 @@ export * from './Announcer';
 export * from './Avatar';
 export * from './Button';
 export * from './IconButton';
+export * from './Popover';
 export * from './Surface';
 export * from './ToggleButton';
 export * from './Tooltip';
