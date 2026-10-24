@@ -205,19 +205,21 @@ describe('ConfirmDialog', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus());
   });
 
-  it('confirms with Enter on the primary action and closes', async () => {
+  it('confirms with Enter on the primary action and closes, without cancelling', async () => {
     const user = userEvent.setup();
     const onConfirm = vi.fn();
-    render(<Leave onConfirm={onConfirm} defaultOpen />);
+    const onCancel = vi.fn();
+    render(<Leave onConfirm={onConfirm} onCancel={onCancel} defaultOpen />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus());
     await user.tab();
     expect(screen.getByRole('button', { name: 'Leave session' })).toHaveFocus();
     await user.keyboard('{Enter}');
     expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onCancel).not.toHaveBeenCalled();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
-  it('cancels with Escape without confirming, and returns focus to the trigger', async () => {
+  it('cancels with Escape without confirming, calls onCancel once, and returns focus to the trigger', async () => {
     const user = userEvent.setup();
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
@@ -227,16 +229,28 @@ describe('ConfirmDialog', () => {
     await screen.findByRole('alertdialog');
     await user.keyboard('{Escape}');
     expect(onConfirm).not.toHaveBeenCalled();
+    expect(onCancel).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
-  it('calls onCancel from the Cancel button', async () => {
+  it('calls onCancel once from the Cancel button', async () => {
     const user = userEvent.setup();
     const onCancel = vi.fn();
     render(<Leave onCancel={onCancel} defaultOpen />);
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('calls onCancel once from the close button, and reports the open state change', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+    const onOpenChange = vi.fn();
+    render(<Leave onCancel={onCancel} onOpenChange={onOpenChange} defaultOpen />);
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 

@@ -1,6 +1,6 @@
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Button } from '../Button';
 import { Tab, TabList, TabPanel, Tabs } from './Tabs';
@@ -38,6 +38,56 @@ describe('Tabs', () => {
     expect(panel).toHaveAttribute('aria-labelledby', tabs[0].id);
     // The list precedes its panel in the DOM (D3: tabs above content).
     expect(list.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  const LONG = 'Shared notes, whiteboard snapshots and everything saved from the breakout rooms';
+
+  /** jsdom has no layout, so the label's overflow is set by hand. */
+  function setLabelOverflow(tab: HTMLElement, scrollWidth: number, clientWidth: number) {
+    const label = tab.querySelector('span.truncate') as HTMLSpanElement;
+    Object.defineProperty(label, 'scrollWidth', { value: scrollWidth, configurable: true });
+    Object.defineProperty(label, 'clientWidth', { value: clientWidth, configurable: true });
+  }
+
+  it('shows a cut-off tab label in full in a tooltip on focus and hover, and Escape closes it', async () => {
+    const user = userEvent.setup();
+    render(
+      <Tabs defaultSelectedKey="long">
+        <TabList label="Panels">
+          <Tab id="long">{LONG}</Tab>
+          <Tab id="chat">Chat</Tab>
+        </TabList>
+        <TabPanel id="long">Saved</TabPanel>
+        <TabPanel id="chat">Chat</TabPanel>
+      </Tabs>,
+    );
+    const tab = screen.getByRole('tab', { name: LONG });
+    setLabelOverflow(tab, 320, 160);
+    await user.tab();
+    expect(tab).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(LONG);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    expect(tab).toHaveFocus();
+    await user.tab();
+    expect(tab).not.toHaveFocus();
+    // Hover, in pointer modality, opens it as well.
+    await user.pointer({ target: document.body, coords: { x: 0, y: 0 } });
+    await user.hover(tab);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(LONG);
+    await user.unhover(tab);
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+  });
+
+  it('opens no tooltip when the tab label fits', async () => {
+    const user = userEvent.setup();
+    render(<Subject />);
+    await user.tab();
+    const tab = screen.getByRole('tab', { name: 'People 4 raised hands' });
+    expect(tab).toHaveFocus();
+    await user.pointer({ target: document.body, coords: { x: 0, y: 0 } });
+    await user.hover(tab);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
   it('names a tab by its text and badge label', () => {

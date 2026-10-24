@@ -1,4 +1,5 @@
 import type { ReactNode, Ref } from 'react';
+import { mergeProps } from 'react-aria';
 import {
   Tab as RacTab,
   TabList as RacTabList,
@@ -12,6 +13,7 @@ import {
 } from 'react-aria-components';
 import { tv } from '../../styles/tv';
 import { Badge, type BadgeProps } from '../Badge';
+import { Tooltip, useTruncationTooltip } from '../Tooltip';
 
 /**
  * The tabs sit above their panels (D3). `Tabs` is the root that links the
@@ -122,12 +124,22 @@ export interface TabProps extends Omit<RacTabProps, 'className' | 'children' | '
 
 /**
  * One tab. A tab needs an `id` that matches its `TabPanel`. With a badge the
- * tab reads "Chat, 3 unread".
+ * tab reads "Chat, 3 unread". When its text is cut off (the segment is
+ * narrower than its label), hover and keyboard focus show the full text in
+ * a Tooltip (`useTruncationTooltip`); the accessible name is always the
+ * full text.
  */
-export function Tab({ children, badge, className, ...props }: TabProps) {
+export function Tab({ children, badge, className, ref, ...props }: TabProps) {
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLDivElement>(ref);
   return (
-    <RacTab {...props} className={composeRenderProps(className, (cls) => tabStyles({ className: cls }))}>
-      <span className={tabLabelStyles()}>{children}</span>
+    <RacTab
+      {...mergeProps(props, triggerProps)}
+      ref={triggerRef}
+      className={composeRenderProps(className, (cls) => tabStyles({ className: cls }))}
+    >
+      <span ref={labelRef} className={tabLabelStyles()}>
+        {children}
+      </span>
       {/* The space keeps the name "Chat 2 unread", not "Chat2 unread"; flex drops it visually. */}
       {badge && (
         <>
@@ -135,6 +147,7 @@ export function Tab({ children, badge, className, ...props }: TabProps) {
           <Badge {...badge} />
         </>
       )}
+      <Tooltip label={children} triggerRef={triggerRef} isOpen={isOpen} onOpenChange={onOpenChange} />
     </RacTab>
   );
 }

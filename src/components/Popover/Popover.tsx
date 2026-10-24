@@ -31,12 +31,13 @@ export const popoverDialogStyles = tv({
  * The header every overlay shares (X1: a visible close button on each):
  * the title on the left, the close IconButton on the right. With
  * `titleHidden` the title still names the dialog but only the close button
- * is drawn.
+ * is drawn. A long title wraps: it is the dialog's name, so it is never
+ * cut off.
  */
 export const overlayHeaderStyles = tv({
   slots: {
     root: 'flex items-start gap-2',
-    title: 'min-w-0 flex-1 self-center truncate text-lg font-bold text-text',
+    title: 'min-w-0 flex-1 self-center text-lg font-bold break-words text-text',
   },
   variants: {
     titleHidden: {

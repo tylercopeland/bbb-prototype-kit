@@ -107,6 +107,50 @@
   --bbb-selected-ring: var(--bbb-on-status-hand);
 }
 
+/* Forced colors drop background colors, so a switch would lose its thumb
+   and its on/off difference. These opt the track and thumb out of the
+   override and draw them in system colors: off is a Canvas track with a
+   CanvasText outline and a CanvasText thumb; on is a Highlight track with a
+   HighlightText thumb. The outline sits inside the track so the geometry
+   does not change. Switch (through group-data-selected:) and the menu's
+   checkbox items use them. */
+@utility forced-colors-track {
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: Canvas;
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+  }
+}
+@utility forced-colors-track-on {
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
+@utility forced-colors-thumb {
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+}
+@utility forced-colors-thumb-on {
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: HighlightText;
+  }
+}
+
+/* A selected chip inverts its fill, which forced colors drop; give it the
+   Highlight border a selected toggle has, so the choice still reads. */
+@utility forced-colors-selected {
+  @media (forced-colors: active) {
+    border: 2px solid Highlight;
+  }
+}
+
 /* aria-disabled controls are not natively disabled, so forced-colors mode
    would draw them like enabled ones. Grey them out explicitly. */
 @utility forced-colors-disabled {

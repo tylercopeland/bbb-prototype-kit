@@ -85,8 +85,11 @@ export const menuSwitchStyles = tv({
   },
   variants: {
     isSelected: {
-      true: { track: 'bg-accent', thumb: 'translate-x-4 bg-on-accent' },
-      false: { track: 'bg-border-control', thumb: 'bg-surface' },
+      true: {
+        track: 'bg-accent forced-colors-track-on',
+        thumb: 'translate-x-4 bg-on-accent forced-colors-thumb-on',
+      },
+      false: { track: 'bg-border-control forced-colors-track', thumb: 'bg-surface forced-colors-thumb' },
     },
   },
   defaultVariants: { isSelected: false },
@@ -262,6 +265,12 @@ export interface MenuProps extends Pick<MenuTriggerProps, 'isOpen' | 'defaultOpe
  * as the canvas draws the student actions menu (owner decision
  * 2026-10-24). Its content sits in a `SurfaceProvider`, so a tooltip
  * inside it is a panel tooltip as well.
+ *
+ * Milestone 5 (B2): after "Move to…" the People row that held the ⋯
+ * trigger unmounts (the student leaves the list), so focus cannot return
+ * to it. The People panel must then move focus itself (to the next row,
+ * or the filter chips) and announce the move politely ("Ana moved to Room
+ * 2") through `Announcer`.
  */
 export function Menu({
   trigger,

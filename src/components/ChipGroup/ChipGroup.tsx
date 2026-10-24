@@ -1,4 +1,5 @@
 import type { ReactNode, Ref } from 'react';
+import { mergeProps } from 'react-aria';
 import {
   Label,
   Radio as RacRadio,
@@ -9,6 +10,7 @@ import {
 } from 'react-aria-components';
 import { tv } from '../../styles/tv';
 import { Badge, type BadgeProps } from '../Badge';
+import { Tooltip, useTruncationTooltip } from '../Tooltip';
 
 /**
  * A row of single-select chips (X8): the People filters (Focus.dc.html
@@ -46,9 +48,11 @@ export const chipListStyles = tv({
  * border, bold 13px text; selected inverts to text on surface, so the
  * state is a lightness swap plus `aria-checked`, never a hue. The
  * durations' blue fill (Breakout.dc.html 489) is folded into this one look.
+ * In forced colors, which drop the fill, the selected chip gets a Highlight
+ * border (`forced-colors-selected`), as a selected toggle does.
  */
 export const chipStyles = tv({
-  base: 'hit-area inline-flex h-control-sm max-w-full cursor-default items-center justify-center gap-2 rounded-full border border-border-control bg-surface px-3 text-sm font-semibold whitespace-nowrap text-text-secondary focus-ring outline-none data-disabled:border-border data-disabled:text-text-muted data-hovered:bg-surface-sunken data-pressed:bg-surface-sunken data-selected:border-text data-selected:bg-text data-selected:text-surface data-selected:data-hovered:bg-text data-selected:data-pressed:bg-text',
+  base: 'hit-area inline-flex h-control-sm max-w-full cursor-default items-center justify-center gap-2 rounded-full border border-border-control bg-surface px-3 text-sm font-semibold whitespace-nowrap text-text-secondary focus-ring outline-none data-disabled:border-border data-disabled:text-text-muted data-hovered:bg-surface-sunken data-pressed:bg-surface-sunken data-selected:border-text data-selected:bg-text data-selected:text-surface data-selected:forced-colors-selected data-selected:data-hovered:bg-text data-selected:data-pressed:bg-text',
 });
 
 export const chipLabelStyles = tv({ base: 'truncate' });
@@ -103,13 +107,25 @@ export interface ChipProps extends Omit<RacRadioProps, 'className' | 'children' 
   ref?: Ref<HTMLLabelElement>;
 }
 
-/** One chip. `value` is what the group reports when this chip is checked. */
-export function Chip({ children, badge, className, ...props }: ChipProps) {
+/**
+ * One chip. `value` is what the group reports when this chip is checked.
+ * When its text is cut off (the chip is narrower than its label), hover and
+ * keyboard focus show the full text in a Tooltip (`useTruncationTooltip`);
+ * the accessible name is always the full text.
+ */
+export function Chip({ children, badge, className, ref, ...props }: ChipProps) {
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLLabelElement>(ref);
   return (
-    <RacRadio {...props} className={composeRenderProps(className, (cls) => chipStyles({ className: cls }))}>
+    <RacRadio
+      {...mergeProps(props, triggerProps)}
+      ref={triggerRef}
+      className={composeRenderProps(className, (cls) => chipStyles({ className: cls }))}
+    >
       {({ isSelected }) => (
         <>
-          <span className={chipLabelStyles()}>{children}</span>
+          <span ref={labelRef} className={chipLabelStyles()}>
+            {children}
+          </span>
           {/* The space keeps the name "All 14 people", not "All14 people"; flex drops it visually. */}
           {badge && (
             <>
@@ -117,6 +133,7 @@ export function Chip({ children, badge, className, ...props }: ChipProps) {
               <Badge {...badge} inverted={isSelected && badge.tone !== 'urgent'} />
             </>
           )}
+          <Tooltip label={children} triggerRef={triggerRef} isOpen={isOpen} onOpenChange={onOpenChange} />
         </>
       )}
     </RacRadio>

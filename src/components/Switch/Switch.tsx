@@ -30,15 +30,17 @@ export const switchTextStyles = tv({
  * off and accent on (both at least 3:1 on the surface), and the thumb moves
  * 16px, so the state is a position as well as a color. The focus ring draws
  * on the track through `group-focus-ring`, since the label holds the focus
- * state. In forced colors the track gets a current-color border and the
- * thumb a current-color fill, so the position still reads.
+ * state. In forced colors, which drop background colors, the track and the
+ * thumb opt out through the `forced-colors-track*` and `forced-colors-thumb*`
+ * utilities and draw in system colors (Canvas and CanvasText off, Highlight
+ * and HighlightText on), so the thumb stays visible and on and off differ.
  */
 export const switchTrackStyles = tv({
   slots: {
     track:
-      'flex h-6 w-10 shrink-0 items-center rounded-full bg-border-control p-1 group-focus-ring transition-colors group-data-disabled:bg-border group-data-selected:bg-accent forced-colors:border forced-colors:border-current',
+      'flex h-6 w-10 shrink-0 items-center rounded-full bg-border-control p-1 group-focus-ring transition-colors group-data-disabled:bg-border group-data-selected:bg-accent forced-colors-track group-data-selected:forced-colors-track-on',
     thumb:
-      'size-4 rounded-full bg-surface transition-transform group-data-selected:translate-x-4 group-data-selected:bg-on-accent forced-colors:bg-current',
+      'size-4 rounded-full bg-surface transition-transform group-data-selected:translate-x-4 group-data-selected:bg-on-accent forced-colors-thumb group-data-selected:forced-colors-thumb-on',
   },
 });
 

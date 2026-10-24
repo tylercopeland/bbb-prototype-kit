@@ -1,4 +1,4 @@
-import { useId, type ReactElement, type ReactNode, type Ref } from 'react';
+import { useId, useRef, type ReactElement, type ReactNode, type Ref } from 'react';
 import {
   DialogTrigger,
   Modal,
@@ -49,7 +49,8 @@ export type DialogKickerTone = NonNullable<VariantProps<typeof dialogStyles>['ki
 /** Content that may need `close`, the way React Aria's Dialog children do. */
 export type DialogRenderable = ReactNode | ((opts: { close: () => void }) => ReactNode);
 
-function renderWith(content: DialogRenderable | undefined, close: () => void): ReactNode {
+/** Renders a `DialogRenderable`, handing a function `close`. Dialog and Sheet share it. */
+export function renderWith(content: DialogRenderable | undefined, close: () => void): ReactNode {
   return typeof content === 'function' ? content({ close }) : content;
 }
 
@@ -174,8 +175,9 @@ export interface ConfirmDialogProps extends Omit<DialogProps, 'children' | 'foot
  * The confirmation before Leave (D5), Remove from session and Open rooms
  * (B5): an `alertdialog` whose Cancel button takes focus first, so Enter
  * never confirms by accident, with the confirming action as the primary
- * button in `tone`. Clicking the scrim does not dismiss it; Escape and the
- * close button do, as a cancel.
+ * button in `tone`. Clicking the scrim does not dismiss it. Every other way
+ * out but the confirming action (the Cancel button, the close button,
+ * Escape) is a cancel and calls `onCancel` once.
  */
 export function ConfirmDialog({
   confirmLabel,
@@ -183,30 +185,33 @@ export function ConfirmDialog({
   tone = 'neutral',
   onConfirm,
   onCancel,
+  onOpenChange,
   children,
   isDismissable = false,
   ...props
 }: ConfirmDialogProps) {
+  // Set by the confirming action, so the close that follows it is not a cancel.
+  const confirmed = useRef(false);
   return (
     <Dialog
       {...props}
       role="alertdialog"
       isDismissable={isDismissable}
+      onOpenChange={(isOpen) => {
+        if (!isOpen && !confirmed.current) onCancel?.();
+        confirmed.current = false;
+        onOpenChange?.(isOpen);
+      }}
       footer={({ close }) => (
         <>
-          <Button
-            autoFocus
-            onPress={() => {
-              onCancel?.();
-              close();
-            }}
-          >
+          <Button autoFocus onPress={close}>
             {cancelLabel}
           </Button>
           <Button
             variant="primary"
             tone={tone}
             onPress={() => {
+              confirmed.current = true;
               onConfirm();
               close();
             }}

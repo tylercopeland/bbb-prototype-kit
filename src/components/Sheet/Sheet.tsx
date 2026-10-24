@@ -8,7 +8,7 @@ import {
   type ModalOverlayProps,
 } from 'react-aria-components';
 import { tv, type VariantProps } from '../../styles/tv';
-import type { DialogRenderable } from '../Dialog';
+import { renderWith, type DialogRenderable } from '../Dialog';
 import { OverlayHeader } from '../Popover';
 import { SurfaceProvider } from '../Surface';
 
@@ -51,7 +51,7 @@ export const sheetModalStyles = tv({
 export const sheetStyles = tv({
   slots: {
     root: 'flex min-h-0 flex-1 flex-col outline-none',
-    handle: 'mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border-strong',
+    handle: 'mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border-control',
     header: 'px-4 pt-2 pb-3',
     body: 'min-h-0 flex-1 overflow-auto px-4 pb-4',
     footer: 'flex gap-2 border-t border-border px-4 py-3',
@@ -86,18 +86,18 @@ export interface SheetProps extends Pick<
   ref?: Ref<HTMLElement>;
 }
 
-function renderWith(content: DialogRenderable | undefined, close: () => void): ReactNode {
-  return typeof content === 'function' ? content({ close }) : content;
-}
-
 /**
  * The mobile sheet (X1, P4): a modal dialog anchored to the bottom in
  * portrait or the end in landscape. Focus moves in, Tab stays inside,
  * Escape, the scrim and the visible close button close it, and focus
  * returns to the trigger. A Sheet opened from inside another (the student
  * actions over People) stacks: it keeps the parent's single scrim and
- * closing it returns to the parent. Swipe-to-dismiss is not built; the
- * handle is decoration.
+ * closing it returns to the parent. Swipe-to-dismiss is not built (owner
+ * decision: decided in milestone 6); the handle is decoration.
+ *
+ * Milestone 6 (P2): the sheet has no safe-area padding yet. The bottom
+ * sheet's footer and the side sheet's edge must add
+ * `env(safe-area-inset-*)` so they clear the home indicator and the notch.
  *
  * It always draws as a panel, white over the dark stage too (owner
  * decision 2026-10-24). Its content sits in a `SurfaceProvider`, so a

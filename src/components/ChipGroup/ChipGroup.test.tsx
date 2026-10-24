@@ -1,6 +1,6 @@
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Chip, ChipGroup } from './ChipGroup';
 
@@ -37,6 +37,51 @@ describe('ChipGroup', () => {
     render(<Subject />);
     expect(screen.getByRole('radio', { name: 'All 14 people' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Raised hands 4 people' })).toBeInTheDocument();
+  });
+
+  const LONG = 'Students who have not spoken, reacted or answered a poll in the last ten minutes';
+
+  /** jsdom has no layout, so the label's overflow is set by hand. */
+  function setLabelOverflow(chip: HTMLElement, scrollWidth: number, clientWidth: number) {
+    const label = chip.querySelector('span.truncate') as HTMLSpanElement;
+    Object.defineProperty(label, 'scrollWidth', { value: scrollWidth, configurable: true });
+    Object.defineProperty(label, 'clientWidth', { value: clientWidth, configurable: true });
+  }
+
+  it('shows a cut-off label in full in a tooltip on focus and hover, and Escape closes it', async () => {
+    const user = userEvent.setup();
+    render(
+      <ChipGroup label="Filter people" labelHidden defaultValue="low">
+        <Chip value="low">{LONG}</Chip>
+      </ChipGroup>,
+    );
+    const radio = screen.getByRole('radio', { name: LONG });
+    const chip = radio.closest('label') as HTMLElement;
+    setLabelOverflow(chip, 320, 160);
+    await user.tab();
+    expect(radio).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(LONG);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    expect(radio).toHaveFocus();
+    await user.tab();
+    expect(radio).not.toHaveFocus();
+    // Hover, in pointer modality, opens it as well.
+    await user.pointer({ target: document.body, coords: { x: 0, y: 0 } });
+    await user.hover(chip);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(LONG);
+    await user.unhover(chip);
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+  });
+
+  it('opens no tooltip when the label fits', async () => {
+    const user = userEvent.setup();
+    render(<Subject />);
+    await user.tab();
+    expect(screen.getByRole('radio', { name: 'All 14 people' })).toHaveFocus();
+    await user.pointer({ target: document.body, coords: { x: 0, y: 0 } });
+    await user.hover(screen.getByRole('radio', { name: 'All 14 people' }).closest('label') as HTMLElement);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
   it('shows its label when not hidden', () => {

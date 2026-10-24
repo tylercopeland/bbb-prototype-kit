@@ -10,14 +10,17 @@ function Speaker({ message, politeness }: { message: string; politeness?: Polite
 }
 
 describe('Announcer', () => {
-  it('renders an empty polite status and an assertive alert region from mount', () => {
+  it('renders an empty polite status and an assertive alert region from mount, reading additions only', () => {
     render(<Announcer />);
     const status = screen.getByRole('status');
     const alert = screen.getByRole('alert');
     expect(status).toHaveAttribute('aria-live', 'polite');
-    expect(status).toHaveAttribute('aria-atomic', 'true');
+    expect(status).toHaveAttribute('aria-atomic', 'false');
+    expect(status).toHaveAttribute('aria-relevant', 'additions');
     expect(status).toBeEmptyDOMElement();
     expect(alert).toHaveAttribute('aria-live', 'assertive');
+    expect(alert).toHaveAttribute('aria-atomic', 'false');
+    expect(alert).toHaveAttribute('aria-relevant', 'additions');
     expect(alert).toBeEmptyDOMElement();
     expect(status).toHaveClass('sr-only');
     expect(alert).toHaveClass('sr-only');
@@ -47,7 +50,7 @@ describe('Announcer', () => {
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
-  it('re-inserts the text so the same message is announced twice', async () => {
+  it('appends the same message again as a new node, so it is announced twice', async () => {
     const user = userEvent.setup();
     render(
       <Announcer>
@@ -56,11 +59,12 @@ describe('Announcer', () => {
     );
     const button = screen.getByRole('button', { name: 'Say it' });
     await user.click(button);
-    const first = screen.getByRole('status').firstElementChild;
+    const first = screen.getByRole('status').lastElementChild;
     await user.click(button);
-    const second = screen.getByRole('status').firstElementChild;
+    const second = screen.getByRole('status').lastElementChild;
     expect(second).toHaveTextContent('New message from Bruno');
     expect(second).not.toBe(first);
+    expect(screen.getByRole('status').children).toHaveLength(2);
   });
 
   it('is a no-op outside a provider', async () => {
@@ -74,7 +78,7 @@ describe('Announcer', () => {
     beforeEach(() => vi.useFakeTimers());
     afterEach(() => vi.useRealTimers());
 
-    it('clears the message after its lifetime', () => {
+    it('removes the message after its lifetime', () => {
       render(
         <Announcer>
           <Speaker message="Poll answer received" />
@@ -84,6 +88,39 @@ describe('Announcer', () => {
       expect(screen.getByRole('status')).toHaveTextContent('Poll answer received');
       act(() => vi.advanceTimersByTime(ANNOUNCEMENT_LIFETIME));
       expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    });
+
+    it('keeps every message of a burst as its own node until each one expires', () => {
+      function Burst() {
+        const { announce } = useAnnouncer();
+        return (
+          <Button
+            onPress={() => {
+              announce('Rafaela raised a hand');
+              announce('Bruno raised a hand');
+              announce('Timo raised a hand');
+            }}
+          >
+            Burst
+          </Button>
+        );
+      }
+      render(
+        <Announcer>
+          <Burst />
+        </Announcer>,
+      );
+      act(() => screen.getByRole('button', { name: 'Burst' }).click());
+      const status = screen.getByRole('status');
+      expect(Array.from(status.children, (node) => node.textContent)).toEqual([
+        'Rafaela raised a hand',
+        'Bruno raised a hand',
+        'Timo raised a hand',
+      ]);
+      act(() => vi.advanceTimersByTime(ANNOUNCEMENT_LIFETIME - 1));
+      expect(status.children).toHaveLength(3);
+      act(() => vi.advanceTimersByTime(1));
+      expect(status).toBeEmptyDOMElement();
     });
   });
 });

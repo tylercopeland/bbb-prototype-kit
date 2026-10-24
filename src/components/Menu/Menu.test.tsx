@@ -134,6 +134,43 @@ describe('Menu', () => {
     expect(onAction.mock.calls[0]?.[0]).toBe('room-1');
   });
 
+  it('leaves the "Move to…" submenu with ArrowLeft or Escape, back to its row, with the menu still open (B2)', async () => {
+    const user = userEvent.setup();
+    render(<Subject />);
+    await user.click(screen.getByRole('button', TRIGGER));
+    await screen.findByRole('menu');
+    const moveTo = screen.getByRole('menuitem', { name: 'Move to…' });
+    for (const key of ['{ArrowLeft}', '{Escape}']) {
+      moveTo.focus();
+      await user.keyboard('{ArrowRight}');
+      const submenu = await screen.findByRole('menu', { name: 'Move to…' });
+      await waitFor(() => expect(submenu.contains(document.activeElement)).toBe(true));
+      await user.keyboard(key);
+      await waitFor(() => expect(screen.queryByRole('menu', { name: 'Move to…' })).not.toBeInTheDocument());
+      expect(screen.getByRole('menu', TRIGGER)).toBeInTheDocument();
+      expect(moveTo).toHaveFocus();
+    }
+  });
+
+  it('returns focus to the ⋯ trigger after choosing a room (B2)', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(<Subject onAction={onAction} />);
+    const trigger = screen.getByRole('button', TRIGGER);
+    await user.click(trigger);
+    await screen.findByRole('menu');
+    screen.getByRole('menuitem', { name: 'Move to…' }).focus();
+    await user.keyboard('{ArrowRight}');
+    const submenu = await screen.findByRole('menu', { name: 'Move to…' });
+    await waitFor(() => expect(submenu.contains(document.activeElement)).toBe(true));
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: 'Room 2' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onAction.mock.calls[0]?.[0]).toBe('room-2');
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
   it('keeps Tab inside while open', async () => {
     const user = userEvent.setup();
     render(<Subject />);

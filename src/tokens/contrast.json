@@ -283,6 +283,13 @@
       "note": "The ring against the unselected fill: blue-600 on neutral-100 4.68; blue-300 on stage-600 6.06; blue-500 on stage-600 3.21"
     },
     {
+      "fg": "semantic.color.selected-ring",
+      "bg": "semantic.color.surface",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "The ring on a selected tab, which lifts to the surface"
+    },
+    {
       "fg": "semantic.color.accent",
       "bg": "semantic.color.surface-sunken",
       "min": 4.5,

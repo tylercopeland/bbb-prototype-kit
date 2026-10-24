@@ -31,7 +31,7 @@ const AnnouncerContext = createContext<AnnouncerContextValue | null>(null);
 
 const noop: AnnouncerContextValue = { announce: () => {} };
 
-/** How long a message stays in the region before it is cleared, so a later focus change does not re-read it. */
+/** How long a message stays in the region before it is removed, so a later focus change does not re-read it. */
 export const ANNOUNCEMENT_LIFETIME = 7000;
 
 /**
@@ -43,7 +43,7 @@ export function useAnnouncer(): AnnouncerContextValue {
   return useContext(AnnouncerContext) ?? noop;
 }
 
-type Slot = { seq: number; message: string };
+type Message = { id: number; text: string };
 
 export interface AnnouncerProps {
   children?: ReactNode;
@@ -68,29 +68,34 @@ export interface AnnouncerProps {
  * session timer and the "Rooms close in 0:59" countdown are plain text,
  * and only their start and end are announced.
  *
- * Each message is rendered in a fresh `<span key>` inside the stable
- * region, so repeating the same text is a new DOM insertion and is read
- * again. Messages clear after `ANNOUNCEMENT_LIFETIME`.
+ * Each message is appended as its own `<span>` to the region, which is
+ * `aria-atomic="false"` with `aria-relevant="additions"`: assistive
+ * technology reads each addition, so a burst (three raised hands in a
+ * second) is read in full and nothing replaces a message before it is
+ * read. Repeating the same text is a new insertion and is read again. Each
+ * message is removed after `ANNOUNCEMENT_LIFETIME`.
  */
 export function Announcer({ children }: AnnouncerProps) {
-  const [polite, setPolite] = useState<Slot>({ seq: 0, message: '' });
-  const [assertive, setAssertive] = useState<Slot>({ seq: 0, message: '' });
-  const timers = useRef<Partial<Record<Politeness, ReturnType<typeof setTimeout>>>>({});
+  const [polite, setPolite] = useState<Message[]>([]);
+  const [assertive, setAssertive] = useState<Message[]>([]);
+  const nextId = useRef(0);
+  const timers = useRef(new Set<ReturnType<typeof setTimeout>>());
 
   const announce = useCallback((message: string, politeness: Politeness = 'polite') => {
     const set = politeness === 'assertive' ? setAssertive : setPolite;
-    set((slot) => ({ seq: slot.seq + 1, message }));
-    const pending = timers.current[politeness];
-    if (pending) clearTimeout(pending);
-    timers.current[politeness] = setTimeout(() => {
-      set((slot) => ({ seq: slot.seq + 1, message: '' }));
+    const id = nextId.current++;
+    set((messages) => [...messages, { id, text: message }]);
+    const timer = setTimeout(() => {
+      timers.current.delete(timer);
+      set((messages) => messages.filter((m) => m.id !== id));
     }, ANNOUNCEMENT_LIFETIME);
+    timers.current.add(timer);
   }, []);
 
   useEffect(() => {
-    const current = timers.current;
+    const pending = timers.current;
     return () => {
-      for (const timer of Object.values(current)) if (timer) clearTimeout(timer);
+      for (const timer of pending) clearTimeout(timer);
     };
   }, []);
 
@@ -99,11 +104,27 @@ export function Announcer({ children }: AnnouncerProps) {
   return (
     <AnnouncerContext.Provider value={value}>
       {children}
-      <div role="status" aria-live="polite" aria-atomic="true" className={announcerStyles()}>
-        {polite.message && <span key={polite.seq}>{polite.message}</span>}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="false"
+        aria-relevant="additions"
+        className={announcerStyles()}
+      >
+        {polite.map((m) => (
+          <span key={m.id}>{m.text}</span>
+        ))}
       </div>
-      <div role="alert" aria-live="assertive" aria-atomic="true" className={announcerStyles()}>
-        {assertive.message && <span key={assertive.seq}>{assertive.message}</span>}
+      <div
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="false"
+        aria-relevant="additions"
+        className={announcerStyles()}
+      >
+        {assertive.map((m) => (
+          <span key={m.id}>{m.text}</span>
+        ))}
       </div>
     </AnnouncerContext.Provider>
   );
