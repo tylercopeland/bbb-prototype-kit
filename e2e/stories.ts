@@ -27,12 +27,15 @@ export function storyUrl(id: string, globals: string) {
 
 /** Waits until the story has rendered something real and Storybook shows no error. */
 export async function storyReady(page: Page, story: Pick<IndexEntry, 'tags'>) {
-  await expect(page.locator(RENDERED).first()).toBeAttached();
+  // An overlay story may render nothing but its portal (a dialog driven from
+  // state, with no trigger), so the overlay itself counts as rendered.
+  const overlay = story.tags?.includes(WAIT_FOR_OVERLAY);
+  await expect(page.locator(overlay ? `${RENDERED}, ${OVERLAY}` : RENDERED).first()).toBeAttached();
   await expect(page.locator('body')).not.toHaveClass(/sb-show-errordisplay/);
   await expect(page.locator('html')).toHaveAttribute('data-theme', /light|dark/);
   if (story.tags?.includes(WAIT_FOR_TOOLTIP)) {
     await expect(page.getByRole('tooltip').first()).toBeVisible();
-  } else if (story.tags?.includes(WAIT_FOR_OVERLAY)) {
+  } else if (overlay) {
     await expect(page.locator(OVERLAY).first()).toBeVisible();
   } else if (await page.evaluate(() => document.activeElement?.closest('#storybook-root') !== null)) {
     // The story focused something on mount (autoFocus): if that control has a
