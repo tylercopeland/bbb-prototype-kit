@@ -9,6 +9,8 @@ import {
   Blocks,
   Captions,
   ChartColumn,
+  ChevronRight,
+  CircleAlert,
   CircleX,
   Disc,
   DoorOpen,
@@ -19,6 +21,7 @@ import {
   Hand,
   HeadphoneOff,
   Headphones,
+  Info,
   Keyboard,
   LayoutGrid,
   Lightbulb,
@@ -79,6 +82,9 @@ export const icons = {
   moderator: ShieldCheck,
   lockChat: Lock,
   removeFromSession: CircleX,
+  submenu: ChevronRight,
+  info: Info,
+  error: CircleAlert,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

@@ -77,6 +77,9 @@ const entries: Record<IconName, Entry> = {
   moderator: { meaning: 'Moderator', used: 'Student actions menu' },
   lockChat: { meaning: 'Lock public chat', used: 'Student actions menu' },
   removeFromSession: { meaning: 'Remove from session', used: 'Student actions menu' },
+  submenu: { meaning: 'Opens a submenu', used: 'Menu items with a submenu ("Move to…")' },
+  info: { meaning: 'Information', used: 'Neutral toasts' },
+  error: { meaning: 'Error or warning', used: 'Danger toasts' },
 };
 
 const names = Object.keys(icons) as IconName[];
