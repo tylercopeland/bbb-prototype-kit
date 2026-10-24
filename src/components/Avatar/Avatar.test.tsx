@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Avatar } from './Avatar';
 import { avatarColor } from './avatarColor';
 
@@ -8,7 +9,17 @@ describe('Avatar', () => {
     render(<Avatar name="Rafaela Monaco" />);
     const avatar = screen.getByRole('img', { name: 'Rafaela Monaco' });
     expect(avatar).toHaveTextContent('RM');
-    expect(avatar).toHaveClass('size-avatar-md', 'rounded-full', 'text-xs', 'font-bold', 'text-white');
+    expect(avatar).toHaveClass('size-avatar-md', 'rounded-full', 'text-xs', 'font-bold', 'text-on-avatar');
+  });
+
+  it('is not focusable', async () => {
+    const user = userEvent.setup();
+    render(<Avatar name="Rafaela Monaco" />);
+    const avatar = screen.getByRole('img', { name: 'Rafaela Monaco' });
+    expect(avatar).not.toHaveAttribute('tabindex');
+    await user.tab();
+    expect(avatar).not.toHaveFocus();
+    expect(document.body).toHaveFocus();
   });
 
   it('includes the status in its name', () => {
@@ -24,6 +35,11 @@ describe('Avatar', () => {
     expect(screen.getByRole('img', { name: 'Bruno, muted' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Cibelle Maciel, hand raised' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Octavio, speaking' })).toBeInTheDocument();
+  });
+
+  it('announces the badge state only when it also has the speaking ring', () => {
+    render(<Avatar name="Bruno" isSpeaking badge="muted" />);
+    expect(screen.getByRole('img', { name: 'Bruno, muted' })).toHaveClass('ring-speaking');
   });
 
   it('has no role or name when aria-hidden, because the row shows the name', () => {
@@ -56,19 +72,25 @@ describe('Avatar', () => {
     );
   });
 
-  it('colors by id, stably and distinctly for two Anas', () => {
+  it('colors by participantId, stably and distinctly for two Anas, and keeps the HTML id free', () => {
     render(
       <>
-        <Avatar name="Ana" id="ana-souza" initials="AS" />
-        <Avatar name="Ana" id="ana-lima" initials="AL" />
+        <Avatar name="Ana" participantId="ana-souza" initials="AS" id="row-1-avatar" />
+        <Avatar name="Ana" participantId="ana-lima" initials="AL" />
       </>,
     );
     const [souza, lima] = screen.getAllByRole('img', { name: 'Ana' });
+    expect(souza).toHaveAttribute('id', 'row-1-avatar');
     expect(souza).toHaveTextContent('AS');
     expect(lima).toHaveTextContent('AL');
     expect(souza).toHaveClass(`bg-avatar-${avatarColor('ana-souza')}`);
     expect(lima).toHaveClass(`bg-avatar-${avatarColor('ana-lima')}`);
     expect(souza.className).not.toBe(lima.className);
+  });
+
+  it('shows the placeholder when the name leaves no initials, keeping the name', () => {
+    render(<Avatar name="Dr." />);
+    expect(screen.getByRole('img', { name: 'Dr.' })).toHaveTextContent('?');
   });
 
   it('takes a fixed color and the square shape', () => {

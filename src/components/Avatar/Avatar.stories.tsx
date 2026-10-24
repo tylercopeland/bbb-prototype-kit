@@ -1,12 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Focusable } from 'react-aria-components';
-import { Tooltip } from '../Tooltip';
-import { Avatar } from './Avatar';
+import { Avatar, type AvatarBadge, type AvatarProps, type AvatarSize } from './Avatar';
 import type { AvatarColor } from './avatarColor';
+
+/**
+ * The component type forbids `badge` at `size="sm"`; Storybook's controls
+ * want the two as independent fields, so the stories go through this
+ * wrapper. The cast only widens the story args, never the component.
+ */
+type AvatarDemoProps = Omit<AvatarProps, 'size' | 'badge'> & { size?: AvatarSize; badge?: AvatarBadge };
+const Demo = (props: AvatarDemoProps) => <Avatar {...(props as AvatarProps)} />;
 
 const meta = {
   title: 'Components/Avatar',
-  component: Avatar,
+  component: Demo,
   args: {
     name: 'Rafaela Monaco',
     size: 'md',
@@ -26,17 +32,17 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof Avatar>;
+} satisfies Meta<typeof Demo>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** 24 / 32 / 40px. Initials are 12px (the B9 minimum) up to md, 14px at lg. */
+/** 24 / 32 / 40px. Initials are 12px (the B9 minimum) up to md, 14px at lg. Badges fit md and lg only. */
 export const Sizes: Story = {
   render: (args) => (
     <>
       {(['sm', 'md', 'lg'] as const).map((size) => (
-        <Avatar key={size} {...args} size={size} />
+        <Demo key={size} {...args} badge={undefined} size={size} />
       ))}
     </>
   ),
@@ -46,31 +52,36 @@ export const Sizes: Story = {
 export const Shapes: Story = {
   render: (args) => (
     <>
-      <Avatar {...args} />
-      <Avatar {...args} name="Helena Costa" shape="square" />
+      <Demo {...args} />
+      <Demo {...args} name="Helena Costa" shape="square" />
     </>
   ),
 };
 
-/** The ten avatar colors, every one 4.5:1 with white initials. */
+/** The ten avatar colors, every one 4.5:1 with on-avatar initials. */
 export const Colors: Story = {
   render: (args) => (
     <>
       {Array.from({ length: 10 }, (_, i) => (i + 1) as AvatarColor).map((color) => (
-        <Avatar key={color} {...args} name={`Color ${color}`} initials={String(color)} color={color} />
+        <Demo key={color} {...args} name={`Color ${color}`} initials={String(color)} color={color} />
       ))}
     </>
   ),
 };
 
-/** The green ring, which is the only thing that is green in the People list. */
+/**
+ * Speaking: the green ring and the speaking badge together, so the ring is
+ * never the only cue. Avatar stacks (milestone 4) put an aria-hidden Avatar
+ * inside a button; `ToggleButton › SpeakingAndFocused` shows the rings on a
+ * focusable control.
+ */
 export const Speaking: Story = {
-  args: { name: 'Frederick Dixon', isSpeaking: true },
+  args: { name: 'Frederick Dixon', isSpeaking: true, badge: 'speaking' },
   render: (args) => (
     <>
-      {(['sm', 'md', 'lg'] as const).map((size) => (
-        <Avatar key={size} {...args} size={size} />
-      ))}
+      <Demo {...args} size="md" />
+      <Demo {...args} size="lg" />
+      <Demo {...args} size="lg" shape="square" />
     </>
   ),
 };
@@ -79,54 +90,47 @@ export const Speaking: Story = {
 export const Badges: Story = {
   render: (args) => (
     <>
-      <Avatar {...args} name="Frederick Dixon" badge="speaking" isSpeaking />
-      <Avatar {...args} name="Bruno" badge="muted" />
-      <Avatar {...args} name="Cibelle Maciel" badge="hand" />
-      <Avatar {...args} name="Octavio" badge="hand" size="lg" shape="square" />
-      <Avatar {...args} name="Ana Souza" badge="muted" size="sm" />
+      <Demo {...args} name="Frederick Dixon" badge="speaking" isSpeaking />
+      <Demo {...args} name="Bruno" badge="muted" />
+      <Demo {...args} name="Cibelle Maciel" badge="hand" />
+      <Demo {...args} name="Octavio" badge="hand" size="lg" shape="square" />
+      <Demo {...args} name="Ana Souza" badge="muted" size="lg" />
     </>
   ),
 };
 
 /**
- * A speaking avatar that also has keyboard focus: the green ring stays
- * inside and the blue focus ring sits outside it. Wrapped in `Focusable`
- * with a tooltip, as a people stack would be, and autofocused.
+ * Two words take the first and last initial; one word its first two letters;
+ * honorifics and "(you)" are dropped; CJK names take one character; nothing
+ * left gives a placeholder.
  */
-export const SpeakingAndFocused: Story = {
-  tags: ['wait-for-tooltip'],
-  args: { name: 'Frederick Dixon', isSpeaking: true, badge: 'speaking' },
-  render: (args) => (
-    <Tooltip label="Frederick Dixon, speaking">
-      <Focusable autoFocus>
-        <Avatar {...args} className="focus-ring" />
-      </Focusable>
-    </Tooltip>
-  ),
-};
-
-/** Two words take the first and last initial; one word its first two letters; honorifics and "(you)" are dropped. */
 export const InitialsRules: Story = {
   render: (args) => (
     <dl className="flex flex-col gap-3 text-md text-text">
       {[
         { name: 'Rafaela Monaco' },
         { name: 'Bruno' },
-        { name: 'Prof. Ana Souza' },
+        { name: 'Profa. Ana Souza' },
         { name: 'Helena Costa (you)' },
         { name: 'Édouard Łukasz' },
-        { name: '李小龙' },
+        { name: '李小龙', note: 'first character only' },
+        { name: 'Dr.', note: 'nothing left after stripping' },
         {
           name: 'Ana',
-          id: 'ana-souza',
+          participantId: 'ana-souza',
           initials: 'AS',
           note: 'duplicate first name, initials from the data layer',
         },
-        { name: 'Ana', id: 'ana-lima', initials: 'AL', note: 'same name, another id: another color' },
+        {
+          name: 'Ana',
+          participantId: 'ana-lima',
+          initials: 'AL',
+          note: 'same name, another participant: another color',
+        },
       ].map((row) => (
-        <div key={row.id ?? row.name} className="flex items-center gap-4">
+        <div key={row.participantId ?? row.name} className="flex items-center gap-4">
           <dt>
-            <Avatar {...args} name={row.name} id={row.id} initials={row.initials} />
+            <Demo {...args} name={row.name} participantId={row.participantId} initials={row.initials} />
           </dt>
           <dd>
             {row.name}
@@ -142,10 +146,10 @@ export const Stage: Story = {
   globals: { surface: 'stage' },
   render: (args) => (
     <>
-      <Avatar {...args} name="Frederick Dixon" isSpeaking badge="speaking" />
-      <Avatar {...args} name="Bruno" badge="muted" />
-      <Avatar {...args} name="Cibelle Maciel" badge="hand" />
-      <Avatar {...args} name="Helena Costa" shape="square" />
+      <Demo {...args} name="Frederick Dixon" isSpeaking badge="speaking" />
+      <Demo {...args} name="Bruno" badge="muted" />
+      <Demo {...args} name="Cibelle Maciel" badge="hand" />
+      <Demo {...args} name="Helena Costa" shape="square" />
     </>
   ),
 };
