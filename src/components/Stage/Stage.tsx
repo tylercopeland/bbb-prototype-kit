@@ -70,8 +70,8 @@ export const stageGridStyles = tv({
 /** The minimized presentation's cell: a tile with the slide thumbnail, its plate and the Restore button. */
 export const presentationTileStyles = tv({
   slots: {
-    root: 'relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-tile border border-border-strong bg-surface-sunken p-6',
-    thumb: 'flex aspect-video max-h-full w-60 max-w-full items-center justify-center rounded-xs bg-slide p-2 text-center text-xs font-semibold text-on-slide',
+    root: 'relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-tile border border-border-strong bg-surface-sunken',
+    thumb: 'absolute inset-x-6 top-3 bottom-9 flex items-center justify-center overflow-hidden rounded-xs bg-slide p-2 text-center text-xs leading-4 font-semibold text-on-slide',
     plate: 'absolute bottom-2 left-2 rounded-xs bg-surface-overlay px-2 text-xs leading-5 font-semibold text-text-on-stage',
     restore: 'absolute top-2 right-2',
   },

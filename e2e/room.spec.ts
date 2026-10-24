@@ -13,7 +13,14 @@ async function tabTo(page: Page, name: string | RegExp, max = 60) {
     await page.keyboard.press('Tab');
     const label = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement | null;
-      return el?.getAttribute('aria-label') ?? el?.textContent?.trim() ?? '';
+      if (!el) return '';
+      const byIds = (attr: string) =>
+        el
+          .getAttribute(attr)
+          ?.split(/\s+/)
+          .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
+          .join(' ');
+      return el.getAttribute('aria-label') ?? byIds('aria-labelledby') ?? el.textContent?.trim() ?? '';
     });
     if (typeof name === 'string' ? label === name : name.test(label)) return;
   }
@@ -31,15 +38,16 @@ test.describe('room, keyboard only', () => {
     await page.keyboard.press('Enter');
     const panel = page.getByRole('complementary', { name: 'People' });
     await expect(panel).toBeVisible();
-    await expect(page.getByRole('button', { name: 'People' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('button', { name: 'People', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByRole('list', { name: 'Raised hands 4' })).toBeVisible();
 
     // The row actions are hidden until focus reaches them (X13), then they show.
     const more = page.getByRole('button', { name: 'More actions for Bruno' });
-    await expect(more).toHaveCSS('opacity', '0');
+    const actions = more.locator('..');
+    await expect(actions).toHaveCSS('opacity', '0');
     await tabTo(page, 'More actions for Bruno');
     await expect(more).toBeFocused();
-    await expect(more).toHaveCSS('opacity', '1');
+    await expect(actions).toHaveCSS('opacity', '1');
     await page.keyboard.press('Enter');
     const menu = page.getByRole('menu', { name: 'More actions for Bruno' });
     await expect(menu).toBeVisible();

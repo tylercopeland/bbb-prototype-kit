@@ -50,7 +50,7 @@ function Everyone({ people, chat }: { people: ParticipantFixture; chat?: 'defaul
   const state = createRoom({ participants: people, chat });
   const me = selectSelf(state)?.id;
   const nameOf = (id: string) => state.participants.find((p) => p.id === id)?.name ?? 'Someone';
-  if (state.chat.everyone.length === 0) return <p className="text-sm text-text-muted">No messages yet</p>;
+  if (state.chat.everyone.length === 0) return <li className="text-sm text-text-muted">No messages yet</li>;
   return (
     <>
       {state.chat.everyone.map((m) => (

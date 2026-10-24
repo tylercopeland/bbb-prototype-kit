@@ -13,7 +13,7 @@ import { Tooltip } from '../Tooltip';
 export const dmListStyles = tv({
   slots: {
     root: 'flex min-h-0 flex-1 flex-col gap-3 p-2',
-    list: 'flex list-none flex-col gap-1 p-0',
+    list: 'flex min-h-0 list-none flex-col gap-1 overflow-y-auto p-0',
     empty: 'px-2 py-3 text-center text-sm text-text-muted',
     hint: 'mt-auto flex flex-wrap items-center justify-center gap-1 px-2 py-3 text-center text-sm text-text-muted',
   },
