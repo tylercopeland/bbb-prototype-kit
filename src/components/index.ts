@@ -22,3 +22,5 @@ export * from './Toast';
 export * from './ToggleButton';
 export * from './ToggleGroup';
 export * from './Tooltip';
+export * from './VideoTile';
+export * from './WebcamStrip';
