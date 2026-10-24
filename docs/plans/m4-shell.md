@@ -159,7 +159,7 @@ One reviewer pass found two blocking accessibility problems, eleven should-fix i
 - **Layout (S10).** `Surface` takes `as` and the stage column is a `main`. `ChipGroup` and `Chip` take `density="compact"` (no wrap, tighter gap and padding, labels truncate). Stage: beside the slide, `fit` is the `@container` and the strip gets `mt-21`; above it, the stage root is the `@container` and the slide uses `slide-fit-stacked` (`theme.css`), whose height subtracts the strip, the chrome row and the gaps, with a 40% floor so a very short stage overflows rather than losing the slide. Checked by screenshot at 1400×900 (F1, G1, G2, G3, 30 people minimized, long names).
 - **Contrast.** `status-live-text` on `surface-sunken` is 4.34:1 in light mode (green-700 on neutral-50). It is only ever the live mic glyph in a hovered or focused People row, so the pair is declared at the icon minimum (3:1) with a note; `status-hand-text` on `surface-sunken` ("Raised · 3 min" in a hovered row) is text and passes at 4.79.
 - **Stories (S11).** VideoTile has no 1 / 14 / 30 stories and ActionBar no long-name story: a single tile and a bar of icon buttons have no count or name to scale. The 0-participant WebcamStrip and Stage grid stories carry a visible caption in a decorator, because an empty `ul` does not count as rendered for the Storybook e2e readiness check.
-- **`npm run check`** takes about 26 s wall clock (48 test files, 487 tests, about 10 s of Vitest).
+- **`npm run check`** takes about 20 s (48 test files, 487 tests, about 10 s of Vitest); `test:e2e` runs 324 tests in about 7 minutes.
 
 ### Owner decisions needed (review fix round)
 
