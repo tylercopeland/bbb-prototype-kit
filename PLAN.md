@@ -71,8 +71,8 @@ Build: `Popover`, `Dialog`, `Sheet` (mobile bottom sheet and landscape side shee
 These don't depend on each other, so they can be built in parallel with the `component-builder` agent, one per git worktree, then merged.
 
 Exit:
-- [ ] Every component has stories, a keyboard test and zero axe violations.
-- [ ] Dialog, Popover and Sheet trap focus, close on Escape and return focus to the trigger.
+- [x] Every component has stories, a keyboard test and zero axe violations. _Verified 2026-10-24: 161 e2e tests, axe clean on every story in light, dark and stage; 273 unit tests, also in shuffled order._
+- [x] Dialog, Popover and Sheet trap focus, close on Escape and return focus to the trigger. _Tests in Dialog, Popover and Sheet, including reopen after Escape; checked in Chromium. Owner approved the look from screenshots on 2026-10-24._
 
 ## Milestone 4 · Room shell and state
 
