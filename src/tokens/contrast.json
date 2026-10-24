@@ -118,7 +118,7 @@
       "bg": "semantic.color.status-hand",
       "min": 4.5,
       "modes": ["light", "dark", "stage"],
-      "note": "amber-950 on amber-400 8.9 (hand badge, selected Raise hand)"
+      "note": "amber-950 on amber-400 8.9 (hand badge, selected Raise hand glyph, and the selected-ring-hand inset ring on a raised hand)"
     },
     {
       "fg": "semantic.color.focus-ring",

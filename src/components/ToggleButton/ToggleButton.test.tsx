@@ -145,7 +145,46 @@ describe('ToggleButton', () => {
       'data-selected:bg-status-hand',
       'data-selected:text-on-status-hand',
       'data-selected:selected-ring',
+      'data-selected:selected-ring-hand',
     );
     expect(toggle).not.toHaveClass('bg-danger-soft', 'text-danger-text');
+  });
+
+  it('keeps the accent ring color for the accent tone', () => {
+    render(<Microphone />);
+    expect(screen.getByRole('button', { name: 'Microphone' })).not.toHaveClass(
+      'data-selected:selected-ring-hand',
+    );
+  });
+
+  it("keeps a caller's aria-describedby, and adds Speaking to it while speaking", () => {
+    const { rerender } = render(
+      <>
+        <span id="hint">Hint</span>
+        <Microphone aria-describedby="hint" />
+      </>,
+    );
+    const toggle = screen.getByRole('button', { name: 'Microphone' });
+    expect(toggle).toHaveAttribute('aria-describedby', 'hint');
+
+    rerender(
+      <>
+        <span id="hint">Hint</span>
+        <Microphone aria-describedby="hint" isSpeaking />
+      </>,
+    );
+    const ids = toggle.getAttribute('aria-describedby')?.split(' ') ?? [];
+    expect(ids).toContain('hint');
+    expect(ids).toHaveLength(2);
+    expect(toggle).toHaveAccessibleDescription('Hint Speaking');
+  });
+
+  it('keeps DOM props such as id and aria-controls when disabled', () => {
+    render(<Microphone isDisabled id="mic" aria-controls="audio-menu" data-slot="mic" />);
+    const toggle = screen.getByRole('button', { name: 'Microphone' });
+    expect(toggle).toHaveAttribute('id', 'mic');
+    expect(toggle).toHaveAttribute('aria-controls', 'audio-menu');
+    expect(toggle).toHaveAttribute('data-slot', 'mic');
+    expect(toggle).toHaveClass('forced-colors-disabled');
   });
 });

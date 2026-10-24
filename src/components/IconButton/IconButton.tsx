@@ -28,7 +28,7 @@ export const iconButtonStyles = tv({
       touch: 'w-control-touch p-0',
     },
     isDisabled: {
-      true: '',
+      true: 'forced-colors-disabled',
     },
   },
   compoundVariants: [
@@ -68,6 +68,20 @@ export interface IconButtonProps extends Omit<
 }
 
 /**
+ * The DOM-safe props (`id`, `aria-*`, `data-*`, `autoFocus`) that the
+ * disabled path passes to its plain `<button>`, so a disabled control keeps
+ * them (for example `aria-controls` on a Menu trigger). React Aria's own
+ * `filterDOMProps` is not exported by the packages we install.
+ */
+export function disabledDomProps(props: object): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(props).filter(
+      ([key]) => key === 'id' || key === 'autoFocus' || key.startsWith('aria-') || key.startsWith('data-'),
+    ),
+  );
+}
+
+/**
  * An icon-only button with a required name and a tooltip that shows it
  * with its shortcut (X5). Leave is
  * `variant="soft" tone="danger" size="touch" icon="leave" label="Leave session"`.
@@ -95,6 +109,7 @@ export function IconButton({
       <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement}>
         <Focusable>
           <button
+            {...disabledDomProps(props)}
             type="button"
             ref={buttonRef}
             aria-label={label}

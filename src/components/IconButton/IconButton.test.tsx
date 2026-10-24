@@ -106,4 +106,26 @@ describe('IconButton', () => {
     expect(screen.getByRole('button', { name: 'Close' })).toHaveClass('text-icon');
     expect(screen.getByRole('button', { name: 'Close' })).not.toHaveClass('text-accent');
   });
+
+  it('keeps DOM props and its ref when disabled, and greys out in forced colors', () => {
+    const ref = createRef<HTMLButtonElement>();
+    render(
+      <IconButton
+        label="More"
+        icon="more"
+        isDisabled
+        ref={ref}
+        id="more"
+        aria-controls="row-menu"
+        aria-expanded={false}
+      />,
+    );
+    const button = screen.getByRole('button', { name: 'More' });
+    expect(ref.current).toBe(button);
+    expect(button).toHaveAttribute('id', 'more');
+    expect(button).toHaveAttribute('aria-controls', 'row-menu');
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveClass('forced-colors-disabled');
+  });
 });

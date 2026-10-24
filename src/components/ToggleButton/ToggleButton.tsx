@@ -9,7 +9,7 @@ import { Icon, type IconName } from '../../icons';
 import { useAriaKeyshortcuts, type ShortcutId } from '../../shortcuts';
 import { tv, type VariantProps } from '../../styles/tv';
 import { iconSizeFor, type ControlSize } from '../Button';
-import { iconButtonStyles } from '../IconButton';
+import { disabledDomProps, iconButtonStyles } from '../IconButton';
 import { Tooltip, type TooltipPlacement } from '../Tooltip';
 
 /**
@@ -31,7 +31,7 @@ export const toggleButtonStyles = tv({
     selectedTone: {
       accent:
         'data-selected:bg-selected data-selected:text-selected-text data-selected:data-hovered:bg-selected data-selected:data-pressed:bg-selected',
-      hand: 'data-selected:bg-status-hand data-selected:text-on-status-hand data-selected:data-hovered:bg-status-hand data-selected:data-pressed:bg-status-hand',
+      hand: 'data-selected:bg-status-hand data-selected:text-on-status-hand data-selected:selected-ring-hand data-selected:data-hovered:bg-status-hand data-selected:data-pressed:bg-status-hand',
     },
     isSpeaking: {
       true: 'ring-speaking',
@@ -100,7 +100,10 @@ export function ToggleButton({
 }: ToggleButtonProps) {
   const buttonRef = useAriaKeyshortcuts<HTMLButtonElement>(shortcut, ref);
   const speakingId = useId();
-  const describedBy = isSpeaking ? speakingId : undefined;
+  // Keep a caller's description and add "Speaking" to it, never replace it.
+  const describedBy =
+    [props['aria-describedby'], isSpeaking ? speakingId : undefined].filter(Boolean).join(' ') ||
+    undefined;
   const glyphFor = (selected: boolean) => (
     <Icon
       name={isSpeaking ? 'speaking' : selected ? (selectedIcon ?? icon) : icon}
@@ -120,6 +123,7 @@ export function ToggleButton({
         <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement}>
           <Focusable>
             <button
+              {...disabledDomProps(props)}
               type="button"
               ref={buttonRef}
               aria-label={label}

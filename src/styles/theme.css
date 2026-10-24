@@ -73,6 +73,22 @@
   }
 }
 
+/* Raise hand is selected on amber, where the blue selected-ring is too
+   faint (1.0–2.8:1). Redirect the ring to on-status-hand, the glyph color,
+   which is 8.9:1 on status-hand in every mode. Use together with selected-ring. */
+@utility selected-ring-hand {
+  --bbb-selected-ring: var(--bbb-on-status-hand);
+}
+
+/* aria-disabled controls are not natively disabled, so forced-colors mode
+   would draw them like enabled ones. Grey them out explicitly. */
+@utility forced-colors-disabled {
+  @media (forced-colors: active) {
+    color: GrayText;
+    border-color: GrayText;
+  }
+}
+
 /* Keeps a 32–40px control visually compact but gives touch a 44px target. */
 @utility hit-area {
   position: relative;
