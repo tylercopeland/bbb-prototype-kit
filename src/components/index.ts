@@ -8,5 +8,6 @@ export * from './Menu';
 export * from './Popover';
 export * from './Sheet';
 export * from './Surface';
+export * from './Toast';
 export * from './ToggleButton';
 export * from './Tooltip';
