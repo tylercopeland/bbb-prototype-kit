@@ -139,14 +139,15 @@ describe('Sheet', () => {
     expect(screen.getByRole('dialog', { name: 'Updates' })).toBeInTheDocument();
   });
 
-  it('carries data-surface when opened from the stage, and merges a className', () => {
+  it('always renders as a panel, even when opened from the stage, and merges a className', () => {
     render(
       <Surface kind="stage">
         <Subject defaultOpen className="rounded-none" />
       </Surface>,
     );
     const box = screen.getByRole('dialog').parentElement;
-    expect(box?.parentElement).toHaveAttribute('data-surface', 'stage');
+    expect(box?.parentElement).not.toHaveAttribute('data-surface');
+    expect(box?.closest('[data-surface="stage"]')).toBeNull();
     expect(box).toHaveClass('rounded-none', 'bg-surface');
     expect(box).not.toHaveClass('rounded-t-xl');
   });

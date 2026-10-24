@@ -18,7 +18,7 @@ import {
 } from 'react-aria-components';
 import { Icon, type IconName } from '../../icons';
 import { tv, type VariantProps } from '../../styles/tv';
-import { useSurfaceProps } from '../Surface';
+import { SurfaceProvider } from '../Surface';
 
 /**
  * The student actions menu (Focus.dc.html 588, docs/screenshots/
@@ -209,19 +209,16 @@ export interface SubmenuProps {
 
 /**
  * "Move to…" (B2): a row that opens a second menu with ArrowRight, Enter
- * or hover. Escape or ArrowLeft returns to the row.
+ * or hover. Escape or ArrowLeft returns to the row. It renders inside the
+ * Menu's `SurfaceProvider`, so it is a panel too.
  */
 export function Submenu({ label, icon, children, tone, isDisabled, onAction, className }: SubmenuProps) {
-  const surfaceProps = useSurfaceProps();
   return (
     <SubmenuTrigger>
       <MenuItem icon={icon} tone={tone} isDisabled={isDisabled}>
         {label}
       </MenuItem>
-      <RacPopover
-        {...surfaceProps}
-        className={composeRenderProps(className, (cls) => menuPopoverStyles({ className: cls }))}
-      >
+      <RacPopover className={composeRenderProps(className, (cls) => menuPopoverStyles({ className: cls }))}>
         <RacMenu onAction={onAction} className={menuStyles()}>
           {children}
         </RacMenu>
@@ -259,7 +256,12 @@ export interface MenuProps extends Pick<MenuTriggerProps, 'isOpen' | 'defaultOpe
  * moves with the arrow keys and type-ahead, acts with Enter or Space, and
  * closes on Escape, on an action and on an outside press, returning focus
  * to the trigger. Tab stays inside while it is open. It is named by its
- * trigger (`aria-labelledby`). It portals, so it spreads `useSurfaceProps()`.
+ * trigger (`aria-labelledby`).
+ *
+ * It portals and always draws as a panel, white over the dark stage too,
+ * as the canvas draws the student actions menu (owner decision
+ * 2026-10-24). Its content sits in a `SurfaceProvider`, so a tooltip
+ * inside it is a panel tooltip as well.
  */
 export function Menu({
   trigger,
@@ -271,20 +273,20 @@ export function Menu({
   ref,
   ...state
 }: MenuProps) {
-  const surfaceProps = useSurfaceProps();
   return (
     <MenuTrigger {...state}>
       {trigger}
       <RacPopover
-        {...surfaceProps}
         placement={placement}
         offset={MENU_OFFSET}
         className={composeRenderProps(className, (cls) => menuPopoverStyles({ className: cls }))}
       >
-        {header && <div className={menuHeaderStyles()}>{header}</div>}
-        <RacMenu ref={ref} onAction={onAction} className={menuStyles()}>
-          {children}
-        </RacMenu>
+        <SurfaceProvider kind="panel">
+          {header && <div className={menuHeaderStyles()}>{header}</div>}
+          <RacMenu ref={ref} onAction={onAction} className={menuStyles()}>
+            {children}
+          </RacMenu>
+        </SurfaceProvider>
       </RacPopover>
     </MenuTrigger>
   );

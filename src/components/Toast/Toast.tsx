@@ -13,6 +13,7 @@ import { tv, type VariantProps } from '../../styles/tv';
 import { useAnnouncer, type Politeness } from '../Announcer';
 import { Button } from '../Button';
 import { IconButton } from '../IconButton';
+import { SurfaceProvider } from '../Surface';
 
 /**
  * The region sits above the action bar, centered, and lets pointer events
@@ -109,6 +110,11 @@ export interface ToastRegionProps {
  * assertive, so it is not used and the text is linked to the `alertdialog`
  * through the title and description slots alone. Each toast has a visible
  * close button; the region is reached with F6 and named with its count.
+ *
+ * Toasts always draw as panels (owner decision 2026-10-24): the list sits
+ * in a `SurfaceProvider`, so the Close tooltip is a panel tooltip too. The
+ * region renders in place, not through a portal, so mount it at the app
+ * root, outside any `Surface kind="stage"`.
  */
 export function ToastRegion({ queue = toastQueue, className, ref }: ToastRegionProps) {
   const { announce } = useAnnouncer();
@@ -129,9 +135,11 @@ export function ToastRegion({ queue = toastQueue, className, ref }: ToastRegionP
 
   return (
     <RacToastRegion ref={ref} queue={queue} className={toastRegionStyles({ className })}>
-      <RacToastList<ToastContent> className={toastListStyles()}>
-        {({ toast }) => <ToastCard toast={toast} queue={queue} />}
-      </RacToastList>
+      <SurfaceProvider kind="panel">
+        <RacToastList<ToastContent> className={toastListStyles()}>
+          {({ toast }) => <ToastCard toast={toast} queue={queue} />}
+        </RacToastList>
+      </SurfaceProvider>
     </RacToastRegion>
   );
 }

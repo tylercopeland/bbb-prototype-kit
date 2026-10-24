@@ -9,7 +9,7 @@ import {
 } from 'react-aria-components';
 import { tv, type VariantProps } from '../../styles/tv';
 import { IconButton } from '../IconButton';
-import { useSurfaceProps } from '../Surface';
+import { SurfaceProvider } from '../Surface';
 
 /**
  * The floating card of the Plugins and Share media pickers (Focus.dc.html
@@ -102,9 +102,12 @@ export interface PopoverProps extends Pick<
  * A floating dialog anchored to its trigger (X1). It is modal while open:
  * focus moves into it, Tab and Shift+Tab wrap inside it, and the rest of
  * the page is hidden from assistive technology. Escape, the close button
- * and a press outside close it, and focus returns to the trigger. It
- * portals to <body>, so it spreads `useSurfaceProps()` and keeps the stage
- * colors when its trigger is on the action bar.
+ * and a press outside close it, and focus returns to the trigger.
+ *
+ * It portals to <body> and always draws as a panel, white over the dark
+ * stage too, as the canvas draws every picker (owner decision 2026-10-24).
+ * Its content sits in a `SurfaceProvider`, so a tooltip inside it is a
+ * panel tooltip as well.
  *
  * Menus use `Menu`, not this; this is for pickers and forms.
  */
@@ -120,25 +123,25 @@ export function Popover({
   ref,
   ...state
 }: PopoverProps) {
-  const surfaceProps = useSurfaceProps();
   return (
     <DialogTrigger {...state}>
       {trigger}
       <RacPopover
-        {...surfaceProps}
         placement={placement}
         offset={offset}
         shouldFlip={shouldFlip}
         className={composeRenderProps(className, (cls) => popoverStyles({ className: cls }))}
       >
-        <RacDialog ref={ref} className={popoverDialogStyles()}>
-          {({ close }) => (
-            <>
-              <OverlayHeader title={title} titleHidden={titleHidden} onClose={close} />
-              {children}
-            </>
-          )}
-        </RacDialog>
+        <SurfaceProvider kind="panel">
+          <RacDialog ref={ref} className={popoverDialogStyles()}>
+            {({ close }) => (
+              <>
+                <OverlayHeader title={title} titleHidden={titleHidden} onClose={close} />
+                {children}
+              </>
+            )}
+          </RacDialog>
+        </SurfaceProvider>
       </RacPopover>
     </DialogTrigger>
   );

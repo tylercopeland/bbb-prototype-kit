@@ -10,7 +10,7 @@ import {
 import { tv, type VariantProps } from '../../styles/tv';
 import { Button, type ButtonTone } from '../Button';
 import { OverlayHeader } from '../Popover';
-import { useSurfaceProps } from '../Surface';
+import { SurfaceProvider } from '../Surface';
 
 /** The scrim over the whole room, centering the box (Breakout.dc.html 326). */
 export const dialogOverlayStyles = tv({
@@ -87,6 +87,11 @@ export interface DialogProps extends Pick<
  * trigger. Clicking the scrim closes it unless `isDismissable={false}`.
  * The title is the accessible name; `description` is linked through
  * `aria-describedby`. Confirmations use `ConfirmDialog`.
+ *
+ * It always draws as a panel, white over the dark stage too, as the canvas
+ * draws every confirmation (owner decision 2026-10-24). Its content sits
+ * in a `SurfaceProvider`, so a tooltip inside it is a panel tooltip as
+ * well.
  */
 export function Dialog({
   trigger,
@@ -103,7 +108,6 @@ export function Dialog({
   ref,
   ...state
 }: DialogProps) {
-  const surfaceProps = useSurfaceProps();
   const descriptionId = useId();
   const styles = dialogStyles({ kickerTone });
 
@@ -112,33 +116,34 @@ export function Dialog({
   // Without one, the overlay takes the state props itself.
   const overlay = (
     <ModalOverlay
-      {...surfaceProps}
       {...(trigger ? undefined : state)}
       isDismissable={isDismissable}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       className={dialogOverlayStyles()}
     >
       <Modal className={composeRenderProps(className, (cls) => dialogModalStyles({ className: cls }))}>
-        <RacDialog
-          ref={ref}
-          role={role}
-          aria-describedby={description ? descriptionId : undefined}
-          className={styles.root()}
-        >
-          {({ close }) => (
-            <>
-              {kicker && <p className={styles.kicker()}>{kicker}</p>}
-              <OverlayHeader title={title} onClose={close} />
-              {description && (
-                <p id={descriptionId} className={styles.description()}>
-                  {description}
-                </p>
-              )}
-              {renderWith(children, close)}
-              {footer && <div className={styles.footer()}>{renderWith(footer, close)}</div>}
-            </>
-          )}
-        </RacDialog>
+        <SurfaceProvider kind="panel">
+          <RacDialog
+            ref={ref}
+            role={role}
+            aria-describedby={description ? descriptionId : undefined}
+            className={styles.root()}
+          >
+            {({ close }) => (
+              <>
+                {kicker && <p className={styles.kicker()}>{kicker}</p>}
+                <OverlayHeader title={title} onClose={close} />
+                {description && (
+                  <p id={descriptionId} className={styles.description()}>
+                    {description}
+                  </p>
+                )}
+                {renderWith(children, close)}
+                {footer && <div className={styles.footer()}>{renderWith(footer, close)}</div>}
+              </>
+            )}
+          </RacDialog>
+        </SurfaceProvider>
       </Modal>
     </ModalOverlay>
   );

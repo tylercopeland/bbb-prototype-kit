@@ -10,7 +10,7 @@ import {
 import { tv, type VariantProps } from '../../styles/tv';
 import type { DialogRenderable } from '../Dialog';
 import { OverlayHeader } from '../Popover';
-import { useSurfaceProps } from '../Surface';
+import { SurfaceProvider } from '../Surface';
 
 /**
  * The scrim and the sheet's anchor. `bottom` is the portrait sheet
@@ -98,6 +98,10 @@ function renderWith(content: DialogRenderable | undefined, close: () => void): R
  * actions over People) stacks: it keeps the parent's single scrim and
  * closing it returns to the parent. Swipe-to-dismiss is not built; the
  * handle is decoration.
+ *
+ * It always draws as a panel, white over the dark stage too (owner
+ * decision 2026-10-24). Its content sits in a `SurfaceProvider`, so a
+ * tooltip inside it is a panel tooltip as well.
  */
 export function Sheet({
   trigger,
@@ -113,7 +117,6 @@ export function Sheet({
   ref,
   ...state
 }: SheetProps) {
-  const surfaceProps = useSurfaceProps();
   const depth = useContext(SheetDepthContext);
   const styles = sheetStyles();
 
@@ -122,7 +125,6 @@ export function Sheet({
   // Without one, the overlay takes the state props itself.
   const overlay = (
     <ModalOverlay
-      {...surfaceProps}
       {...(trigger ? undefined : state)}
       isDismissable={isDismissable}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
@@ -131,23 +133,25 @@ export function Sheet({
       <Modal
         className={composeRenderProps(className, (cls) => sheetModalStyles({ position, className: cls }))}
       >
-        <RacDialog ref={ref} className={styles.root()}>
-          {({ close }) => (
-            <SheetDepthContext.Provider value={depth + 1}>
-              {position === 'bottom' && <span aria-hidden="true" className={styles.handle()} />}
-              <OverlayHeader
-                title={title}
-                titleHidden={titleHidden}
-                onClose={close}
-                className={styles.header()}
-              >
-                {headerExtra}
-              </OverlayHeader>
-              <div className={styles.body()}>{renderWith(children, close)}</div>
-              {footer && <div className={styles.footer()}>{renderWith(footer, close)}</div>}
-            </SheetDepthContext.Provider>
-          )}
-        </RacDialog>
+        <SurfaceProvider kind="panel">
+          <RacDialog ref={ref} className={styles.root()}>
+            {({ close }) => (
+              <SheetDepthContext.Provider value={depth + 1}>
+                {position === 'bottom' && <span aria-hidden="true" className={styles.handle()} />}
+                <OverlayHeader
+                  title={title}
+                  titleHidden={titleHidden}
+                  onClose={close}
+                  className={styles.header()}
+                >
+                  {headerExtra}
+                </OverlayHeader>
+                <div className={styles.body()}>{renderWith(children, close)}</div>
+                {footer && <div className={styles.footer()}>{renderWith(footer, close)}</div>}
+              </SheetDepthContext.Provider>
+            )}
+          </RacDialog>
+        </SurfaceProvider>
       </Modal>
     </ModalOverlay>
   );

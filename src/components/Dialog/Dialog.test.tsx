@@ -117,16 +117,34 @@ describe('Dialog', () => {
     expect(screen.getByRole('dialog', { name: 'Reconnecting' })).toBeInTheDocument();
   });
 
-  it('carries data-surface when opened from the stage, and merges a className onto the box', () => {
+  it('always renders as a panel, even when opened from the stage, and merges a className onto the box', () => {
     render(
       <Surface kind="stage">
         <Subject defaultOpen className="max-w-panel" />
       </Surface>,
     );
     const box = screen.getByRole('dialog').parentElement;
-    expect(box?.parentElement).toHaveAttribute('data-surface', 'stage');
+    expect(box?.parentElement).not.toHaveAttribute('data-surface');
+    expect(box?.closest('[data-surface="stage"]')).toBeNull();
     expect(box).toHaveClass('max-w-panel', 'bg-surface', 'shadow-overlay');
     expect(box).not.toHaveClass('max-w-104');
+  });
+
+  it('shows a panel tooltip on its close button when opened from the stage', async () => {
+    const user = userEvent.setup();
+    render(
+      <Surface kind="stage">
+        <Subject defaultOpen />
+      </Surface>,
+    );
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveFocus());
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
+    // The modal hides everything outside it, including the tooltip's portal, from assistive technology.
+    const tooltip = await screen.findByRole('tooltip', { hidden: true });
+    expect(tooltip).toHaveTextContent('Close');
+    expect(tooltip).not.toHaveAttribute('data-surface');
+    expect(tooltip.closest('[data-surface="stage"]')).toBeNull();
   });
 
   it('reopens from its trigger after Escape when it started open, and the trigger reports aria-expanded', async () => {

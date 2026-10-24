@@ -121,14 +121,15 @@ describe('Popover', () => {
     expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
   });
 
-  it('carries data-surface when its trigger sits on the stage, and merges a className', () => {
+  it('always renders as a panel, even when its trigger sits on the stage, and merges a className', () => {
     render(
       <Surface kind="stage">
         <Subject defaultOpen className="w-112" />
       </Surface>,
     );
     const card = screen.getByRole('dialog').parentElement;
-    expect(card).toHaveAttribute('data-surface', 'stage');
+    expect(card).not.toHaveAttribute('data-surface');
+    expect(card?.closest('[data-surface="stage"]')).toBeNull();
     expect(card).toHaveClass('w-112', 'bg-surface', 'shadow-overlay');
     expect(card).not.toHaveClass('w-panel');
   });

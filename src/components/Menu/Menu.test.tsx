@@ -155,14 +155,15 @@ describe('Menu', () => {
     expect(screen.getAllByRole('separator')).toHaveLength(2);
   });
 
-  it('carries data-surface when its trigger sits on the stage, and merges a className', () => {
+  it('always renders as a panel, even when its trigger sits on the stage, and merges a className', () => {
     render(
       <Surface kind="stage">
         <Subject defaultOpen className="min-w-80" />
       </Surface>,
     );
     const card = screen.getByRole('menu').parentElement;
-    expect(card).toHaveAttribute('data-surface', 'stage');
+    expect(card).not.toHaveAttribute('data-surface');
+    expect(card?.closest('[data-surface="stage"]')).toBeNull();
     expect(card).toHaveClass('min-w-80', 'bg-surface');
     expect(card).not.toHaveClass('min-w-64');
   });
