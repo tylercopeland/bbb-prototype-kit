@@ -26,7 +26,9 @@
 
 /* One focus style for every interactive element: a gap ring that
    reads on white panels and on the dark stage. The transparent outline
-   becomes visible in forced-colors mode, where box-shadow is dropped. */
+   becomes visible in forced-colors mode, where box-shadow is dropped.
+   When the element also has ring-speaking, the green ring stays inside
+   and the focus ring moves outside it (--bbb-ring-base is the offset). */
 @utility focus-ring {
   outline: none;
   &:focus-visible,
@@ -34,8 +36,9 @@
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow:
-      0 0 0 2px var(--bbb-ring-offset),
-      0 0 0 4px var(--bbb-focus-ring);
+      var(--bbb-shadow-speaking, 0 0 0 0 transparent),
+      0 0 0 calc(var(--bbb-ring-base, 0px) + 2px) var(--bbb-ring-offset),
+      0 0 0 calc(var(--bbb-ring-base, 0px) + 4px) var(--bbb-focus-ring);
   }
 }
 
@@ -54,11 +57,14 @@
   }
 }
 
-/* Speaking ring for avatars and tiles. Always pair it with an icon or badge. */
+/* Speaking ring for avatars and tiles. Always pair it with an icon or badge.
+   The ring is kept in a variable so focus-ring can layer its own ring outside it. */
 @utility ring-speaking {
-  box-shadow:
+  --bbb-shadow-speaking:
     0 0 0 var(--spacing-speaking-ring) var(--bbb-ring-offset),
     0 0 0 calc(var(--spacing-speaking-ring) * 2) var(--bbb-status-live);
+  --bbb-ring-base: calc(var(--spacing-speaking-ring) * 2);
+  box-shadow: var(--bbb-shadow-speaking);
 }
 
 @layer base {

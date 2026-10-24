@@ -106,6 +106,12 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
+  {
+    // The component pattern (CLAUDE.md) exports `<name>Styles` and context hooks
+    // next to the component, so these files reload fully instead of fast-refreshing.
+    files: ['src/components/**/*.tsx', 'src/icons/**/*.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
   ...storybook.configs['flat/recommended'],
   // Layer 1: Tailwind classes resolved against the real theme.
   {

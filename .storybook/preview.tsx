@@ -1,29 +1,38 @@
 import { useLayoutEffect, type ReactNode } from 'react';
 import type { Decorator, Preview } from '@storybook/react-vite';
 import '../src/styles/theme.css';
+import { Surface, type SurfaceKind } from '../src/components/Surface';
 
 type Theme = 'light' | 'dark';
-type Surface = 'panel' | 'stage';
 
 /** Applies the theme to <html> and, on the stage, wraps the story in the dark video area. */
-function ThemeFrame({ theme, surface, children }: { theme: Theme; surface: Surface; children: ReactNode }) {
+function ThemeFrame({
+  theme,
+  surface,
+  children,
+}: {
+  theme: Theme;
+  surface: SurfaceKind;
+  children: ReactNode;
+}) {
   // Layout effect: the theme is on <html> before the story paints, so axe and screenshots see it.
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
   if (surface === 'stage') {
+    // Surface provides the kind through context, so tooltips that portal to <body> stay on the stage.
     return (
-      <div data-surface="stage" className="bg-surface-stage p-6">
+      <Surface kind="stage" className="bg-surface-stage p-6">
         {children}
-      </div>
+      </Surface>
     );
   }
   return <>{children}</>;
 }
 
 const withTheme: Decorator = (Story, context) => (
-  <ThemeFrame theme={context.globals.theme as Theme} surface={context.globals.surface as Surface}>
+  <ThemeFrame theme={context.globals.theme as Theme} surface={context.globals.surface as SurfaceKind}>
     <Story />
   </ThemeFrame>
 );
