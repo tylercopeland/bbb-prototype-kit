@@ -3,7 +3,8 @@
 //   1. eslint-plugin-better-tailwindcss: arbitrary values and unknown classes
 //      in className strings, template literals and tv()/cn()/clsx() calls
 //   2. no-restricted-syntax: raw hex and arbitrary values in any string
-//   3. no-restricted-syntax: pointer and keyboard handlers on div and span
+//   3. no-restricted-syntax: pointer and keyboard handlers on div and span,
+//      and function-form classNames (docs/plans/m2-primitives.md §6)
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -33,6 +34,10 @@ const NON_INTERACTIVE =
 const POINTER_HANDLER =
   'JSXAttribute[name.name=/^on(Click|DoubleClick|ContextMenu|Mouse\\w+|Pointer\\w+|Touch\\w+|Key\\w+)$/]';
 const STYLE_OBJECT = 'JSXAttribute[name.name="style"] > JSXExpressionContainer > ObjectExpression';
+// A function-form className (React Aria render props). The Tailwind plugin
+// cannot see inside it, so classes go through tv() and composeRenderProps.
+const RENDER_PROP_CLASSNAME =
+  'JSXAttribute[name.name="className"] > JSXExpressionContainer > :matches(ArrowFunctionExpression, FunctionExpression)';
 const CSS_VARIABLE = '[value.type="Literal"][value.value=/^var\\(--[a-zA-Z0-9-]+\\)$/]';
 const ZERO = '[value.type="Literal"][value.value=0]';
 
@@ -44,6 +49,7 @@ const messages = {
   opacity: 'Opacity modifier on a color. Add a semantic color token instead.',
   style: 'Inline style values must be CSS variables (var(--…)) or 0; everything else needs a token utility.',
   handler: 'Use a React Aria component; no pointer or keyboard handlers on non-interactive elements.',
+  renderProp: 'Route render-prop classNames through tv() with composeRenderProps.',
 };
 
 const forStrings = (pattern, message) => [
@@ -67,6 +73,7 @@ const tokenSyntaxRules = [
   },
   { selector: `${STYLE_OBJECT} > :not(Property)`, message: messages.style },
   { selector: `${STYLE_OBJECT} > Property:not(${CSS_VARIABLE}):not(${ZERO})`, message: messages.style },
+  { selector: RENDER_PROP_CLASSNAME, message: messages.renderProp },
   { selector: `${NON_INTERACTIVE} > ${POINTER_HANDLER}`, message: messages.handler },
   {
     selector: `${NON_INTERACTIVE} > JSXSpreadAttribute > ObjectExpression > Property[key.name=/^on(Click|DoubleClick|ContextMenu|Mouse\\w+|Pointer\\w+|Touch\\w+|Key\\w+)$/]`,

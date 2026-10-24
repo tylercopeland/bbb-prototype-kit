@@ -14,16 +14,20 @@ const timeout = 30_000;
 
 type Fixture = { name: string; attrs: string; tag?: string; rule?: string; message?: RegExp };
 
+async function lintSource(source: string) {
+  const [result] = await eslint.lintText(source, { filePath });
+  return result.messages.filter((m) => m.severity === 2 && !/no-unused-vars/.test(m.ruleId ?? ''));
+}
+
 async function lintElement({ attrs, tag = 'div' }: Fixture) {
-  const imports = tag === 'Button' ? "import { Button } from 'react-aria-components';\n" : '';
-  const source = `${imports}export default { title: 'Fixture' };
+  const imports =
+    tag === 'Button' ? "import { Button, composeRenderProps } from 'react-aria-components';\n" : '';
+  return lintSource(`${imports}export default { title: 'Fixture' };
 const c = 'x';
 const x = 1;
 const s = {};
 export const Fixture = () => <${tag} ${attrs} />;
-`;
-  const [result] = await eslint.lintText(source, { filePath });
-  return result.messages.filter((m) => m.severity === 2 && !/no-unused-vars/.test(m.ruleId ?? ''));
+`);
 }
 
 const rejected: Fixture[] = [
@@ -126,6 +130,36 @@ const rejected: Fixture[] = [
     message: /no pointer or keyboard handlers/,
   },
   { name: 'mt-px', attrs: 'className="mt-px"', message: /Raw pixel length/ },
+  {
+    name: 'a function-form className',
+    attrs: "className={({ isPressed }) => 'bg-surface'}",
+    tag: 'Button',
+    message: /Route render-prop classNames through tv\(\)/,
+  },
+  {
+    name: 'a function-expression className',
+    attrs: "className={function () { return 'bg-surface'; }}",
+    tag: 'Button',
+    message: /Route render-prop classNames through tv\(\)/,
+  },
+];
+
+/** Whole-module fixtures, for rules that apply outside a JSX attribute. */
+const rejectedSources: Array<{ name: string; source: string; rule: string }> = [
+  {
+    name: 'an arbitrary value inside a tv() object',
+    source: `import { tv } from 'tailwind-variants';
+export const styles = tv({ base: 'bg-[#fff]' });
+`,
+    rule: 'better-tailwindcss/no-restricted-classes',
+  },
+  {
+    name: 'an unknown class inside a tv() variant',
+    source: `import { tv } from 'tailwind-variants';
+export const styles = tv({ base: 'flex', variants: { tone: { danger: 'bg-canvas-red' } } });
+`,
+    rule: 'better-tailwindcss/no-unknown-classes',
+  },
 ];
 
 const accepted: Fixture[] = [
@@ -142,6 +176,11 @@ const accepted: Fixture[] = [
   },
   { name: 'onClick on a button', attrs: 'onClick={() => {}}', tag: 'button' },
   { name: 'spacing, breakpoints and sizes', attrs: 'className="p-2 sm:grid-cols-4 size-16"' },
+  {
+    name: 'a className composed with composeRenderProps',
+    attrs: 'className={composeRenderProps(c, (x) => x)}',
+    tag: 'Button',
+  },
 ];
 
 describe('token lint rules reject', () => {
@@ -151,6 +190,15 @@ describe('token lint rules reject', () => {
       expect(errors.length).toBeGreaterThan(0);
       if (fixture.rule) expect(errors.map((e) => e.ruleId)).toContain(fixture.rule);
       if (fixture.message) expect(errors.some((e) => fixture.message?.test(e.message))).toBe(true);
+    });
+  }
+});
+
+describe('token lint rules reject, in whole modules', () => {
+  for (const fixture of rejectedSources) {
+    it(fixture.name, { timeout }, async () => {
+      const errors = await lintSource(fixture.source);
+      expect(errors.map((e) => e.ruleId)).toContain(fixture.rule);
     });
   }
 });
