@@ -42,7 +42,8 @@ export function chatFor(participants: Participant[]): ChatState {
     direct: direct
       .filter((t) => present.has(t.with))
       .map((t) => ({ ...t, messages: t.messages.filter((m) => present.has(m.from)) })),
+    seq: 0,
   };
 }
 
-export const emptyChat: ChatState = { everyone: [], direct: [] };
+export const emptyChat: ChatState = { everyone: [], direct: [], seq: 0 };

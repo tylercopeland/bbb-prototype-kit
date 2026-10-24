@@ -140,6 +140,7 @@ export function breakoutsFor(state: Pick<RoomState, 'participants'>, options: Br
     closingEndsAt: null,
     onStage: null,
     helpQueue: [],
+    helpSeq: 0,
     activity: {
       0: { kind: 'talking', since: FIXTURE_NOW - 2 * MINUTE },
       2: { kind: 'quiet', since: FIXTURE_NOW - 4 * MINUTE },

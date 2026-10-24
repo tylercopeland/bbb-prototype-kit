@@ -194,7 +194,7 @@ export function RoomScreen() {
             panelRefs={{ people: peopleButton, chat: chatButton, notes: notesButton, plugins: pluginsButton }}
             onTogglePanel={(p: ActionBarPanel) => dispatch({ type: 'togglePanel', panel: p })}
             onTogglePlugins={() => dispatch({ type: 'setPlugins', open: !pluginsOpen })}
-            onJoinAudio={() => me && dispatch({ type: 'setAudio', participantId: me.id, audio: 'live' })}
+            onJoinAudio={() => me && dispatch({ type: 'joinAudio', participantId: me.id })}
             onMicrophoneChange={(on) => me && dispatch({ type: 'setAudio', participantId: me.id, audio: on ? 'live' : 'muted' })}
             onCameraChange={(on) => me && dispatch({ type: 'setCamera', participantId: me.id, on })}
             onRaiseHandChange={(raised) => me && dispatch({ type: raised ? 'raiseHand' : 'lowerHand', participantId: me.id })}

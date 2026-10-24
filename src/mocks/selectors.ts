@@ -5,6 +5,7 @@
  * until the state changes and `useSyncExternalStore` stays quiet.
  */
 import { buildRooms, helpFirst, isUneven, sortedHelpQueue, type Room } from './breakouts';
+import { firstName, firstNameWithInitial } from './names';
 import { formatAgo, formatElapsed, MINUTE, SECOND } from './time';
 import type {
   ChatMessage,
@@ -68,13 +69,12 @@ export const selectPeopleFilterCounts = memo((s) => ({
  * Short names for pills, tiles and chips (B9). The first name alone, unless
  * another participant shares it; then first name plus the last initial
  * ("Ana S.", "Ana F."); and the full name when even that collides.
+ * Honorifics and generational suffixes are skipped, as the avatar initials
+ * skip them ("Prof. Helena Costa" → "Helena", `names.ts`).
  */
 export const selectDisplayNames = memo((s): Record<ParticipantId, string> => {
-  const first = (name: string) => name.trim().split(/\s+/)[0] ?? name;
-  const withInitial = (name: string) => {
-    const words = name.trim().split(/\s+/);
-    return words.length > 1 ? `${words[0]} ${words[words.length - 1][0]}.` : name;
-  };
+  const first = firstName;
+  const withInitial = firstNameWithInitial;
   const byFirst = new Map<string, number>();
   for (const p of s.participants) byFirst.set(first(p.name), (byFirst.get(first(p.name)) ?? 0) + 1);
   const byInitial = new Map<string, number>();
@@ -189,7 +189,8 @@ export type Alert =
  * The session header's pills, in the canvas order: raised hands, questions,
  * the engagement insight. The accessible name starts with this `text` (D4).
  * While rooms are live, open help requests come first; after they close,
- * the "Breakouts ended" pill.
+ * the "Breakouts ended" pill. The hands pill counts the students' hands,
+ * never your own: you know you raised it, and the toggle says so.
  */
 export const selectAlerts = memo((s): Alert[] => {
   const alerts: Alert[] = [];
@@ -215,7 +216,7 @@ export const selectAlerts = memo((s): Alert[] => {
       text: `Breakouts ended · ${count} ${count === 1 ? 'room’s' : 'rooms’'} work saved`,
     });
   }
-  const hands = selectRaisedHands(s);
+  const hands = selectRaisedHands(s).filter((p) => !p.isSelf);
   if (hands.length > 0) {
     alerts.push({ id: 'hands', kind: 'hands', count: hands.length, text: `${hands.length} raised`, longest: hands[0] });
   }
@@ -281,8 +282,17 @@ export const selectClosingLeft = (s: RoomState): number | null => {
   return closingEndsAt === null ? null : Math.max(0, (closingEndsAt - s.clock.now) / SECOND);
 };
 
-/** The line under a room's name (BO5): what the room is doing, from data (B3). */
-export function roomStatus(room: Room, phase: RoomState['breakouts']['phase'], now: number): string {
+/**
+ * The line under a room's name (BO5): what the room is doing, from data
+ * (B3). `names` is `selectDisplayNames(state)`, so two Anas read "Ana S.
+ * and Ana F. are talking" (B9).
+ */
+export function roomStatus(
+  room: Room,
+  phase: RoomState['breakouts']['phase'],
+  now: number,
+  names: Record<ParticipantId, string>,
+): string {
   if (phase === 'back') {
     const label = { board: 'Shared whiteboard', doc: 'Shared notes', quiz: 'Practice quiz', slide: 'Your slides' }[room.work];
     return `${label} saved`;
@@ -293,8 +303,8 @@ export function roomStatus(room: Room, phase: RoomState['breakouts']['phase'], n
   if (!a) return `Quiet since the rooms opened`;
   switch (a.kind) {
     case 'talking': {
-      const names = room.members.slice(0, 2).map((m) => m.name.split(' ')[0]);
-      return names.length === 1 ? `${names[0]} is talking` : `${names.join(' and ')} are talking`;
+      const who = room.members.slice(0, 2).map((m) => names[m.id] ?? firstName(m.name));
+      return who.length === 1 ? `${who[0]} is talking` : `${who.join(' and ')} are talking`;
     }
     case 'quiet':
       return `Quiet for ${formatAgo(a.since, now)}`;

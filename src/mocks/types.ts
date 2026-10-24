@@ -67,6 +67,8 @@ export interface ChatState {
   everyone: ChatMessage[];
   /** One thread per person, in the order they were opened. */
   direct: DirectThread[];
+  /** The last message number the reducer handed out; ids are `m-${seq}`. Kept here so the reducer stays pure. */
+  seq: number;
 }
 
 export type Panel = 'none' | 'people' | 'chat' | 'notes' | 'poll';
@@ -209,6 +211,8 @@ export interface BreakoutState {
   /** Room whose work is on the main stage after the rooms closed. */
   onStage: number | null;
   helpQueue: HelpRequest[];
+  /** The last help-request number handed out; ids are `help-${helpSeq}`. */
+  helpSeq: number;
   /** Per room index; a room without an entry is quiet since it opened. */
   activity: Record<number, RoomActivity>;
   /** Per room index; a room without an entry is on the shared whiteboard. */

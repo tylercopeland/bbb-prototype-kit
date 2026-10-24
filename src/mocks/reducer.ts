@@ -44,8 +44,11 @@ export type RoomAction =
   | { type: 'raiseHand'; participantId: ParticipantId }
   | { type: 'lowerHand'; participantId: ParticipantId }
   | { type: 'setAudio'; participantId: ParticipantId; audio: AudioState }
+  /** Joins audio muted (owner decision 2026-10-24); the person unmutes themselves. */
+  | { type: 'joinAudio'; participantId: ParticipantId }
   | { type: 'mute'; participantId: ParticipantId }
   | { type: 'requestUnmute'; participantId: ParticipantId }
+  | { type: 'cancelUnmuteRequest'; participantId: ParticipantId }
   | { type: 'setCamera'; participantId: ParticipantId; on: boolean }
   | { type: 'makePresenter'; participantId: ParticipantId }
   | {
@@ -148,10 +151,7 @@ export function selfId(state: RoomState): ParticipantId | null {
   return state.participants.find((p) => p.isSelf)?.id ?? null;
 }
 
-let messageSeq = 0;
-let helpSeq = 0;
-
-/** Ids are unique per process; fixtures use their own prefixes. */
+/** Ids come from a counter in the state (`chat.seq`, `breakouts.helpSeq`); fixtures use their own prefixes. */
 function nextId(prefix: string, seq: number): string {
   return `${prefix}-${seq}`;
 }
@@ -240,6 +240,10 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       return updateParticipant(state, action.participantId, (p) =>
         p.audio === action.audio ? p : { ...p, audio: action.audio, unmuteRequested: false },
       );
+    case 'joinAudio':
+      return updateParticipant(state, action.participantId, (p) =>
+        p.audio === 'notJoined' || p.audio === 'listening' ? { ...p, audio: 'muted', unmuteRequested: false } : p,
+      );
     case 'mute':
       return updateParticipant(state, action.participantId, (p) =>
         p.audio === 'live' || p.audio === 'speaking' ? { ...p, audio: 'muted' } : p,
@@ -247,6 +251,10 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     case 'requestUnmute':
       return updateParticipant(state, action.participantId, (p) =>
         p.audio === 'muted' && !p.unmuteRequested ? { ...p, unmuteRequested: true } : p,
+      );
+    case 'cancelUnmuteRequest':
+      return updateParticipant(state, action.participantId, (p) =>
+        p.unmuteRequested ? { ...p, unmuteRequested: false } : p,
       );
     case 'setCamera':
       return updateParticipant(state, action.participantId, (p) =>
@@ -266,24 +274,43 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
         p[action.flag] === action.value ? p : { ...p, [action.flag]: action.value },
       );
     case 'removeParticipant': {
-      if (!state.participants.some((p) => p.id === action.participantId)) return state;
-      const participants = state.participants.filter((p) => p.id !== action.participantId);
+      // Nothing may point at the removed person afterwards (S2): their thread, alerts, menu,
+      // sheet, moves, help requests and the presenter role all go or fall back.
+      const id = action.participantId;
+      const removed = state.participants.find((p) => p.id === id);
+      if (!removed) return state;
+      let participants = state.participants.filter((p) => p.id !== id);
+      if (removed.isPresenter) {
+        // The presenter role goes back to the teacher (you first, then any teacher).
+        const teacher = participants.find((p) => p.role === 'teacher' && p.isSelf) ?? participants.find((p) => p.role === 'teacher');
+        if (teacher) participants = participants.map((p) => (p === teacher ? { ...p, isPresenter: true } : p));
+      }
       const ui = { ...state.ui };
-      if (ui.peopleMenu === action.participantId) ui.peopleMenu = null;
-      if (ui.dm === action.participantId) ui.dm = null;
-      if (ui.sheetStudent === action.participantId) ui.sheetStudent = null;
-      const { moves, assignments } = state.breakouts;
+      if (ui.peopleMenu === id) ui.peopleMenu = null;
+      if (ui.dm === id) ui.dm = null;
+      if (ui.sheetStudent === id) {
+        ui.sheetStudent = null;
+        if (ui.sheet === 'student') ui.sheet = 'none';
+      }
+      const chat = state.chat.direct.some((t) => t.with === id)
+        ? { ...state.chat, direct: state.chat.direct.filter((t) => t.with !== id) }
+        : state.chat;
+      const alerts = state.alerts.some((a) => a.from === id) ? state.alerts.filter((a) => a.from !== id) : state.alerts;
+      const { moves, assignments, helpQueue } = state.breakouts;
       const breakouts = { ...state.breakouts };
-      if (action.participantId in moves) {
+      if (id in moves) {
         breakouts.moves = { ...moves };
-        delete breakouts.moves[action.participantId];
+        delete breakouts.moves[id];
       }
-      if (action.participantId in assignments) {
+      if (id in assignments) {
         breakouts.assignments = { ...assignments };
-        delete breakouts.assignments[action.participantId];
+        delete breakouts.assignments[id];
       }
-      if (breakouts.moving === action.participantId) breakouts.moving = null;
-      return { ...state, participants, ui, breakouts };
+      if (breakouts.moving === id) breakouts.moving = null;
+      if (helpQueue.some((h) => h.from === id)) {
+        breakouts.helpQueue = helpQueue.map((h) => (h.from === id ? { ...h, from: null } : h));
+      }
+      return { ...state, participants, chat, alerts, ui, breakouts };
     }
 
     // ---------- chat ----------
@@ -291,22 +318,23 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       const text = action.text.trim();
       if (text.length === 0) return state;
       const me = selfId(state);
+      const seq = state.chat.seq + 1;
       const message: ChatMessage = {
-        id: nextId('m', ++messageSeq),
+        id: nextId('m', seq),
         from: action.from,
         sentAt: state.clock.now,
         text,
         read: action.from === me,
       };
       if (action.to === undefined) {
-        return readVisibleChat({ ...state, chat: { ...state.chat, everyone: [...state.chat.everyone, message] } });
+        return readVisibleChat({ ...state, chat: { ...state.chat, everyone: [...state.chat.everyone, message], seq } });
       }
       const other = action.from === me ? action.to : action.from;
       const exists = state.chat.direct.some((t) => t.with === other);
       const direct = exists
         ? state.chat.direct.map((t) => (t.with === other ? { ...t, messages: [...t.messages, message] } : t))
         : [...state.chat.direct, { with: other, messages: [message] }];
-      return readVisibleChat({ ...state, chat: { ...state.chat, direct } });
+      return readVisibleChat({ ...state, chat: { ...state.chat, direct, seq } });
     }
     case 'openDm': {
       if (!state.participants.some((p) => p.id === action.participantId && !p.isSelf)) return state;
@@ -324,9 +352,7 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
 
     // ---------- panel and scope ----------
     case 'setPanel':
-      return readVisibleChat(
-        withUi(state, { panel: action.panel, peopleMenu: null, ...(action.panel === 'chat' ? {} : { dm: state.ui.dm }) }),
-      );
+      return readVisibleChat(withUi(state, { panel: action.panel, peopleMenu: null }));
     case 'togglePanel':
       return roomReducer(state, { type: 'setPanel', panel: state.ui.panel === action.panel ? 'none' : action.panel });
     case 'setScope':
@@ -467,9 +493,11 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
         ...withUi(state, { breakoutsOpen: action.open, panel: action.open ? 'none' : state.ui.panel }),
         plugins: { ...state.plugins, open: false },
       };
+    // The setup actions change nothing once the rooms are open or closed (S3).
     case 'setBreakoutMode':
-      return withBreakouts(state, { mode: action.mode, moving: null });
+      return state.breakouts.phase !== 'setup' ? state : withBreakouts(state, { mode: action.mode, moving: null });
     case 'setRoomCount': {
+      if (state.breakouts.phase !== 'setup') return state;
       const roomCount = clampRoomCount(action.roomCount);
       if (roomCount === state.breakouts.roomCount) return state;
       // Moves into rooms that no longer exist are dropped; the rest stay (B4).
@@ -478,8 +506,9 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       return reassign(withBreakouts(state, { roomCount, moves }), state.breakouts.seed);
     }
     case 'shuffleRooms':
-      return reassign(state, state.breakouts.seed + 1);
+      return state.breakouts.phase !== 'setup' ? state : reassign(state, state.breakouts.seed + 1);
     case 'evenOutRooms': {
+      if (state.breakouts.phase !== 'setup') return state;
       const students = breakoutStudents(state.participants).map((s) => s.id);
       const count = clampRoomCount(state.breakouts.roomCount);
       return withBreakouts(state, {
@@ -586,14 +615,21 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       });
     case 'requestHelp': {
       if (state.breakouts.phase !== 'live') return state;
+      const count = roomCountFor(
+        state.breakouts.mode,
+        state.breakouts.roomCount,
+        breakoutStudents(state.participants).length,
+      );
+      if (!Number.isInteger(action.roomIndex) || action.roomIndex < 0 || action.roomIndex >= count) return state;
+      const helpSeq = state.breakouts.helpSeq + 1;
       const request = {
-        id: nextId('help', ++helpSeq),
+        id: nextId('help', helpSeq),
         roomIndex: action.roomIndex,
         from: action.from ?? null,
         askedAt: state.clock.now,
         acknowledgedAt: null,
       };
-      return withBreakouts(state, { helpQueue: [...state.breakouts.helpQueue, request] });
+      return withBreakouts(state, { helpQueue: [...state.breakouts.helpQueue, request], helpSeq });
     }
     case 'acknowledgeHelp':
       return withBreakouts(state, {

@@ -55,7 +55,7 @@ describe('hands', () => {
 });
 
 describe('audio and camera', () => {
-  it('mutes a live or speaking person, asks a muted one to unmute', () => {
+  it('mutes a live or speaking person, asks a muted one to unmute, and cancels the request', () => {
     const s = createRoom();
     expect(find(reduce(s, { type: 'mute', participantId: 'frederick' }), 'frederick').audio).toBe('muted');
     expect(find(reduce(s, { type: 'mute', participantId: 'helena' }), 'helena').audio).toBe('muted');
@@ -65,6 +65,17 @@ describe('audio and camera', () => {
     expect(reduce(s, { type: 'requestUnmute', participantId: 'ellen' })).toBe(s);
     const unmuted = reduce(asked, { type: 'setAudio', participantId: 'bruno', audio: 'live' });
     expect(find(unmuted, 'bruno')).toMatchObject({ audio: 'live', unmuteRequested: false });
+    const cancelled = reduce(asked, { type: 'cancelUnmuteRequest', participantId: 'bruno' });
+    expect(find(cancelled, 'bruno')).toMatchObject({ audio: 'muted', unmuteRequested: false });
+    expect(reduce(s, { type: 'cancelUnmuteRequest', participantId: 'bruno' })).toBe(s);
+  });
+
+  it('joins audio muted (owner decision), from not joined or listening only', () => {
+    const s = createRoom();
+    expect(find(reduce(s, { type: 'joinAudio', participantId: 'timo' }), 'timo').audio).toBe('muted');
+    expect(find(reduce(s, { type: 'joinAudio', participantId: 'ellen' }), 'ellen').audio).toBe('muted');
+    expect(reduce(s, { type: 'joinAudio', participantId: 'helena' })).toBe(s);
+    expect(reduce(s, { type: 'joinAudio', participantId: 'bruno' })).toBe(s);
   });
 
   it('turns a camera on and off', () => {
@@ -98,10 +109,34 @@ describe('presenter, flags and removal', () => {
     const gone = reduce(s, { type: 'removeParticipant', participantId: 'ana' });
     expect(gone.participants.some((p) => p.id === 'ana')).toBe(false);
     expect(gone.ui.dm).toBeNull();
+    expect(gone.ui.peopleMenu).toBeNull();
+    expect(gone.chat.direct.some((t) => t.with === 'ana')).toBe(false);
     expect(gone.breakouts.moves).not.toHaveProperty('ana');
     expect(gone.breakouts.assignments).not.toHaveProperty('ana');
+    expect(gone.breakouts.moving).toBeNull();
     expect(selectRooms(gone).flatMap((r) => r.members).some((m) => m.id === 'ana')).toBe(false);
     expect(reduce(gone, { type: 'removeParticipant', participantId: 'ana' })).toBe(gone);
+  });
+
+  it('leaves nothing pointing at a removed person: thread, alerts, help, sheet and the presenter role (S2)', () => {
+    const s = run(
+      createRoom(),
+      { type: 'makePresenter', participantId: 'rafaela' },
+      { type: 'setSheet', sheet: 'student', student: 'rafaela' },
+      { type: 'openRooms' },
+      { type: 'requestHelp', roomIndex: 1, from: 'rafaela' },
+    );
+    expect(s.chat.direct.some((t) => t.with === 'rafaela')).toBe(true);
+    expect(s.alerts.some((a) => a.from === 'rafaela')).toBe(true);
+    const gone = reduce(s, { type: 'removeParticipant', participantId: 'rafaela' });
+    expect(gone.chat.direct.some((t) => t.with === 'rafaela')).toBe(false);
+    expect(gone.alerts.some((a) => a.from === 'rafaela')).toBe(false);
+    expect(gone.breakouts.helpQueue).toHaveLength(1);
+    expect(gone.breakouts.helpQueue[0].from).toBeNull();
+    expect(gone.ui).toMatchObject({ sheet: 'none', sheetStudent: null });
+    expect(gone.participants.filter((p) => p.isPresenter).map((p) => p.id)).toEqual(['helena']);
+    // Her public message stays; the chat names her "Someone who left".
+    expect(gone.chat.everyone.some((m) => m.from === 'rafaela')).toBe(true);
   });
 });
 
@@ -111,6 +146,16 @@ describe('chat', () => {
     const last = s.chat.everyone[s.chat.everyone.length - 1];
     expect(last).toMatchObject({ from: 'helena', text: 'Hello', sentAt: FIXTURE_NOW, read: true });
     expect(reduce(s, { type: 'sendMessage', from: 'helena', text: '   ' })).toBe(s);
+  });
+
+  it('numbers messages from a counter in the state, so the reducer is pure', () => {
+    const a = run(createRoom(), { type: 'sendMessage', from: 'bruno', text: 'One' }, { type: 'sendMessage', from: 'helena', to: 'bruno', text: 'Two' });
+    expect(a.chat.everyone.at(-1)?.id).toBe('m-1');
+    expect(a.chat.direct.find((t) => t.with === 'bruno')?.messages.at(-1)?.id).toBe('m-2');
+    expect(a.chat.seq).toBe(2);
+    // The same state and action give the same id every time.
+    const b = reduce(createRoom(), { type: 'sendMessage', from: 'bruno', text: 'One' });
+    expect(b.chat.everyone.at(-1)?.id).toBe('m-1');
   });
 
   it('counts an incoming message as unread until the panel shows it', () => {
@@ -144,12 +189,14 @@ describe('chat', () => {
 });
 
 describe('panel, scope and pickers', () => {
-  it('sets and toggles the panel', () => {
+  it('sets and toggles the panel, keeping the open thread for when Chat comes back', () => {
     const s = createRoom();
     expect(reduce(s, { type: 'setPanel', panel: 'people' }).ui.panel).toBe('people');
     const toggled = reduce(s, { type: 'togglePanel', panel: 'people' });
     expect(toggled.ui.panel).toBe('people');
     expect(reduce(toggled, { type: 'togglePanel', panel: 'people' }).ui.panel).toBe('none');
+    const thread = run(s, { type: 'openDm', participantId: 'bruno' }, { type: 'setPanel', panel: 'people' });
+    expect(thread.ui).toMatchObject({ panel: 'people', dm: 'bruno' });
   });
 
   it('switches scope, closing any open thread', () => {
@@ -326,6 +373,19 @@ describe('breakout setup', () => {
     expect(reduce(solo, { type: 'startMove', participantId: 'ana' })).toBe(solo);
   });
 
+  it('ignores the setup actions once the rooms are open or closed (S3)', () => {
+    const open = live(run(createRoom(), { type: 'moveParticipant', participantId: 'ana', roomIndex: 1 }));
+    expect(reduce(open, { type: 'setBreakoutMode', mode: 'solo' })).toBe(open);
+    expect(reduce(open, { type: 'setRoomCount', roomCount: 6 })).toBe(open);
+    expect(reduce(open, { type: 'shuffleRooms' })).toBe(open);
+    expect(reduce(open, { type: 'evenOutRooms' })).toBe(open);
+    const back = reduce(open, { type: 'bringEveryoneBack' });
+    expect(reduce(back, { type: 'setRoomCount', roomCount: 6 })).toBe(back);
+    // Set up new rooms, and they work again.
+    const fresh = reduce(back, { type: 'setUpNewRooms' });
+    expect(reduce(fresh, { type: 'setRoomCount', roomCount: 6 }).breakouts.roomCount).toBe(6);
+  });
+
   it('can empty a room without crashing anything that reads it (B1)', () => {
     let s = createRoom({ participants: 'four' });
     const rooms = selectRooms(s);
@@ -397,6 +457,19 @@ describe('breakouts live', () => {
     expect(cleared.breakouts.helpQueue).toHaveLength(1);
     const setup = createRoom();
     expect(reduce(setup, { type: 'requestHelp', roomIndex: 1 })).toBe(setup);
+  });
+
+  it('numbers help requests from the state and refuses a room that does not exist (S3)', () => {
+    const s = live();
+    expect(reduce(s, { type: 'requestHelp', roomIndex: 4 })).toBe(s);
+    expect(reduce(s, { type: 'requestHelp', roomIndex: -1 })).toBe(s);
+    expect(reduce(s, { type: 'requestHelp', roomIndex: 1.5 })).toBe(s);
+    const asked = run(s, { type: 'requestHelp', roomIndex: 0 }, { type: 'requestHelp', roomIndex: 3 });
+    expect(asked.breakouts.helpQueue.map((h) => h.id)).toEqual(['help-1', 'help-2']);
+    expect(asked.breakouts.helpSeq).toBe(2);
+    const solo = live(reduce(createRoom({ participants: 'four' }), { type: 'setBreakoutMode', mode: 'solo' }));
+    expect(reduce(solo, { type: 'requestHelp', roomIndex: 2 }).breakouts.helpQueue).toHaveLength(1);
+    expect(reduce(solo, { type: 'requestHelp', roomIndex: 3 })).toBe(solo);
   });
 
   it('acknowledges every open request when the rooms close', () => {

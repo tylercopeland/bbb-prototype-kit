@@ -53,7 +53,7 @@ export const PeopleOpen: Story = {
   args: { panel: 'people' },
 };
 
-/** Before audio is joined, the mic slot is "Join audio" (same key), never a third toggle state. */
+/** Before audio is joined, the mic slot is "Join audio" (same key), never a third toggle state. Joining starts muted. */
 export const AudioNotJoined: Story = {
   args: { audio: 'notJoined' },
 };
@@ -85,7 +85,7 @@ function Interactive(props: React.ComponentProps<typeof ActionBar>) {
         handRaised={hand}
         onTogglePanel={(p) => setPanel((current) => (current === p ? 'none' : p))}
         onTogglePlugins={() => setPlugins((v) => !v)}
-        onJoinAudio={() => setAudio('live')}
+        onJoinAudio={() => setAudio('muted')}
         onMicrophoneChange={(on) => setAudio(on ? 'live' : 'muted')}
         onCameraChange={setCamera}
         onRaiseHandChange={setHand}

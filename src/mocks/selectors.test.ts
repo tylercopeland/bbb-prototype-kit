@@ -50,6 +50,13 @@ describe('people selectors', () => {
     expect(names.rafaela).toBe('Rafaela');
   });
 
+  it('skips honorifics and generational suffixes in short names, as the avatar initials do', () => {
+    expect(selectDisplayNames(createRoom()).helena).toBe('Helena');
+    const long = selectDisplayNames(createRoom({ participants: 'longNames' }));
+    expect(long.frederick).toBe('Frederick');
+    expect(long.michelle).toBe('Michelle');
+  });
+
   it('describes a row’s second line', () => {
     const s = createRoom();
     const bruno = s.participants.find((p) => p.id === 'bruno')!;
@@ -104,6 +111,19 @@ describe('alerts', () => {
     expect(selectAlerts(read).map((a) => a.kind)).toEqual(['hands', 'insight']);
   });
 
+  it('never counts your own hand in the hands pill', () => {
+    const s = reduce(createRoom(), { type: 'raiseHand', participantId: 'helena' });
+    expect(selectRaisedHands(s)).toHaveLength(5);
+    expect(selectAlerts(s)[0]).toMatchObject({ kind: 'hands', count: 4, text: '4 raised' });
+    const alone = reduce(createRoom({ participants: 'one' }), { type: 'raiseHand', participantId: 'helena' });
+    expect(selectAlerts(alone)).toEqual([]);
+  });
+
+  it('drops a question pill with its author', () => {
+    const s = reduce(createRoom(), { type: 'removeParticipant', participantId: 'rafaela' });
+    expect(selectAlerts(s).map((a) => a.kind)).toEqual(['hands', 'insight']);
+  });
+
   it('puts help requests first while rooms are live and the ended pill after', () => {
     const live = reduce(createRoom(), { type: 'openRooms' });
     const asked = reduce(live, { type: 'requestHelp', roomIndex: 1 });
@@ -135,13 +155,23 @@ describe('roomStatus', () => {
   it('reads the room’s activity, help and emptiness from data', () => {
     const s = reduce(createRoom(), { type: 'openRooms' });
     const rooms = selectRooms(s);
-    expect(roomStatus(rooms[0], 'live', FIXTURE_NOW)).toBe('Bruno and Frederick are talking');
-    expect(roomStatus(rooms[1], 'live', FIXTURE_NOW)).toBe('Quiet since the rooms opened');
-    expect(roomStatus(rooms[2], 'live', FIXTURE_NOW + 4 * MINUTE)).toBe('Quiet for 8 min');
-    expect(roomStatus(rooms[3], 'live', FIXTURE_NOW)).toBe('Drawing on the board');
-    expect(roomStatus({ ...rooms[1], members: [] }, 'live', FIXTURE_NOW)).toBe('Empty');
+    const names = selectDisplayNames(s);
+    expect(roomStatus(rooms[0], 'live', FIXTURE_NOW, names)).toBe('Bruno and Frederick are talking');
+    expect(roomStatus(rooms[1], 'live', FIXTURE_NOW, names)).toBe('Quiet since the rooms opened');
+    expect(roomStatus(rooms[2], 'live', FIXTURE_NOW + 4 * MINUTE, names)).toBe('Quiet for 8 min');
+    expect(roomStatus(rooms[3], 'live', FIXTURE_NOW, names)).toBe('Drawing on the board');
+    expect(roomStatus({ ...rooms[1], members: [] }, 'live', FIXTURE_NOW, names)).toBe('Empty');
     const asked = reduce(s, { type: 'requestHelp', roomIndex: 1 });
-    expect(roomStatus(selectRooms(asked)[1], 'live', FIXTURE_NOW + MINUTE)).toBe('Asked for help · 1 min');
-    expect(roomStatus(rooms[1], 'back', FIXTURE_NOW)).toBe('Shared notes saved');
+    expect(roomStatus(selectRooms(asked)[1], 'live', FIXTURE_NOW + MINUTE, names)).toBe('Asked for help · 1 min');
+    expect(roomStatus(rooms[1], 'back', FIXTURE_NOW, names)).toBe('Shared notes saved');
+  });
+
+  it('tells two Anas apart in a talking room (B9)', () => {
+    let s = createRoom({ participants: 'duplicateNames' });
+    for (const id of ['ana', 'ana-ferreira']) s = reduce(s, { type: 'moveParticipant', participantId: id, roomIndex: 1 });
+    s = reduce(s, { type: 'openRooms' });
+    s = reduce(s, { type: 'setRoomActivity', roomIndex: 1, activity: { kind: 'talking', since: FIXTURE_NOW } });
+    const room = { ...selectRooms(s)[1], members: selectRooms(s)[1].members.filter((m) => m.name.startsWith('Ana')) };
+    expect(roomStatus(room, 'live', FIXTURE_NOW, selectDisplayNames(s))).toBe('Ana S. and Ana F. are talking');
   });
 });

@@ -18,8 +18,13 @@ export function useRoomShortcuts(): void {
       const me = selectSelf(store.getState());
       if (!me) return;
       if (event.code === `Key${shortcuts.microphone.key}`) {
-        const on = me.audio === 'live' || me.audio === 'speaking';
-        store.dispatch({ type: 'setAudio', participantId: me.id, audio: on ? 'muted' : 'live' });
+        // Before audio is joined the key is "Join audio", which joins muted (owner decision 2026-10-24).
+        if (me.audio === 'notJoined' || me.audio === 'listening') {
+          store.dispatch({ type: 'joinAudio', participantId: me.id });
+        } else {
+          const on = me.audio === 'live' || me.audio === 'speaking';
+          store.dispatch({ type: 'setAudio', participantId: me.id, audio: on ? 'muted' : 'live' });
+        }
       } else if (event.code === `Key${shortcuts.camera.key}`) {
         store.dispatch({ type: 'setCamera', participantId: me.id, on: !me.camera });
       } else if (event.code === `Key${shortcuts.raiseHand.key}`) {

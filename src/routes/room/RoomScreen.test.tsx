@@ -109,11 +109,13 @@ describe('RoomScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Raise hand' }));
     expect(screen.getByRole('button', { name: 'Raise hand' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('list', { name: 'Raised hands 5' })).toBeInTheDocument();
-    // You pressed the toggle and it reports its state: no announcement for your own hand.
+    // You pressed the toggle and it reports its state: no announcement, and the pill counts the students only.
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(screen.getByRole('button', { name: '4 raised' })).toBeInTheDocument();
     dispatch({ type: 'raiseHand', participantId: 'anton' });
     expect(screen.getByRole('list', { name: 'Raised hands 6' })).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Anton raised their hand');
+    expect(screen.getByRole('button', { name: '5 raised' })).toBeInTheDocument();
     await user.keyboard('{Alt>}h{/Alt}');
     expect(screen.getByRole('button', { name: 'Raise hand' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByRole('list', { name: 'Raised hands 5' })).toBeInTheDocument();

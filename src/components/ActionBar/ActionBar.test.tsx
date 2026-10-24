@@ -90,6 +90,9 @@ describe('ActionBar', () => {
     expect(join).not.toHaveAttribute('aria-pressed');
     await user.click(join);
     expect(onJoinAudio).toHaveBeenCalledTimes(1);
+    // Joining lands muted (owner decision): the toggle appears unpressed.
+    rerender(<Subject audio="muted" />);
+    expect(button('Microphone')).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('toggles camera and raise hand through their callbacks, keyboard first', async () => {

@@ -1,6 +1,7 @@
 /** The mock room state: types, reducer, store, provider, selectors and fixtures. */
 export * from './types';
 export * from './time';
+export * from './names';
 export * from './breakouts';
 export { roomReducer, selfId } from './reducer';
 export type { RoomAction, RoomActionType } from './reducer';
