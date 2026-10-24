@@ -92,6 +92,7 @@ export function ParticipantList({
   const styles = participantListStyles();
   const handsId = useId();
   const othersId = useId();
+  const analyticsHintId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const handsHeadingRef = useRef<HTMLHeadingElement>(null);
   const othersHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -158,9 +159,13 @@ export function ParticipantList({
           <div className={styles.note()}>
             Quiet for 15+ minutes: no chat, reactions, poll answers or speaking. Based only on activity in this
             session, so a quick check-in is the right next step, not a judgement.
-            <Button variant="ghost" size="sm" iconEnd="externalLink" onPress={onAnalytics}>
+            <Button variant="ghost" size="sm" iconEnd="externalLink" aria-describedby={analyticsHintId} onPress={onAnalytics}>
               See full activity in Learning Analytics
             </Button>
+            {/* The external-link glyph says it visually; this says it to assistive technology. */}
+            <span id={analyticsHintId} hidden>
+              Opens in a new tab
+            </span>
           </div>
         )}
         {filter !== 'low' && hands.length > 0 && (

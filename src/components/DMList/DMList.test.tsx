@@ -41,11 +41,13 @@ describe('DMList', () => {
     expect(onPickPerson).toHaveBeenCalledTimes(1);
   });
 
-  it('says so when there are no conversations, and still points to People', () => {
+  it('says so when there are no conversations, and still points to People in one sentence', () => {
     render(<DMList threads={threadsFor('one')} />);
     expect(screen.getByText('No private conversations yet.')).toBeInTheDocument();
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'People' })).toBeInTheDocument();
+    const link = screen.getByRole('button', { name: 'People' });
+    expect(link).toHaveClass('underline');
+    expect(link.closest('p')).toHaveTextContent(/^To start a private chat, pick someone in People\.$/);
   });
 
   it('shows a just-opened thread without preview or time', () => {

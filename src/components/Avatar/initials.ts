@@ -1,5 +1,5 @@
-/** Honorifics that never make it into initials (English and Portuguese). */
-const HONORIFIC = /^(?:prof|profa|dr|dra|mr|ms|mrs|sr|sra)\.?$/i;
+import { nameWords } from '../../mocks/names';
+
 /** A trailing "(you)" marker from the People list. */
 const YOU = /\s*\(you\)\s*$/i;
 /** Scripts where one character is a whole syllable or word: the first grapheme alone is the initial. */
@@ -17,19 +17,16 @@ function graphemes(word: string): string[] {
 /**
  * Initials for an avatar (B9). Two or more words: the first letter of the
  * first and of the last word (`Rafaela Monaco` → `RM`). One word: its first
- * two letters (`Bruno` → `BR`). Honorifics and a trailing "(you)" are
- * stripped first. Names are normalized to NFC and split into graphemes with
- * `Intl.Segmenter`, so accented letters and emoji count as one; CJK names
- * take their first grapheme only (`李小龙` → `李`), because one character is
- * already a syllable. Upper-cased for the locale.
+ * two letters (`Bruno` → `BR`). Honorifics, a generational suffix
+ * (`Frederick Dixon III` → `FD`, from `names.ts`, shared with the display
+ * names) and a trailing "(you)" are stripped first. Names are normalized to
+ * NFC and split into graphemes with `Intl.Segmenter`, so accented letters
+ * and emoji count as one; CJK names take their first grapheme only
+ * (`李小龙` → `李`), because one character is already a syllable.
+ * Upper-cased for the locale.
  */
 export function initials(name: string): string {
-  const words = name
-    .normalize('NFC')
-    .replace(YOU, '')
-    .trim()
-    .split(/\s+/)
-    .filter((word) => word.length > 0 && !HONORIFIC.test(word));
+  const words = nameWords(name.replace(YOU, ''));
   if (words.length === 0) return INITIALS_FALLBACK;
   const first = graphemes(words[0]);
   if (CJK.test(first[0])) return first[0];

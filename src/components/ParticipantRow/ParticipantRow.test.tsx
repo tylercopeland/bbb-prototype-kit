@@ -25,6 +25,8 @@ describe('ParticipantRow', () => {
     expect(screen.getByRole('button', { name: 'More actions for Anton Georgiev' })).toHaveAttribute('aria-haspopup', 'true');
     const actions = screen.getByRole('button', { name: 'Message Anton Georgiev privately' }).parentElement;
     expect(actions).toHaveClass('opacity-0', 'group-focus-within:opacity-100', 'pointer-coarse:opacity-100');
+    // Inert while faded out on a pointer device, 12px apart so the 44px hit areas do not overlap.
+    expect(actions).toHaveClass('pointer-events-none', 'group-hover:pointer-events-auto', 'pointer-coarse:pointer-events-auto', 'gap-3');
   });
 
   it('draws speaking with the green disc and ring, hands and presenting on the second line', () => {

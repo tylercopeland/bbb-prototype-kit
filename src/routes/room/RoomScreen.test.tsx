@@ -166,6 +166,16 @@ describe('RoomScreen', () => {
     expect(screen.getByRole('button', { name: 'Camera' })).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('leaves Alt + letter alone inside an editable field', async () => {
+    const user = userEvent.setup();
+    renderAt(G2);
+    await user.click(screen.getByRole('textbox', { name: 'Message everyone' }));
+    await user.keyboard('{Alt>}h{/Alt}');
+    expect(screen.getByRole('button', { name: 'Raise hand' })).toHaveAttribute('aria-pressed', 'false');
+    await user.keyboard('{Alt>}m{/Alt}');
+    expect(screen.getByRole('button', { name: 'Microphone' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('removing a person announces it and moves focus to the next row’s ⋯ button', async () => {
     const user = userEvent.setup();
     renderAt(G1);

@@ -1,4 +1,5 @@
 import type { ComponentProps, Ref } from 'react';
+import { formatRaisedHands, formatUnread } from '../../mocks/format';
 import type { AudioState, Panel } from '../../mocks/types';
 import { tv } from '../../styles/tv';
 import { ConfirmDialog } from '../Dialog';
@@ -107,7 +108,7 @@ export function ActionBar({
           icon="people"
           isSelected={peopleOpen}
           onChange={() => onTogglePanel('people')}
-          badge={raisedHands > 0 && !peopleOpen ? { count: raisedHands, label: `${raisedHands} raised hands` } : undefined}
+          badge={raisedHands > 0 && !peopleOpen ? { count: raisedHands, label: formatRaisedHands(raisedHands) } : undefined}
         />
         <ToggleButton
           ref={panelRefs?.chat}
@@ -115,7 +116,7 @@ export function ActionBar({
           icon="chat"
           isSelected={chatOpen}
           onChange={() => onTogglePanel('chat')}
-          badge={unread > 0 && !chatOpen ? { count: unread, label: `${unread} unread` } : undefined}
+          badge={unread > 0 && !chatOpen ? { count: unread, label: formatUnread(unread) } : undefined}
         />
         <ToggleButton
           ref={panelRefs?.notes}

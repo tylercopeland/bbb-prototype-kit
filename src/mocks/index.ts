@@ -2,6 +2,7 @@
 export * from './types';
 export * from './time';
 export * from './names';
+export * from './format';
 export * from './breakouts';
 export { roomReducer, selfId } from './reducer';
 export type { RoomAction, RoomActionType } from './reducer';

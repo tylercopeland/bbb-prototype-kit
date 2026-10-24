@@ -103,7 +103,9 @@ describe('ParticipantList', () => {
     expect(items[1]).toHaveTextContent('No chat or poll answers yet');
     expect(items[2]).toHaveTextContent('Missed the last poll · quiet for 18 min');
     expect(screen.queryByRole('heading', { name: /Raised hands/ })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'See full activity in Learning Analytics' }));
+    const analytics = screen.getByRole('button', { name: 'See full activity in Learning Analytics' });
+    expect(analytics).toHaveAccessibleDescription('Opens in a new tab');
+    await user.click(analytics);
     expect(onAnalytics).toHaveBeenCalledTimes(1);
   });
 

@@ -15,7 +15,10 @@ export const dmListStyles = tv({
     root: 'flex min-h-0 flex-1 flex-col gap-3 p-2',
     list: 'flex min-h-0 list-none flex-col gap-1 overflow-y-auto p-0',
     empty: 'px-2 py-3 text-center text-sm text-text-muted',
-    hint: 'mt-auto flex flex-wrap items-center justify-center gap-1 px-2 py-3 text-center text-sm text-text-muted',
+    /** One sentence: "To start a private chat, pick someone in People." with the link inline. */
+    hint: 'mt-auto px-2 py-3 text-center text-sm leading-5 text-text-muted',
+    /** The "People" button as a link in the sentence: no control height or padding, underlined. */
+    link: 'h-auto px-0 align-baseline underline underline-offset-2',
   },
 });
 
@@ -92,10 +95,11 @@ export function DMList({ threads, onOpen, onPickPerson, rowRef, className, ...pr
         </ul>
       )}
       <p className={styles.hint()}>
-        To start a private chat, pick someone in
-        <Button variant="ghost" size="sm" onPress={onPickPerson}>
+        To start a private chat, pick someone in{' '}
+        <Button variant="ghost" size="sm" onPress={onPickPerson} className={styles.link()}>
           People
         </Button>
+        .
       </p>
     </div>
   );

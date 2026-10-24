@@ -24,6 +24,14 @@ describe('initials', () => {
     expect(initials('Sra. Joana Lima')).toBe('JL');
   });
 
+  it('skips a generational suffix as the last word', () => {
+    expect(initials('Frederick Alexander Dixon-Whitworth III')).toBe('FD');
+    expect(initials('Martin Luther King Jr.')).toBe('MK');
+    expect(initials('Sammy Davis Jr')).toBe('SD');
+    // A suffix alone is a name, not a suffix.
+    expect(initials('V')).toBe('V');
+  });
+
   it('strips a trailing "(you)"', () => {
     expect(initials('Helena Costa (you)')).toBe('HC');
     expect(initials('Bruno (you)')).toBe('BR');

@@ -72,6 +72,34 @@
       "modes": ["light", "dark", "stage"]
     },
     {
+      "fg": "semantic.color.icon-subtle",
+      "bg": "semantic.color.surface-sunken",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "The muted mic and camera glyphs of a hovered or focused People row"
+    },
+    {
+      "fg": "semantic.color.status-live-text",
+      "bg": "semantic.color.surface-sunken",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "The live mic glyph of a hovered or focused People row: an icon, never text (green-700 on neutral-50 is 4.34, under the 4.5 text minimum)"
+    },
+    {
+      "fg": "semantic.color.status-hand-text",
+      "bg": "semantic.color.surface-sunken",
+      "min": 4.5,
+      "modes": ["light", "dark", "stage"],
+      "note": "\"Raised · 3 min\" under a name in a hovered or focused People row: amber-700 on neutral-50 4.79"
+    },
+    {
+      "fg": "semantic.color.accent",
+      "bg": "semantic.color.insight-soft",
+      "min": 4.5,
+      "modes": ["light", "dark", "stage"],
+      "note": "The Learning Analytics ghost button on the insight note"
+    },
+    {
       "fg": "semantic.color.accent",
       "bg": "semantic.color.surface",
       "min": 4.5,

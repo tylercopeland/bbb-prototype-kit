@@ -4,7 +4,14 @@
  * person. Matched on `event.code`, so the letter is the physical key
  * whatever Alt does to `event.key` on the platform, and `preventDefault`
  * keeps the browser (Firefox's menu bar) from acting on the same keys.
+ * Inside an editable field (the composer, a text field, anything
+ * contenteditable) the keys are left to the field: Alt + letter types
+ * characters on some layouts.
  */
+function isEditable(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.isContentEditable;
+}
 import { useEffect } from 'react';
 import { useRoomStore } from '../../mocks/context';
 import { selectSelf } from '../../mocks/selectors';
@@ -15,6 +22,7 @@ export function useRoomShortcuts(): void {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if (isEditable(event.target)) return;
       const me = selectSelf(store.getState());
       if (!me) return;
       if (event.code === `Key${shortcuts.microphone.key}`) {

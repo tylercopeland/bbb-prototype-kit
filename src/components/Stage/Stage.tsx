@@ -103,13 +103,21 @@ export const stageGridStyles = tv({
   defaultVariants: { columns: 1 },
 });
 
-/** The minimized presentation's cell: a tile with the slide thumbnail, its plate and the Restore button. */
+/**
+ * The minimized presentation's cell: a tile with the slide thumbnail, its
+ * plate and the Restore button. The plate and the button share the bottom
+ * row (the plate truncates, the button never moves), and the thumbnail
+ * keeps clear of that row and clamps its title to two lines, so the cell
+ * still reads at eight columns with thirty people.
+ */
 export const presentationTileStyles = tv({
   slots: {
     root: 'relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-tile border border-border-strong bg-surface-sunken',
-    thumb: 'absolute inset-x-6 top-3 bottom-9 flex items-center justify-center overflow-hidden rounded-xs bg-slide p-2 text-center text-xs leading-4 font-semibold text-on-slide',
-    plate: 'absolute bottom-2 left-2 rounded-xs bg-surface-overlay px-2 text-xs leading-5 font-semibold text-text-on-stage',
-    restore: 'absolute top-2 right-2',
+    thumb: 'absolute inset-x-4 top-3 bottom-12 flex items-center justify-center overflow-hidden rounded-xs bg-slide p-2 text-center text-xs leading-4 font-semibold text-on-slide',
+    thumbTitle: 'line-clamp-2 break-words',
+    bottom: 'absolute inset-x-2 bottom-2 flex items-center justify-between gap-2',
+    plate: 'min-w-0 truncate rounded-xs bg-surface-overlay px-2 text-xs leading-5 font-semibold text-text-on-stage',
+    restore: 'shrink-0',
   },
 });
 
@@ -320,18 +328,21 @@ function StageGrid({
       {presentation && (
         <li className={tile.root()}>
           <span aria-hidden="true" className={tile.thumb()}>
-            {presentation.slideTitle}
+            <span className={tile.thumbTitle()}>{presentation.slideTitle}</span>
           </span>
-          <span className={tile.plate()}>
-            Presentation · {presentation.slideNumber} / {presentation.slideCount}
+          <span className={tile.bottom()}>
+            <span className={tile.plate()}>
+              Presentation · {presentation.slideNumber} / {presentation.slideCount}
+            </span>
+            <IconButton
+              label="Restore presentation"
+              icon="restore"
+              variant="primary"
+              size="sm"
+              onPress={onRestore}
+              className={tile.restore()}
+            />
           </span>
-          <IconButton
-            label="Restore presentation"
-            icon="restore"
-            variant="primary"
-            onPress={onRestore}
-            className={tile.restore()}
-          />
         </li>
       )}
     </ul>

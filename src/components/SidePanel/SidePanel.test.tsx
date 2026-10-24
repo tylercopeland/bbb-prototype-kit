@@ -24,6 +24,8 @@ describe('SidePanel', () => {
   it('is a complementary landmark named after the panel, with the tabs above their panels (D3)', () => {
     render(<Subject />);
     expect(screen.getByRole('complementary', { name: 'People' })).toBeInTheDocument();
+    // An h2 (visually hidden) keeps the heading order: the room's h1, the panel, then the h3 sections.
+    expect(screen.getByRole('heading', { level: 2, name: 'People' })).toBeInTheDocument();
     const tabs = screen.getByRole('tablist', { name: 'People and chat' });
     expect(tabs).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'People 4 raised hands' })).toHaveAttribute('aria-selected', 'true');
@@ -62,11 +64,14 @@ describe('SidePanel', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('shows no badges at zero', () => {
-    render(<Subject raisedHands={0} unread={0} />);
+  it('shows no badges at zero, and says "1 raised hand" for one', () => {
+    const { rerender } = render(<Subject raisedHands={0} unread={0} />);
     expect(screen.getByRole('tab', { name: 'People' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Chat' })).toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    rerender(<Subject raisedHands={1} unread={1} />);
+    expect(screen.getByRole('tab', { name: 'People 1 raised hand' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Chat 1 unread' })).toBeInTheDocument();
   });
 
   it('hides the Chat count while Chat is the open tab, and keeps the People count', () => {

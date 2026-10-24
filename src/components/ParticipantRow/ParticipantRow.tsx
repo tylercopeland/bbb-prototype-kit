@@ -27,8 +27,13 @@ export const participantRowStyles = tv({
     nameText: 'min-w-0 truncate',
     you: 'shrink-0 font-medium text-text-muted',
     subline: 'flex items-center gap-1 text-xs',
+    /**
+     * The two 32px actions sit 12px apart so their 44px hit areas do not
+     * overlap, and while they are faded out on a pointer device they are
+     * inert too, so an invisible button is never pressed by accident.
+     */
     actions:
-      'flex shrink-0 gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100',
+      'pointer-events-none flex shrink-0 gap-3 opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100',
     status: 'flex shrink-0 items-center gap-2',
     mic: 'flex size-6 items-center justify-center rounded-full',
     camera: 'flex w-5 items-center justify-center',
@@ -40,7 +45,7 @@ export const participantRowStyles = tv({
   },
   variants: {
     isMenuOpen: {
-      true: { root: 'bg-surface-sunken', actions: 'opacity-100' },
+      true: { root: 'bg-surface-sunken', actions: 'pointer-events-auto opacity-100' },
     },
     sublineTone: {
       hand: { subline: 'text-status-hand-text' },

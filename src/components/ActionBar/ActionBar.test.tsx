@@ -53,9 +53,12 @@ describe('ActionBar', () => {
     expect(button('Chat')).toHaveAccessibleDescription('2 unread');
   });
 
-  it('shows no badge at zero', () => {
-    render(<Subject raisedHands={0} unread={0} />);
+  it('shows no badge at zero, and says "1 raised hand" for one', () => {
+    const { rerender } = render(<Subject raisedHands={0} unread={0} />);
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    rerender(<Subject raisedHands={1} unread={1} />);
+    expect(button('People')).toHaveAccessibleDescription('1 raised hand');
+    expect(button('Chat')).toHaveAccessibleDescription('1 unread');
   });
 
   it('reports panel toggles, with a fixed label', async () => {

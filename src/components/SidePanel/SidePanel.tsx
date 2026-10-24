@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react';
 import type { Key } from 'react-aria-components';
+import { formatRaisedHands, formatUnread } from '../../mocks/format';
 import type { Panel } from '../../mocks/types';
 import { tv } from '../../styles/tv';
 import { IconButton } from '../IconButton';
@@ -20,6 +21,8 @@ export const sidePanelStyles = tv({
     /** The segmented People / Chat control takes the header's width before the close button. */
     tabList: 'flex-1',
     title: 'min-w-0 flex-1 truncate text-lg font-semibold text-text',
+    /** The tabbed panel's heading, for assistive technology only: the tabs are the visible title, and the sections under them are h3. */
+    heading: 'sr-only',
     body: 'flex min-h-0 flex-1 flex-col',
   },
 });
@@ -93,14 +96,16 @@ export function SidePanel({
 
   return (
     <aside aria-label={name} {...props} className={styles.root({ className })}>
+      {/* Keeps the heading levels in order: the room's h1, this h2, then "Raised hands" and the thread's name as h3. */}
+      <h2 className={styles.heading()}>{name}</h2>
       <Tabs selectedKey={panel} onSelectionChange={onChange} className={styles.tabs()}>
         <div className={styles.header()}>
           <TabList label="People and chat" className={styles.tabList()}>
-            <Tab id="people" badge={raisedHands > 0 ? { count: raisedHands, label: `${raisedHands} raised hands` } : undefined}>
+            <Tab id="people" badge={raisedHands > 0 ? { count: raisedHands, label: formatRaisedHands(raisedHands) } : undefined}>
               People
             </Tab>
             {/* The unread count hides while Chat is open: the messages are on screen (Focus.dc.html 418). */}
-            <Tab id="chat" badge={unread > 0 && panel !== 'chat' ? { count: unread, label: `${unread} unread` } : undefined}>
+            <Tab id="chat" badge={unread > 0 && panel !== 'chat' ? { count: unread, label: formatUnread(unread) } : undefined}>
               Chat
             </Tab>
           </TabList>
