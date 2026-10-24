@@ -11,6 +11,7 @@ export * from './Popover';
 export * from './Sheet';
 export * from './Stepper';
 export * from './Surface';
+export * from './Switch';
 export * from './Tabs';
 export * from './TextArea';
 export * from './TextField';
