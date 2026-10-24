@@ -24,6 +24,24 @@
  * Shared utilities
  * ------------------------------------------------------------- */
 
+/* The three rings (selected, speaking, focus) share one box-shadow. Each
+   utility stores its layer in a variable and every utility draws all three,
+   so any combination composes. The variables are registered as
+   non-inherited: a focus-ring element inside a speaking tile must not pick
+   up the tile's green ring. */
+@property --bbb-shadow-selected {
+  syntax: '*';
+  inherits: false;
+}
+@property --bbb-shadow-speaking {
+  syntax: '*';
+  inherits: false;
+}
+@property --bbb-ring-base {
+  syntax: '*';
+  inherits: false;
+}
+
 /* One focus style for every interactive element: a gap ring that
    reads on white panels and on the dark stage. The transparent outline
    becomes visible in forced-colors mode, where box-shadow is dropped.
@@ -36,9 +54,22 @@
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow:
+      var(--bbb-shadow-selected, 0 0 0 0 transparent),
       var(--bbb-shadow-speaking, 0 0 0 0 transparent),
       0 0 0 calc(var(--bbb-ring-base, 0px) + 2px) var(--bbb-ring-offset),
       0 0 0 calc(var(--bbb-ring-base, 0px) + 4px) var(--bbb-focus-ring);
+  }
+}
+
+/* The non-color cue of a selected toggle: an inset 2px ring in
+   selected-ring, which is at least 3:1 on the selected fill and on the
+   unselected (raised) fill in every mode. In forced colors, where
+   box-shadow is dropped, it becomes a Highlight border. */
+@utility selected-ring {
+  --bbb-shadow-selected: inset 0 0 0 2px var(--bbb-selected-ring);
+  box-shadow: var(--bbb-shadow-selected), var(--bbb-shadow-speaking, 0 0 0 0 transparent);
+  @media (forced-colors: active) {
+    border: 2px solid Highlight;
   }
 }
 
@@ -64,7 +95,7 @@
     0 0 0 var(--spacing-speaking-ring) var(--bbb-ring-offset),
     0 0 0 calc(var(--spacing-speaking-ring) * 2) var(--bbb-status-live);
   --bbb-ring-base: calc(var(--spacing-speaking-ring) * 2);
-  box-shadow: var(--bbb-shadow-speaking);
+  box-shadow: var(--bbb-shadow-selected, 0 0 0 0 transparent), var(--bbb-shadow-speaking);
 }
 
 @layer base {

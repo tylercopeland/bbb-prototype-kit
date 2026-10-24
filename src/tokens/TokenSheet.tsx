@@ -8,6 +8,7 @@ import {
   textSizes,
   type Swatch,
 } from './swatches';
+import { Surface } from '../components/Surface';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -40,9 +41,9 @@ export function TokenSheet() {
         <ColorGrid swatches={semanticColors} />
       </Section>
       <Section title="Stage surface">
-        <div data-surface="stage" className="flex flex-col gap-3 rounded-tile bg-surface-stage p-4">
+        <Surface kind="stage" className="flex flex-col gap-3 rounded-tile bg-surface-stage p-4">
           <ColorGrid swatches={semanticColors} />
-        </div>
+        </Surface>
       </Section>
       <Section title="Primitive colors">
         <ColorGrid swatches={primitiveColors} />

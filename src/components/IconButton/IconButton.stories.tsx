@@ -49,7 +49,7 @@ export const Soft: Story = {
   render: (args) => (
     <>
       <IconButton {...args} label="Message Anton Georgiev privately" icon="chat" size="sm" />
-      <IconButton {...args} label="More actions for Anton Georgiev" icon="moreVertical" size="sm" />
+      <IconButton {...args} label="More actions for Anton Georgiev" icon="more" size="sm" />
       <IconButton {...args} label="People" icon="people" size="touch" />
     </>
   ),

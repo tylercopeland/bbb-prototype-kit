@@ -10,6 +10,7 @@ const entries: Record<IconName, Entry> = {
   microphoneOff: {
     meaning: 'Microphone off / muted',
     used: 'Action bar (ToggleButton), People row, tile badge',
+    note: '"Mute everyone" in the People header is a different meaning and gets its own glyph in milestone 4',
   },
   speaking: {
     meaning: 'Speaking now',
@@ -36,7 +37,11 @@ const entries: Record<IconName, Entry> = {
   chat: { meaning: 'Chat / message privately', used: 'Action bar panel buttons, People row action' },
   notes: { meaning: 'Shared notes', used: 'Action bar panel buttons' },
   plugins: { meaning: 'Plugins', used: 'Action bar panel buttons' },
-  breakouts: { meaning: 'Breakout rooms', used: 'Plugins menu' },
+  breakouts: {
+    meaning: 'Breakout rooms',
+    used: 'Plugins menu',
+    note: 'An open door, not a third grid: the 2 by 2 grid read like All slides and See all webcams',
+  },
   slidesOverview: {
     meaning: 'All slides',
     used: 'Presentation controls, mobile pager',
@@ -54,8 +59,11 @@ const entries: Record<IconName, Entry> = {
     note: 'Whiteboard and Annotate shared a pencil; access is a pen on a board',
   },
   annotate: { meaning: 'Annotate', used: 'Mobile pager, presentation controls', note: 'The plain pencil' },
-  more: { meaning: 'More options', used: 'Panel headers, action bar overflow' },
-  moreVertical: { meaning: 'More actions for a person', used: 'People row action' },
+  more: {
+    meaning: 'More options / more actions',
+    used: 'Panel headers, action bar overflow, People row action',
+    note: 'One glyph for one meaning: the row action no longer has its own vertical dots',
+  },
   close: { meaning: 'Close', used: 'Panel headers, dialogs, sheets' },
   settings: { meaning: 'Settings', used: 'Session header, More menu' },
   analytics: { meaning: 'Learning analytics', used: 'Session header' },
