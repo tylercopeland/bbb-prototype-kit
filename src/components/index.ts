@@ -12,6 +12,8 @@ export * from './Dialog';
 export * from './DMList';
 export * from './IconButton';
 export * from './Menu';
+export * from './ParticipantList';
+export * from './ParticipantRow';
 export * from './Popover';
 export * from './SessionHeader';
 export * from './Sheet';
