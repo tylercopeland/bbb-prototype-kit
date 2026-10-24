@@ -114,6 +114,99 @@
   box-shadow: var(--bbb-shadow-selected, 0 0 0 0 transparent), var(--bbb-shadow-speaking);
 }
 
+/* ---------------------------------------------------------------
+ * Motion: overlay enter and exit. The canvas's bbbPopIn and bbbFade
+ * (Focus.dc.html line 12) and the mobile sheet slide, as @theme animations
+ * so they are utilities (animate-overlay-in …). React Aria sets
+ * data-entering / data-exiting and waits for animationend before it
+ * unmounts. Under prefers-reduced-motion the rule in @layer base shortens
+ * every animation to 0.01ms, so overlays then appear and disappear at once;
+ * nothing else is needed per component.
+ * ------------------------------------------------------------- */
+@theme {
+  --animate-overlay-in: bbb-overlay-in 0.2s var(--ease-out) both;
+  --animate-overlay-out: bbb-overlay-out 0.15s var(--ease-in) both;
+  --animate-fade-in: bbb-fade-in 0.2s var(--ease-out) both;
+  --animate-fade-out: bbb-fade-out 0.15s var(--ease-in) both;
+  --animate-sheet-in-bottom: bbb-sheet-in-bottom 0.26s var(--ease-out) both;
+  --animate-sheet-out-bottom: bbb-sheet-out-bottom 0.2s var(--ease-in) both;
+  --animate-sheet-in-end: bbb-sheet-in-end 0.26s var(--ease-out) both;
+  --animate-sheet-out-end: bbb-sheet-out-end 0.2s var(--ease-in) both;
+
+  @keyframes bbb-overlay-in {
+    from {
+      opacity: 0;
+      translate: 0 8px;
+      scale: 0.97;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+  }
+  @keyframes bbb-overlay-out {
+    from {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+    to {
+      opacity: 0;
+      translate: 0 8px;
+      scale: 0.97;
+    }
+  }
+  @keyframes bbb-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes bbb-fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes bbb-sheet-in-bottom {
+    from {
+      translate: 0 100%;
+    }
+    to {
+      translate: 0 0;
+    }
+  }
+  @keyframes bbb-sheet-out-bottom {
+    from {
+      translate: 0 0;
+    }
+    to {
+      translate: 0 100%;
+    }
+  }
+  @keyframes bbb-sheet-in-end {
+    from {
+      translate: 100% 0;
+    }
+    to {
+      translate: 0 0;
+    }
+  }
+  @keyframes bbb-sheet-out-end {
+    from {
+      translate: 0 0;
+    }
+    to {
+      translate: 100% 0;
+    }
+  }
+}
+
 @layer base {
   html {
     font-family: var(--font-sans);

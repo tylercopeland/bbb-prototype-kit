@@ -8,8 +8,8 @@
  * Colors and text sizes already merge: tailwind-merge treats any `bg-x` /
  * `text-x` as a color and any t-shirt size as a font size. It cannot guess
  * the custom names of the other token scales, so every one of them is
- * listed below: radius, spacing, font weight, letter spacing and container
- * width. When tokens.json gains a name in one of these scales, add it here
+ * listed below: radius, spacing, font weight, letter spacing, container
+ * width and shadow. When tokens.json gains a name in one of these scales, add it here
  * and a case to tv.test.ts.
  */
 import { createTV } from 'tailwind-variants';
@@ -39,6 +39,8 @@ export const trackingScale = ['label'];
 
 export const containerScale = ['page'];
 
+export const shadowScale = ['overlay'];
+
 export const tv = createTV({
   twMergeConfig: {
     extend: {
@@ -48,6 +50,7 @@ export const tv = createTV({
         'font-weight': fontWeightScale,
         tracking: trackingScale,
         container: containerScale,
+        shadow: shadowScale,
       },
     },
   },
