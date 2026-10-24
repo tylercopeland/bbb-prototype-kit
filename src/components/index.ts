@@ -1,4 +1,5 @@
 /** Barrel of barrels. App code imports components only through this file. */
+export * from './ActionBar';
 export * from './AlertPill';
 export * from './Announcer';
 export * from './Avatar';
