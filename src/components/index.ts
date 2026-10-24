@@ -12,6 +12,7 @@ export * from './Sheet';
 export * from './Stepper';
 export * from './Surface';
 export * from './Tabs';
+export * from './TextField';
 export * from './Toast';
 export * from './ToggleButton';
 export * from './ToggleGroup';
