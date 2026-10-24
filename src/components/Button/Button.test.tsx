@@ -48,6 +48,17 @@ describe('Button', () => {
     expect(button).toHaveClass('focus-ring');
   });
 
+  it('ignores Escape: no press, and focus stays on the button', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    render(<Button onPress={onPress}>Join</Button>);
+    const button = screen.getByRole('button', { name: 'Join' });
+    await user.tab();
+    await user.keyboard('{Escape}');
+    expect(onPress).not.toHaveBeenCalled();
+    expect(button).toHaveFocus();
+  });
+
   it('renders its icons as decoration', () => {
     render(
       <Button icon="shareMedia" iconEnd="externalLink">

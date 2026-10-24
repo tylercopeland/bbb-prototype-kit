@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { avatarColor, avatarColorClass } from './avatarColor';
+import { avatarColor } from './avatarColor';
 
 describe('avatarColor', () => {
   it('is stable for the same id', () => {
@@ -27,7 +27,6 @@ describe('avatarColor', () => {
       const color = avatarColor(id);
       expect(color).toBeGreaterThanOrEqual(1);
       expect(color).toBeLessThanOrEqual(10);
-      expect(avatarColorClass[color]).toBe(`bg-avatar-${color}`);
     }
   });
 

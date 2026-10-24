@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react';
 import { Icon, type IconName } from '../../icons';
 import { tv, type VariantProps } from '../../styles/tv';
-import { avatarColor, avatarColorClass, type AvatarColor } from './avatarColor';
+import { avatarColor, type AvatarColor } from './avatarColor';
 import { initials as deriveInitials } from './initials';
 
 /**
@@ -27,6 +27,19 @@ export const avatarStyles = tv({
     shape: {
       circle: { root: 'rounded-full' },
       square: { root: 'rounded-md' },
+    },
+    /** The ten avatar-* tokens; every one passes 4.5:1 with on-avatar initials. */
+    color: {
+      1: { root: 'bg-avatar-1' },
+      2: { root: 'bg-avatar-2' },
+      3: { root: 'bg-avatar-3' },
+      4: { root: 'bg-avatar-4' },
+      5: { root: 'bg-avatar-5' },
+      6: { root: 'bg-avatar-6' },
+      7: { root: 'bg-avatar-7' },
+      8: { root: 'bg-avatar-8' },
+      9: { root: 'bg-avatar-9' },
+      10: { root: 'bg-avatar-10' },
     },
     isSpeaking: {
       true: { root: 'ring-speaking' },
@@ -108,8 +121,13 @@ export function Avatar({
   className,
   ...props
 }: AvatarProps) {
-  const { root, badge: badgeSlot } = avatarStyles({ size, shape, isSpeaking, badge });
-  const fill = avatarColorClass[color ?? avatarColor(participantId ?? name)];
+  const { root, badge: badgeSlot } = avatarStyles({
+    size,
+    shape,
+    isSpeaking,
+    badge,
+    color: color ?? avatarColor(participantId ?? name),
+  });
   const hidden = props['aria-hidden'] === true || props['aria-hidden'] === 'true';
   const status = badge ? badgeStatus[badge] : isSpeaking ? badgeStatus.speaking : undefined;
   const label = status ? `${name}, ${status}` : name;
@@ -118,7 +136,7 @@ export function Avatar({
       {...props}
       role={hidden ? undefined : 'img'}
       aria-label={hidden ? undefined : label}
-      className={root({ className: [fill, className] })}
+      className={root({ className })}
     >
       <span aria-hidden="true">{initials ?? deriveInitials(name)}</span>
       {badge && (

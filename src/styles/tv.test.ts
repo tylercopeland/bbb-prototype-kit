@@ -21,6 +21,12 @@ describe('tv merge config', () => {
     expect(result).toContain('bg-accent text-md size-icon-sm');
   });
 
+  it('merges the font-weight, tracking and container token scales', () => {
+    const text = tv({ base: 'font-semibold tracking-label max-w-64' });
+    expect(text({ className: 'font-regular max-w-page' })).toBe('tracking-label font-regular max-w-page');
+    expect(text({ className: 'tracking-label' })).toBe('font-semibold max-w-64 tracking-label');
+  });
+
   it('resolves conflicts between extended variants', () => {
     const base = tv({ variants: { size: { sm: 'h-control-sm px-3' } } });
     const extended = tv({ extend: base, variants: { size: { sm: 'w-control-sm p-0' } } });
