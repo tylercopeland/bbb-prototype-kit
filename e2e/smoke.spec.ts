@@ -30,6 +30,8 @@ test.describe('token sheet', () => {
 
   test('shows the focus ring in the focus-ring token color after Tab', async ({ page }) => {
     await page.goto('/');
+    // Tab only once the app has rendered, or nothing is there to focus yet.
+    await expect(page.getByRole('button', { name: 'Dark theme' })).toBeVisible();
     await page.keyboard.press('Tab');
     const focused = page.locator(':focus');
     await expect(focused).toHaveText('Dark theme');

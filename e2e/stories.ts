@@ -37,6 +37,8 @@ export async function storyReady(page: Page, story: Pick<IndexEntry, 'tags'>) {
     await expect(page.getByRole('tooltip').first()).toBeVisible();
   } else if (overlay) {
     await expect(page.locator(OVERLAY).first()).toBeVisible();
+    // Scan after the entering animation: a mid-fade overlay reads as blended colors to axe.
+    await expect(page.locator('[data-entering]')).toHaveCount(0);
   } else if (await page.evaluate(() => document.activeElement?.closest('#storybook-root') !== null)) {
     // The story focused something on mount (autoFocus): if that control has a
     // tooltip it opens at once, so give it a moment before scanning.
