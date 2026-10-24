@@ -72,8 +72,10 @@ describe('ParticipantRow', () => {
       'Turn off camera',
       'Remove from session',
     ]);
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Microphone (ask to unmute)' })).toHaveAttribute('aria-checked', 'false');
+    // The switch keeps its label (X7, X9): unchecked for a muted person, checked only while the mic is on.
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Microphone' })).toHaveAttribute('aria-checked', 'false');
     expect(screen.getByText('Muted, camera on')).toBeInTheDocument();
+    expect(screen.getByText('Anton Georgiev', { selector: '.break-words' })).toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(onMenuOpenChange).toHaveBeenCalledWith(false);
     await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
@@ -88,11 +90,36 @@ describe('ParticipantRow', () => {
     await screen.findByRole('menu');
     await user.click(screen.getByRole('menuitemcheckbox', { name: 'Whiteboard access' }));
     expect(onAction).toHaveBeenLastCalledWith({ type: 'flag', flag: 'hasWhiteboard', value: true });
-    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Microphone (ask to unmute)' }));
+    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Microphone' }));
     expect(onAction).toHaveBeenLastCalledWith({ type: 'microphone', on: true });
     await user.click(screen.getByRole('menuitem', { name: 'Turn off camera' }));
     expect(onAction).toHaveBeenLastCalledWith({ type: 'setCamera', on: false });
     await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+  });
+
+  it('keeps the Microphone switch unchecked while a request is pending, and checked for a live mic', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const { rerender } = render(<Subject participant={{ ...by('anton'), unmuteRequested: true }} onAction={onAction} />);
+    // The pending request shows in the row's second line, never in the switch's label.
+    expect(screen.getByText('Asked to unmute')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'More actions for Anton Georgiev' }));
+    await screen.findByRole('menu');
+    const mic = screen.getByRole('menuitemcheckbox', { name: 'Microphone' });
+    expect(mic).toHaveAttribute('aria-checked', 'false');
+    expect(mic).not.toHaveAccessibleDescription();
+    await user.click(mic);
+    expect(onAction).toHaveBeenLastCalledWith({ type: 'microphone', on: true });
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+
+    rerender(<Subject id="frederick" onAction={onAction} />);
+    await user.click(screen.getByRole('button', { name: 'More actions for Frederick Dixon' }));
+    await screen.findByRole('menu');
+    const live = screen.getByRole('menuitemcheckbox', { name: 'Microphone' });
+    expect(live).toHaveAttribute('aria-checked', 'true');
+    await user.click(live);
+    expect(onAction).toHaveBeenLastCalledWith({ type: 'microphone', on: false });
   });
 
   it('disables the microphone switch before audio is joined, and Make presenter for the presenter', async () => {
@@ -100,7 +127,9 @@ describe('ParticipantRow', () => {
     render(<Subject id="timo" />);
     await user.click(screen.getByRole('button', { name: 'More actions for Timo' }));
     await screen.findByRole('menu');
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Microphone (audio not joined)' })).toHaveAttribute('aria-disabled', 'true');
+    const mic = screen.getByRole('menuitemcheckbox', { name: 'Microphone' });
+    expect(mic).toHaveAttribute('aria-disabled', 'true');
+    expect(mic).toHaveAccessibleDescription('Audio not joined');
     expect(screen.getByRole('menuitem', { name: 'Turn on camera' })).toBeInTheDocument();
   });
 
@@ -123,7 +152,7 @@ describe('ParticipantRow', () => {
     expect(onAction).toHaveBeenCalledWith({ type: 'remove' });
   });
 
-  it('shows a cut-off name in full in a tooltip on hover, and nothing when it fits', async () => {
+  it('shows a cut-off name in full in a tooltip on hover and on focus inside the row, and nothing when it fits', async () => {
     const user = userEvent.setup();
     render(<Subject id="michelle" />);
     const name = screen.getByText('Michelle Winkler');
@@ -135,9 +164,15 @@ describe('ParticipantRow', () => {
     Object.defineProperty(name, 'clientWidth', { value: 150, configurable: true });
     await user.hover(name);
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Michelle Winkler');
-    // The name is out of the tab order: Tab goes straight to the first action.
     await user.unhover(name);
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+    // The name is not focusable: Tab goes straight to the first action, and the name tooltip shows while the
+    // row holds focus (next to the focused button's own tooltip).
     await user.tab();
+    expect(screen.getByRole('button', { name: 'Message Michelle Winkler privately' })).toHaveFocus();
+    await waitFor(() => expect(screen.getAllByRole('tooltip').map((t) => t.textContent)).toContain('Michelle Winkler'));
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'Message Michelle Winkler privately' })).toHaveFocus();
   });
 

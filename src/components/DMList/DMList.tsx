@@ -1,4 +1,4 @@
-import { useRef, useState, type ComponentProps, type Ref } from 'react';
+import type { ComponentProps, Ref } from 'react';
 import { Button as RacButton } from 'react-aria-components';
 import { formatTimeOfDay } from '../../mocks/time';
 import type { DirectSummary } from '../../mocks/selectors';
@@ -7,7 +7,7 @@ import { tv } from '../../styles/tv';
 import { Avatar } from '../Avatar';
 import { Badge } from '../Badge';
 import { Button } from '../Button';
-import { Tooltip } from '../Tooltip';
+import { Tooltip, useTruncationTooltip } from '../Tooltip';
 
 /** The Direct list (Focus.dc.html 435–453): rows 2px apart, then the hint at the bottom. */
 export const dmListStyles = tv({
@@ -84,7 +84,7 @@ export function DMList({ threads, onOpen, onPickPerson, rowRef, className, ...pr
             <li key={t.thread.with}>
               <DMRow
                 summary={t}
-                ref={rowRef ? (el) => rowRef(t.thread.with, el) : undefined}
+                ref={rowRef ? (el: HTMLButtonElement | null) => rowRef(t.thread.with, el) : undefined}
                 onPress={() => onOpen?.(t.thread.with)}
               />
             </li>
@@ -101,32 +101,27 @@ export function DMList({ threads, onOpen, onPickPerson, rowRef, className, ...pr
   );
 }
 
+/** One row. A cut-off name shows in a tooltip while the row is hovered or focused (`useTruncationTooltip`, as Chip and Tab). */
 function DMRow({ summary, ref, onPress }: { summary: DirectSummary; ref?: Ref<HTMLButtonElement>; onPress: () => void }) {
   const isUnread = summary.unread > 0;
   const text = dmRowTextStyles({ isUnread });
   const name = summary.person?.name ?? 'Someone who left';
-  const nameRef = useRef<HTMLSpanElement>(null);
-  const [isTooltipOpen, setTooltipOpen] = useState(false);
-  const onTooltipOpenChange = (open: boolean) => {
-    const label = nameRef.current;
-    setTooltipOpen(open && label !== null && label.scrollWidth > label.clientWidth);
-  };
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLButtonElement>(ref);
   return (
-    <Tooltip label={name} isOpen={isTooltipOpen} onOpenChange={onTooltipOpenChange}>
-      <RacButton ref={ref} onPress={onPress} className={dmRowStyles({ isUnread })}>
-        <Avatar aria-hidden="true" name={name} participantId={summary.thread.with} />
-        {/* The spaces keep the name "Rafaela Monaco, Can I…, 9:06, 1 unread" readable; flex drops them visually. */}
-        <span className={text.body()}>
-          <span ref={nameRef} className={text.name()}>
-            {name}
-          </span>{' '}
-          {summary.preview && <span className={text.preview()}>{summary.preview}</span>}
+    <RacButton {...triggerProps} ref={triggerRef} onPress={onPress} className={dmRowStyles({ isUnread })}>
+      <Avatar aria-hidden="true" name={name} participantId={summary.thread.with} />
+      {/* The spaces keep the name "Rafaela Monaco, Can I…, 9:06, 1 unread" readable; flex drops them visually. */}
+      <span className={text.body()}>
+        <span ref={labelRef} className={text.name()}>
+          {name}
         </span>{' '}
-        <span className={text.aside()}>
-          {summary.last && <span className={text.time()}>{formatTimeOfDay(summary.last.sentAt)}</span>}{' '}
-          {isUnread && <Badge count={summary.unread} label={`${summary.unread} unread`} />}
-        </span>
-      </RacButton>
-    </Tooltip>
+        {summary.preview && <span className={text.preview()}>{summary.preview}</span>}
+      </span>{' '}
+      <span className={text.aside()}>
+        {summary.last && <span className={text.time()}>{formatTimeOfDay(summary.last.sentAt)}</span>}{' '}
+        {isUnread && <Badge count={summary.unread} label={`${summary.unread} unread`} />}
+      </span>
+      <Tooltip label={name} triggerRef={triggerRef} isOpen={isOpen} onOpenChange={onOpenChange} />
+    </RacButton>
   );
 }

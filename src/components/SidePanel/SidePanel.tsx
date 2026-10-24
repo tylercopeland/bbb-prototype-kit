@@ -17,7 +17,8 @@ export const sidePanelStyles = tv({
     root: 'flex h-full w-panel shrink-0 flex-col border-r border-border bg-surface text-text shadow-overlay',
     header: 'flex items-center gap-2 border-b border-border py-3 pr-2 pl-4',
     tabs: 'min-h-0 flex-1 gap-0',
-    tabList: 'mx-4 mt-3 mb-0',
+    /** The segmented People / Chat control takes the header's width before the close button. */
+    tabList: 'flex-1',
     title: 'min-w-0 flex-1 truncate text-lg font-semibold text-text',
     body: 'flex min-h-0 flex-1 flex-col',
   },
@@ -94,7 +95,7 @@ export function SidePanel({
     <aside aria-label={name} {...props} className={styles.root({ className })}>
       <Tabs selectedKey={panel} onSelectionChange={onChange} className={styles.tabs()}>
         <div className={styles.header()}>
-          <TabList label="People and chat" className="flex-1">
+          <TabList label="People and chat" className={styles.tabList()}>
             <Tab id="people" badge={raisedHands > 0 ? { count: raisedHands, label: `${raisedHands} raised hands` } : undefined}>
               People
             </Tab>

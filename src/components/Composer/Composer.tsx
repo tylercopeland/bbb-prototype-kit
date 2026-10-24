@@ -1,6 +1,7 @@
 import type { Ref } from 'react';
 import { useRoom, useRoomDispatch } from '../../mocks/context';
-import { selectParticipant, selectSelf } from '../../mocks/selectors';
+import { firstName } from '../../mocks/names';
+import { selectDisplayNames, selectParticipant, selectSelf } from '../../mocks/selectors';
 import type { ParticipantId } from '../../mocks/types';
 import { tv } from '../../styles/tv';
 import { TextArea, type TextAreaProps } from '../TextArea';
@@ -34,8 +35,9 @@ export function Composer({ to, onSent, className, ...props }: ComposerProps) {
   const dispatch = useRoomDispatch();
   const me = useRoom(selectSelf);
   const other = useRoom(selectParticipant(to ?? null));
-  const first = other?.name.trim().split(/\s+/)[0];
-  const label = other ? `Message ${first} privately` : 'Message everyone';
+  const names = useRoom(selectDisplayNames);
+  // The short name tells two Anas apart (B9): "Message Ana S. privately".
+  const label = other ? `Message ${names[other.id] ?? firstName(other.name)} privately` : 'Message everyone';
   const send = (text: string) => {
     if (!me) return;
     dispatch({ type: 'sendMessage', from: me.id, text, to });

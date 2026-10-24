@@ -1,5 +1,6 @@
-import { useRef, useState, type ComponentProps, type Ref } from 'react';
-import { Focusable, type Key, type Selection } from 'react-aria-components';
+import { useState, type ComponentProps, type Ref } from 'react';
+import { mergeProps, useHover } from 'react-aria';
+import type { Key, Selection } from 'react-aria-components';
 import { Icon, type IconName } from '../../icons';
 import { participantSubline } from '../../mocks/selectors';
 import type { AudioState, Participant } from '../../mocks/types';
@@ -8,7 +9,7 @@ import { Avatar } from '../Avatar';
 import { ConfirmDialog } from '../Dialog';
 import { IconButton } from '../IconButton';
 import { Menu, MenuItem, MenuSection, MenuSeparator } from '../Menu';
-import { Tooltip } from '../Tooltip';
+import { Tooltip, useTruncationTooltip } from '../Tooltip';
 
 /**
  * A People row (Focus.dc.html 588, docs/screenshots/O2StudentActions.png),
@@ -23,7 +24,7 @@ export const participantRowStyles = tv({
     root: 'group flex min-h-row items-center gap-2 rounded-control px-2 py-1 hover:bg-surface-sunken focus-within:bg-surface-sunken',
     body: 'flex min-w-0 flex-1 flex-col',
     name: 'flex min-w-0 items-baseline gap-1 text-md font-semibold text-text',
-    nameText: 'min-w-0 truncate outline-none',
+    nameText: 'min-w-0 truncate',
     you: 'shrink-0 font-medium text-text-muted',
     subline: 'flex items-center gap-1 text-xs',
     actions:
@@ -31,6 +32,11 @@ export const participantRowStyles = tv({
     status: 'flex shrink-0 items-center gap-2',
     mic: 'flex size-6 items-center justify-center rounded-full',
     camera: 'flex w-5 items-center justify-center',
+    cameraIcon: 'text-icon-subtle',
+    /** The ⋯ menu's header: the name wraps rather than truncating, so a long name is read in full. */
+    menuHeaderBody: 'flex min-w-0 flex-col',
+    menuHeaderName: 'text-md font-bold break-words',
+    menuHeaderStatus: 'text-xs text-text-muted',
   },
   variants: {
     isMenuOpen: {
@@ -79,7 +85,11 @@ export function participantStatus(p: Pick<Participant, 'audio' | 'camera'>): str
 export type ParticipantAction =
   | { type: 'makePresenter' }
   | { type: 'setCamera'; on: boolean }
-  /** `on` asks a muted person to unmute; `off` mutes a live one. */
+  /**
+   * The Microphone switch. `on` for a muted person asks them to unmute (or
+   * cancels a pending request); `off` mutes a live one. The switch is
+   * checked only while their microphone is on.
+   */
   | { type: 'microphone'; on: boolean }
   | { type: 'flag'; flag: 'hasWhiteboard' | 'isModerator' | 'chatLocked'; value: boolean }
   | { type: 'remove' };
@@ -108,8 +118,17 @@ export interface ParticipantRowProps extends Omit<ComponentProps<'li'>, 'childre
  * icon buttons with tooltips, and the ⋯ `Menu` holds the student actions:
  * Make presenter, the camera, the four switches as checkbox items (X9)
  * and Remove from session behind a `ConfirmDialog`. Your own row has no
- * actions. A cut-off name shows in full in a tooltip on hover (it is not
- * cut off for assistive technology, and the ⋯ menu header repeats it).
+ * actions.
+ *
+ * The Microphone switch keeps its label and is checked only while the
+ * microphone is on (X7, X9): for a muted person, turning it on asks them
+ * to unmute and the row's second line says "Asked to unmute"; turning it
+ * on again cancels the request. Before audio is joined it is disabled and
+ * described as such.
+ *
+ * A cut-off name shows in full in a tooltip while the row is hovered or
+ * holds focus (`useTruncationTooltip`); it is not cut off for assistive
+ * technology, and the ⋯ menu header repeats it in full.
  */
 export function ParticipantRow({
   participant: p,
@@ -136,22 +155,12 @@ export function ParticipantRow({
   const styles = participantRowStyles({ isMenuOpen, sublineTone, audio: p.audio });
   const [confirmRemove, setConfirmRemove] = useState(false);
 
-  const nameRef = useRef<HTMLSpanElement>(null);
-  const [isTooltipOpen, setTooltipOpen] = useState(false);
-  const onTooltipOpenChange = (open: boolean) => {
-    const label = nameRef.current;
-    setTooltipOpen(open && label !== null && label.scrollWidth > label.clientWidth);
-  };
+  // The row is the tooltip's trigger (hover anywhere on it, or focus inside it); the name is what is measured.
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLLIElement>();
+  const { hoverProps } = useHover({ onHoverStart: triggerProps.onHoverStart, onHoverEnd: triggerProps.onHoverEnd });
 
   const audioJoined = p.audio === 'live' || p.audio === 'speaking' || p.audio === 'muted';
-  const micOn = p.audio === 'live' || p.audio === 'speaking' || p.unmuteRequested;
-  const micLabel = !audioJoined
-    ? 'Microphone (audio not joined)'
-    : p.unmuteRequested
-      ? 'Microphone · unmute requested'
-      : p.audio === 'muted'
-        ? 'Microphone (ask to unmute)'
-        : 'Microphone';
+  const micOn = p.audio === 'live' || p.audio === 'speaking';
   const flags = new Set<Key>();
   if (micOn) flags.add('microphone');
   if (p.hasWhiteboard) flags.add('whiteboard');
@@ -173,7 +182,11 @@ export function ParticipantRow({
   };
 
   return (
-    <li {...props} className={styles.root({ className })}>
+    <li
+      {...mergeProps(props, hoverProps, { onFocus: triggerProps.onFocus, onBlur: triggerProps.onBlur })}
+      ref={triggerRef}
+      className={styles.root({ className })}
+    >
       <Avatar
         aria-hidden="true"
         name={p.name}
@@ -183,14 +196,11 @@ export function ParticipantRow({
       />
       <div className={styles.body()}>
         <span className={styles.name()}>
-          <Tooltip label={p.name} isOpen={isTooltipOpen} onOpenChange={onTooltipOpenChange}>
-            <Focusable>
-              <span ref={nameRef} tabIndex={-1} className={styles.nameText()}>
-                {p.name}
-              </span>
-            </Focusable>
-          </Tooltip>
+          <span ref={labelRef} className={styles.nameText()}>
+            {p.name}
+          </span>
           {p.isSelf && <span className={styles.you()}>(you)</span>}
+          <Tooltip label={p.name} triggerRef={labelRef} isOpen={isOpen} onOpenChange={onOpenChange} />
         </span>
         {subline && (
           <span className={styles.subline()}>
@@ -210,9 +220,9 @@ export function ParticipantRow({
             header={
               <>
                 <Avatar aria-hidden="true" name={p.name} participantId={p.id} size="lg" />
-                <span className="flex min-w-0 flex-col">
-                  <span className="truncate text-md font-bold">{p.name}</span>
-                  <span className="truncate text-xs text-text-muted">{participantStatus(p)}</span>
+                <span className={styles.menuHeaderBody()}>
+                  <span className={styles.menuHeaderName()}>{p.name}</span>
+                  <span className={styles.menuHeaderStatus()}>{participantStatus(p)}</span>
                 </span>
               </>
             }
@@ -225,8 +235,13 @@ export function ParticipantRow({
             </MenuItem>
             <MenuSeparator />
             <MenuSection aria-label="Permissions" selectionMode="multiple" selectedKeys={flags} onSelectionChange={onFlags}>
-              <MenuItem id="microphone" icon={micOn ? 'microphone' : 'microphoneOff'} isDisabled={!audioJoined}>
-                {micLabel}
+              <MenuItem
+                id="microphone"
+                icon={micOn ? 'microphone' : 'microphoneOff'}
+                isDisabled={!audioJoined}
+                description={audioJoined ? undefined : 'Audio not joined'}
+              >
+                Microphone
               </MenuItem>
               <MenuItem id="whiteboard" icon="whiteboardAccess">
                 Whiteboard access
@@ -258,7 +273,7 @@ export function ParticipantRow({
         <span className={styles.mic()}>
           <Icon name={micIcon[p.audio]} size={p.audio === 'speaking' ? 'xs' : 'sm'} />
         </span>
-        <span className={styles.camera()}>{p.camera && <Icon name="camera" size="sm" className="text-icon-subtle" />}</span>
+        <span className={styles.camera()}>{p.camera && <Icon name="camera" size="sm" className={styles.cameraIcon()} />}</span>
       </span>
     </li>
   );

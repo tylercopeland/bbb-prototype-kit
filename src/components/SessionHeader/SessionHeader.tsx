@@ -14,6 +14,8 @@ export const sessionHeaderStyles = tv({
     recording: 'flex shrink-0 items-center gap-1 text-xs font-bold text-danger-text',
     dot: 'size-2 rounded-full bg-danger-text',
     meta: 'shrink-0 text-sm text-text-muted tabular-nums',
+    /** "Session time" before the clock, for assistive technology only. */
+    metaLabel: 'sr-only',
   },
 });
 
@@ -52,7 +54,7 @@ export function SessionHeader({ title, recording = false, peopleCount, elapsed, 
         </span>
       )}
       <p className={styles.meta()}>
-        {formatPeopleCount(peopleCount)} · <span className="sr-only">Session time </span>
+        {formatPeopleCount(peopleCount)} · <span className={styles.metaLabel()}>Session time </span>
         {elapsed}
       </p>
     </header>

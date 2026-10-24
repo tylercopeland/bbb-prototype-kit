@@ -17,6 +17,8 @@ export const chatMessageStyles = tv({
     name: 'truncate text-sm font-bold text-text',
     time: 'shrink-0 text-xs text-text-muted tabular-nums',
     text: 'text-md break-words text-text',
+    /** "You:" or "Bruno:" before a bubble's text, for assistive technology only: the side says it visually. */
+    sender: 'sr-only',
   },
   variants: {
     variant: {
@@ -76,7 +78,7 @@ export function ChatMessage({
     return (
       <li {...props} className={styles.root({ className })}>
         <p className={styles.text()}>
-          <span className="sr-only">{isSelf ? 'You' : name}: </span>
+          <span className={styles.sender()}>{isSelf ? 'You' : name}: </span>
           {children}
         </p>
         <span className={styles.time()}>{time}</span>

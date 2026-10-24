@@ -8,12 +8,13 @@
  */
 import { useMemo } from 'react';
 import { ParticipantList, type ParticipantAction } from '../../components';
-import { useRoom, useRoomDispatch } from '../../mocks/context';
+import { useRoom, useRoomDispatch, useRoomStore } from '../../mocks/context';
 import { selectPeople, selectPeopleFilterCounts } from '../../mocks/selectors';
 import type { ParticipantId } from '../../mocks/types';
 import { useRoomFocus } from './focus';
 
 export function PeoplePanel() {
+  const store = useRoomStore();
   const dispatch = useRoomDispatch();
   const { requestFocus } = useRoomFocus();
   const filter = useRoom((s) => s.ui.peopleFilter);
@@ -29,8 +30,13 @@ export function PeoplePanel() {
         return dispatch({ type: 'makePresenter', participantId });
       case 'setCamera':
         return dispatch({ type: 'setCamera', participantId, on: action.on });
-      case 'microphone':
-        return dispatch(action.on ? { type: 'requestUnmute', participantId } : { type: 'mute', participantId });
+      case 'microphone': {
+        // The switch is checked only while the mic is on: "on" for a muted person asks
+        // them to unmute, or cancels the request already pending (S1); "off" mutes.
+        if (!action.on) return dispatch({ type: 'mute', participantId });
+        const pending = store.getState().participants.find((p) => p.id === participantId)?.unmuteRequested;
+        return dispatch({ type: pending ? 'cancelUnmuteRequest' : 'requestUnmute', participantId });
+      }
       case 'flag':
         return dispatch({ type: 'setParticipantFlag', participantId, flag: action.flag, value: action.value });
       case 'remove':

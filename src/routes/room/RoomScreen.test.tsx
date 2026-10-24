@@ -29,10 +29,16 @@ describe('RoomScreen', () => {
     expect(screen.getByText(/14 people/)).toBeInTheDocument();
     const alerts = within(screen.getByRole('group', { name: 'Alerts' }));
     expect(alerts.getAllByRole('button').map((b) => b.textContent)).toEqual(['4 raised', 'Rafaela asked', '3 low engagement']);
-    expect(screen.getByRole('region', { name: 'Presentation' })).toBeInTheDocument();
-    expect(screen.getByRole('list', { name: 'Webcams' })).toHaveClass('flex-col');
-    expect(screen.getByRole('navigation', { name: 'Actions' })).toBeInTheDocument();
+    // The stage column is the main landmark; the header, alerts, stage and bar sit inside it.
+    const main = screen.getByRole('main');
+    expect(main).toHaveAttribute('data-surface', 'stage');
+    expect(within(main).getByRole('region', { name: 'Presentation' })).toBeInTheDocument();
+    expect(within(main).getByRole('list', { name: 'Webcams' })).toHaveClass('flex-col');
+    expect(within(main).getByRole('navigation', { name: 'Actions' })).toBeInTheDocument();
+    expect(within(main).getByRole('group', { name: 'Alerts' })).toBeInTheDocument();
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    // The help and "Breakouts ended" pills are status only until milestone 5; these three open something.
+    for (const b of alerts.getAllByRole('button')) expect(b).toHaveAccessibleDescription(/^Opens/);
     expect(screen.getByRole('button', { name: 'People' })).toHaveAccessibleDescription('4 raised hands');
     expect(screen.getByRole('button', { name: 'Chat' })).toHaveAccessibleDescription('2 unread');
   });

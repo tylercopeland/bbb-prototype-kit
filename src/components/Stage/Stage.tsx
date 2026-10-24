@@ -22,9 +22,16 @@ export const stageStyles = tv({
     chrome: 'flex min-h-control-md items-center justify-between gap-3',
     /** A size container, so the slide can fit by height (`slide-fit`). */
     fit: '@container flex min-h-0 min-w-0 flex-1 items-center justify-center',
-    screen: 'relative flex items-center justify-center overflow-hidden rounded-tile border border-border bg-surface-tile text-text shadow-overlay',
+    /** The shared screen's frame: fitted like the slide. */
+    screen: 'slide-fit relative flex items-center justify-center overflow-hidden rounded-tile border border-border bg-surface-tile text-text shadow-overlay',
     screenNote: 'flex items-center gap-2 text-md font-semibold',
     screenDot: 'size-2 rounded-full bg-danger-text',
+    /** The "What everyone sees" tabs in the chrome row. */
+    shareTabs: 'w-96 max-w-full',
+    /** The tab panels only say what is on stage; the stage itself shows it. */
+    shareNote: 'sr-only',
+    /** A grid cell. */
+    cell: 'flex',
   },
   variants: {
     webcams: {
@@ -42,6 +49,8 @@ export const slideStyles = tv({
     deck: 'text-sm font-semibold tracking-label uppercase',
     title: 'text-xl font-bold text-balance',
     number: 'self-end text-sm font-semibold tabular-nums',
+    /** "Slide" before the number, for assistive technology only. */
+    numberLabel: 'sr-only',
   },
 });
 
@@ -213,7 +222,7 @@ function Slide({ deckName, slideTitle, slideNumber, slideCount }: StagePresentat
       <p className={styles.deck()}>{deckName}</p>
       <h2 className={styles.title()}>{slideTitle}</h2>
       <p className={styles.number()}>
-        <span className="sr-only">Slide </span>
+        <span className={styles.numberLabel()}>Slide </span>
         {slideNumber} / {slideCount}
       </p>
     </div>
@@ -224,7 +233,7 @@ function Slide({ deckName, slideTitle, slideNumber, slideCount }: StagePresentat
 function ScreenFrame({ kind }: { kind: ScreenKind }) {
   const styles = stageStyles();
   return (
-    <div className={`${styles.screen()} slide-fit`}>
+    <div className={styles.screen()}>
       <p className={styles.screenNote()}>
         <span aria-hidden="true" className={styles.screenDot()} />
         Everyone sees your {kind.toLowerCase()}
@@ -243,17 +252,18 @@ function ShareTabs({
   share: StageShare;
   onShowingChange?: (showing: StageTab) => void;
 }) {
+  const styles = stageStyles();
   const onChange = (key: Key) => onShowingChange?.(key === 'screen' ? 'screen' : 'slides');
   return (
-    <Tabs selectedKey={share.showing} onSelectionChange={onChange} className="w-96 max-w-full">
+    <Tabs selectedKey={share.showing} onSelectionChange={onChange} className={styles.shareTabs()}>
       <TabList label="What everyone sees">
         <Tab id="slides">{`Presentation ${presentation.slideNumber} / ${presentation.slideCount}`}</Tab>
         <Tab id="screen">{share.kind}</Tab>
       </TabList>
-      <TabPanel id="slides" className="sr-only">
+      <TabPanel id="slides" className={styles.shareNote()}>
         Everyone sees your slides. Your screen is still shared.
       </TabPanel>
-      <TabPanel id="screen" className="sr-only">
+      <TabPanel id="screen" className={styles.shareNote()}>
         Everyone sees your {share.kind.toLowerCase()}.
       </TabPanel>
     </Tabs>
@@ -267,6 +277,7 @@ function StageGrid({
   onRestore,
 }: Pick<StageProps, 'participants' | 'names' | 'presentation' | 'onRestore'>) {
   const count = participants.length + (presentation ? 1 : 0);
+  const styles = stageStyles();
   const tile = presentationTileStyles();
   return (
     <ul
@@ -274,7 +285,7 @@ function StageGrid({
       className={stageGridStyles({ columns: gridColumns(count) })}
     >
       {participants.map((p) => (
-        <li key={p.id} className="flex">
+        <li key={p.id} className={styles.cell()}>
           <VideoTile participant={p} shortName={p.isSelf ? 'You' : (names[p.id] ?? p.name)} size="grid" />
         </li>
       ))}

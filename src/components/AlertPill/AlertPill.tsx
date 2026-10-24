@@ -1,8 +1,9 @@
-import { useId, useRef, useState, type Ref } from 'react';
+import { useId, type Ref } from 'react';
+import { mergeProps } from 'react-aria';
 import { Button as RacButton, composeRenderProps, type ButtonProps as RacButtonProps } from 'react-aria-components';
 import { Icon, type IconName } from '../../icons';
 import { tv, type VariantProps } from '../../styles/tv';
-import { Tooltip } from '../Tooltip';
+import { Tooltip, useTruncationTooltip } from '../Tooltip';
 
 /**
  * The notification pills in the session header (Focus.dc.html 33–41): a
@@ -57,7 +58,7 @@ export interface AlertPillProps extends Omit<RacButtonProps, 'className' | 'chil
   kind: AlertPillKind;
   /** The visible text, which is also the whole accessible name (D4): "4 raised", "Rafaela asked", "3 low engagement". */
   children: string;
-  /** What pressing does, as the description: "Opens People filtered to raised hands". */
+  /** What pressing does, as the description: "Opens People filtered to raised hands". Leave it out for a pill that is status only. */
   description?: string;
   className?: string;
   ref?: Ref<HTMLButtonElement>;
@@ -68,34 +69,29 @@ export interface AlertPillProps extends Omit<RacButtonProps, 'className' | 'chil
  * visible text (D4: the canvas announced a longer sentence than it showed);
  * what the press opens goes in `description`, read after the name. Text
  * longer than the pill truncates, and hover or keyboard focus then show
- * the full text in a Tooltip (D6), measured when the tooltip asks to open,
- * as Button does. Pressing it is the owner's job (`onPress`), usually
- * opening the panel that resolves the alert.
+ * the full text in a Tooltip (D6) through `useTruncationTooltip`, as Chip
+ * and Tab do. Pressing it is the owner's job (`onPress`), usually opening
+ * the panel that resolves the alert.
  */
-export function AlertPill({ kind, children, description, className, ...props }: AlertPillProps) {
+export function AlertPill({ kind, children, description, className, ref, ...props }: AlertPillProps) {
   const descriptionId = useId();
-  const labelRef = useRef<HTMLSpanElement>(null);
-  const [isTooltipOpen, setTooltipOpen] = useState(false);
-  const onTooltipOpenChange = (open: boolean) => {
-    const label = labelRef.current;
-    setTooltipOpen(open && label !== null && label.scrollWidth > label.clientWidth);
-  };
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLButtonElement>(ref);
   return (
     <>
-      <Tooltip label={children} isOpen={isTooltipOpen} onOpenChange={onTooltipOpenChange}>
-        <RacButton
-          {...props}
-          aria-describedby={description ? descriptionId : undefined}
-          className={composeRenderProps(className, (cls) => alertPillStyles({ kind, className: cls }))}
-        >
-          <span aria-hidden="true" className={alertPillIconStyles({ kind })}>
-            <Icon name={kindIcon[kind]} size="xs" />
-          </span>
-          <span ref={labelRef} className={alertPillLabelStyles()}>
-            {children}
-          </span>
-        </RacButton>
-      </Tooltip>
+      <RacButton
+        {...mergeProps(props, triggerProps)}
+        ref={triggerRef}
+        aria-describedby={description ? descriptionId : undefined}
+        className={composeRenderProps(className, (cls) => alertPillStyles({ kind, className: cls }))}
+      >
+        <span aria-hidden="true" className={alertPillIconStyles({ kind })}>
+          <Icon name={kindIcon[kind]} size="xs" />
+        </span>
+        <span ref={labelRef} className={alertPillLabelStyles()}>
+          {children}
+        </span>
+        <Tooltip label={children} triggerRef={triggerRef} isOpen={isOpen} onOpenChange={onOpenChange} />
+      </RacButton>
       {description && (
         <span id={descriptionId} hidden>
           {description}

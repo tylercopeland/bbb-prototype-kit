@@ -20,6 +20,8 @@ export const videoTileStyles = tv({
     badges: 'absolute top-2 right-2 flex gap-1',
     plateRow: 'absolute inset-x-2 bottom-2 flex',
     plate: 'min-w-0 truncate rounded-xs bg-surface-overlay px-2 text-xs leading-5 font-semibold text-text-on-stage',
+    /** The status after the name, for assistive technology only: the badges show it. */
+    status: 'sr-only',
   },
   variants: {
     size: {
@@ -118,7 +120,7 @@ export function VideoTile({ participant, shortName, size = 'strip', className, .
       )}
       <figcaption id={captionId} className={styles.plateRow()}>
         <span className={styles.plate()}>{shortName ?? participant.name}</span>
-        <span className="sr-only">, {tileStatus(participant)}</span>
+        <span className={styles.status()}>, {tileStatus(participant)}</span>
       </figcaption>
     </figure>
   );

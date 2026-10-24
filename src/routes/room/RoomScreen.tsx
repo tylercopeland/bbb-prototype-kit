@@ -56,13 +56,16 @@ const roomStyles = tv({
   },
 });
 
-/** What pressing an alert opens, as its description (D4: the name stays the visible text). */
-const alertDescriptions: Record<Alert['kind'], string> = {
+/**
+ * What pressing an alert opens, as its description (D4: the name stays the
+ * visible text). The help and "Breakouts ended" pills have no description
+ * until milestone 5 wires them to the breakout surface: until then they
+ * are status, not a promise.
+ */
+const alertDescriptions: Partial<Record<Alert['kind'], string>> = {
   hands: 'Opens People',
   question: 'Opens Chat',
   insight: 'Opens People filtered to low engagement',
-  help: 'Opens the breakout rooms',
-  back: 'Shows the rooms’ work',
 };
 
 export function RoomScreen() {
@@ -156,7 +159,7 @@ export function RoomScreen() {
             <p className={styles.placeholder()}>Not built yet (milestone 5).</p>
           </SidePanel>
         )}
-        <Surface kind="stage" className={styles.main()}>
+        <Surface as="main" kind="stage" className={styles.main()}>
           <div className={styles.top()}>
             <SessionHeader title={session.title} recording={session.recording} peopleCount={peopleCount} elapsed={elapsed} />
             {alerts.length > 0 && (

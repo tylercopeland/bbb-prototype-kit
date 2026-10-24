@@ -15,7 +15,15 @@ import type { Key } from 'react-aria-components';
 import { Icon } from '../../icons';
 import { Avatar, ChatMessage, Composer, DMList, IconButton, Tab, TabList, TabPanel, Tabs } from '../../components';
 import { useRoom, useRoomDispatch } from '../../mocks/context';
-import { selectDirectList, selectOpenThread, selectParticipant, selectSelf, selectUnreadDirect } from '../../mocks/selectors';
+import { firstName } from '../../mocks/names';
+import {
+  selectDirectList,
+  selectDisplayNames,
+  selectOpenThread,
+  selectParticipant,
+  selectSelf,
+  selectUnreadDirect,
+} from '../../mocks/selectors';
 import { formatTimeOfDay } from '../../mocks/time';
 import type { ChatMessage as Message } from '../../mocks/types';
 import { tv } from '../../styles/tv';
@@ -138,6 +146,7 @@ function Thread() {
   const other = useRoom(useMemo(() => selectParticipant(dm), [dm]));
   const thread = useRoom(selectOpenThread);
   const me = useRoom(selectSelf)?.id;
+  const names = useRoom(selectDisplayNames);
   const messages = thread?.messages ?? [];
   const ref = useStickToBottom(messages.length);
 
@@ -149,7 +158,8 @@ function Thread() {
   }, [takeFocus]);
 
   if (!other || dm === null) return null;
-  const first = other.name.trim().split(/\s+/)[0];
+  // The short name tells two Anas apart (B9): "Only you and Ana S. can see this conversation."
+  const first = names[other.id] ?? firstName(other.name);
   const back = () => {
     requestFocus({ kind: 'dmRow', participantId: dm });
     dispatch({ type: 'closeDm' });

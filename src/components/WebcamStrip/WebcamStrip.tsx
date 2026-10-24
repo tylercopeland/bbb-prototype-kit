@@ -32,6 +32,9 @@ export const webcamStripMoreStyles = tv({
   defaultVariants: { direction: 'column' },
 });
 
+/** One cell of the strip: a flex box so the tile and the more button fill it. */
+export const webcamStripCellStyles = tv({ base: 'flex' });
+
 export type WebcamStripDirection = NonNullable<VariantProps<typeof webcamStripStyles>['direction']>;
 
 /** How many tiles the strip shows before "+N more" (the canvas draws five). */
@@ -73,12 +76,12 @@ export function WebcamStrip({
   return (
     <ul aria-label="Webcams" {...props} className={webcamStripStyles({ direction, className })}>
       {shown.map((p) => (
-        <li key={p.id} className="flex">
+        <li key={p.id} className={webcamStripCellStyles()}>
           <VideoTile participant={p} shortName={p.isSelf ? 'You' : (names[p.id] ?? p.name)} />
         </li>
       ))}
       {rest > 0 && (
-        <li className="flex">
+        <li className={webcamStripCellStyles()}>
           <Button
             aria-label={`+${rest} more, show all ${participants.length} people`}
             onPress={onShowAll}

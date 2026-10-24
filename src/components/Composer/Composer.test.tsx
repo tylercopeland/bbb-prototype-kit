@@ -6,7 +6,10 @@ import { Announcer } from '../Announcer';
 import { createRoom, createRoomStore, RoomProvider } from '../../mocks';
 import { Composer } from './Composer';
 
-function setup(props: Partial<React.ComponentProps<typeof Composer>> = {}, people: 'class' | 'longNames' = 'class') {
+function setup(
+  props: Partial<React.ComponentProps<typeof Composer>> = {},
+  people: 'class' | 'longNames' | 'duplicateNames' = 'class',
+) {
   const store = createRoomStore(createRoom({ participants: people }));
   const utils = render(
     <Announcer>
@@ -73,5 +76,10 @@ describe('Composer', () => {
     const ref = createRef<HTMLTextAreaElement>();
     setup({ to: 'rafaela', ref }, 'longNames');
     expect(screen.getByRole('textbox', { name: 'Message Rafaela privately' })).toBe(ref.current);
+  });
+
+  it('tells two Anas apart in its name (B9)', () => {
+    setup({ to: 'ana-ferreira' }, 'duplicateNames');
+    expect(screen.getByRole('textbox', { name: 'Message Ana F. privately' })).toBeInTheDocument();
   });
 });
