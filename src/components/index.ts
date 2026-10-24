@@ -17,6 +17,7 @@ export * from './ParticipantRow';
 export * from './Popover';
 export * from './SessionHeader';
 export * from './Sheet';
+export * from './SidePanel';
 export * from './Stage';
 export * from './Stepper';
 export * from './Surface';
