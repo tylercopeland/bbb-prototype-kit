@@ -107,6 +107,11 @@ for (const n of semanticNames) {
   }
 }
 if (semanticNames.includes('selected-text')) required.push(['selected-text', 'selected']);
+// The inset ring is the non-color cue of a selected toggle, so it must read
+// against the selected fill and against the unselected (raised) fill.
+if (semanticNames.includes('selected-ring')) {
+  required.push(['selected-ring', 'selected'], ['selected-ring', 'surface-raised']);
+}
 
 for (const [fg, bg] of required) {
   const declared = new Set<string>();

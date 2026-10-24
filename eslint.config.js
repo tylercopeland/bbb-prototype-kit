@@ -3,7 +3,8 @@
 //   1. eslint-plugin-better-tailwindcss: arbitrary values and unknown classes
 //      in className strings, template literals and tv()/cn()/clsx() calls
 //   2. no-restricted-syntax: raw hex and arbitrary values in any string
-//   3. no-restricted-syntax: pointer and keyboard handlers on div and span
+//   3. no-restricted-syntax: pointer and keyboard handlers on div and span,
+//      and function-form classNames (docs/plans/m2-primitives.md §6)
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -33,6 +34,17 @@ const NON_INTERACTIVE =
 const POINTER_HANDLER =
   'JSXAttribute[name.name=/^on(Click|DoubleClick|ContextMenu|Mouse\\w+|Pointer\\w+|Touch\\w+|Key\\w+)$/]';
 const STYLE_OBJECT = 'JSXAttribute[name.name="style"] > JSXExpressionContainer > ObjectExpression';
+// A function-form className (React Aria render props). The Tailwind plugin
+// cannot see inside it, so classes go through tv() and composeRenderProps.
+const RENDER_PROP_CLASSNAME =
+  'JSXAttribute[name.name="className"] > JSXExpressionContainer > :matches(ArrowFunctionExpression, FunctionExpression)';
+// A bare variable as className hides its classes the same way.
+const IDENTIFIER_CLASSNAME = 'JSXAttribute[name.name="className"] > JSXExpressionContainer > Identifier';
+// The composeRenderProps callback may only call a tv() result (`xStyles(...)`).
+const COMPOSE_RENDER_PROPS_CALLBACK =
+  'CallExpression[callee.name="composeRenderProps"] > :matches(ArrowFunctionExpression, FunctionExpression):not([body.type="CallExpression"][body.callee.type="Identifier"][body.callee.name=/Styles$/])';
+// data-surface is written by Surface alone; everything else uses <Surface> or useSurfaceProps().
+const RAW_DATA_SURFACE = 'JSXAttribute[name.name="data-surface"]';
 const CSS_VARIABLE = '[value.type="Literal"][value.value=/^var\\(--[a-zA-Z0-9-]+\\)$/]';
 const ZERO = '[value.type="Literal"][value.value=0]';
 
@@ -44,6 +56,13 @@ const messages = {
   opacity: 'Opacity modifier on a color. Add a semantic color token instead.',
   style: 'Inline style values must be CSS variables (var(--…)) or 0; everything else needs a token utility.',
   handler: 'Use a React Aria component; no pointer or keyboard handlers on non-interactive elements.',
+  renderProp: 'Route render-prop classNames through tv() with composeRenderProps.',
+  identifierClassName:
+    'A bare variable as className hides its classes from lint. Pass it through the component tv(): xStyles({ className }).',
+  composeCallback:
+    'The composeRenderProps callback must be `(cls) => xStyles({ ..., className: cls })`, a call to a tv() result.',
+  dataSurface:
+    'Write data-surface only in Surface. Wrap in <Surface kind="stage">, or spread useSurfaceProps() on a portaled element.',
 };
 
 const forStrings = (pattern, message) => [
@@ -67,6 +86,9 @@ const tokenSyntaxRules = [
   },
   { selector: `${STYLE_OBJECT} > :not(Property)`, message: messages.style },
   { selector: `${STYLE_OBJECT} > Property:not(${CSS_VARIABLE}):not(${ZERO})`, message: messages.style },
+  { selector: RENDER_PROP_CLASSNAME, message: messages.renderProp },
+  { selector: IDENTIFIER_CLASSNAME, message: messages.identifierClassName },
+  { selector: COMPOSE_RENDER_PROPS_CALLBACK, message: messages.composeCallback },
   { selector: `${NON_INTERACTIVE} > ${POINTER_HANDLER}`, message: messages.handler },
   {
     selector: `${NON_INTERACTIVE} > JSXSpreadAttribute > ObjectExpression > Property[key.name=/^on(Click|DoubleClick|ContextMenu|Mouse\\w+|Pointer\\w+|Touch\\w+|Key\\w+)$/]`,
@@ -105,6 +127,12 @@ export default tseslint.config(
       ...reactRefresh.configs.vite.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
+  },
+  {
+    // The component pattern (CLAUDE.md) exports `<name>Styles` and context hooks
+    // next to the component, so these files reload fully instead of fast-refreshing.
+    files: ['src/components/**/*.tsx', 'src/icons/**/*.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
   },
   ...storybook.configs['flat/recommended'],
   // Layer 1: Tailwind classes resolved against the real theme.
@@ -149,7 +177,24 @@ export default tseslint.config(
   // Layers 2 and 3: raw hex, arbitrary values in any string, handlers on div/span.
   {
     files: ['src/**/*.{ts,tsx}', '.storybook/**/*.tsx'],
-    ignores: ['scripts/**', 'src/tokens/*.ts', '**/*.test.ts', '**/*.test.tsx'],
+    ignores: [
+      'scripts/**',
+      'src/tokens/*.ts',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      'src/components/Surface/Surface.tsx',
+    ],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...tokenSyntaxRules,
+        { selector: RAW_DATA_SURFACE, message: messages.dataSurface },
+      ],
+    },
+  },
+  // Surface itself writes data-surface; every other rule still applies to it.
+  {
+    files: ['src/components/Surface/Surface.tsx'],
     rules: {
       'no-restricted-syntax': ['error', ...tokenSyntaxRules],
     },
