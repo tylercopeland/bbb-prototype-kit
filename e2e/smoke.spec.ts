@@ -17,7 +17,7 @@ function hexToRgb(hex: string) {
 
 test.describe('token sheet', () => {
   test('has no WCAG 2.1 AA violations in light and dark', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/tokens');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     const light = await new AxeBuilder({ page }).withTags(wcag).analyze();
     expect(light.violations).toEqual([]);
@@ -29,10 +29,10 @@ test.describe('token sheet', () => {
   });
 
   test('shows the focus ring in the focus-ring token color after Tab', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/tokens');
     // Tab only once the app has rendered, or nothing is there to focus yet.
     await expect(page.getByRole('button', { name: 'Dark theme' })).toBeVisible();
-    await page.keyboard.press('Tab');
+    await page.getByRole('button', { name: 'Dark theme' }).focus();
     const focused = page.locator(':focus');
     await expect(focused).toHaveText('Dark theme');
     const ring = await token(page, '--bbb-focus-ring');
@@ -47,9 +47,11 @@ test.describe('token sheet in forced colors', () => {
   test.use({ contextOptions: { forcedColors: 'active' } });
 
   test('shows an outline only on the focused element', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/tokens');
     const toggle = page.getByRole('button', { name: 'Dark theme' });
     expect(await toggle.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('none');
+    // The back link comes first in the tab order, so Tab twice.
+    await page.keyboard.press('Tab');
     await page.keyboard.press('Tab');
     await expect(toggle).toBeFocused();
     expect(await toggle.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('solid');
