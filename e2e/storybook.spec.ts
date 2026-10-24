@@ -8,7 +8,11 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { storybookUrl } from './ports.ts';
 
-type IndexEntry = { id: string; title: string; name: string; type: 'story' | 'docs' };
+type IndexEntry = { id: string; title: string; name: string; type: 'story' | 'docs'; tags?: string[] };
+
+// A story tagged `wait-for-tooltip` opens a tooltip on mount (defaultOpen or
+// autoFocus); the scan waits for it so the portal is part of every run.
+const WAIT_FOR_TOOLTIP = 'wait-for-tooltip';
 type StoryIndex = { entries: Record<string, IndexEntry> };
 
 const index = JSON.parse(readFileSync('storybook-static/index.json', 'utf8')) as StoryIndex;
@@ -38,6 +42,8 @@ test.describe('stories', () => {
         );
         await expect(page.locator('#storybook-root')).not.toBeEmpty();
         await expect(page.locator('html')).toHaveAttribute('data-theme', /light|dark/);
+        if (story.tags?.includes(WAIT_FOR_TOOLTIP))
+          await expect(page.getByRole('tooltip').first()).toBeVisible();
         await page.waitForFunction(() => !(window as { axe?: { _running?: boolean } }).axe?._running);
         const theme = await page.locator('html').getAttribute('data-theme');
         const onStage = (await page.locator('[data-surface="stage"]').count()) > 0;

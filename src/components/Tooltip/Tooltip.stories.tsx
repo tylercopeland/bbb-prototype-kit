@@ -1,8 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from 'react-aria-components';
+import { IconButton } from '../IconButton';
 import { Tooltip } from './Tooltip';
 
-/** A plain trigger for these stories; IconButton builds the real one. */
+/**
+ * A bare React Aria Button, so these stories show the Tooltip on its own.
+ * IconButton wraps the two together; see Default.
+ */
 function Trigger({ label }: { label: string }) {
   return (
     <Button
@@ -37,8 +41,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Hover or focus the control. */
-export const Default: Story = {};
+/** On an IconButton, which renders its own Tooltip. Hover or focus the control. */
+export const Default: Story = {
+  render: () => <IconButton label="Microphone" icon="microphone" variant="soft" size="touch" />,
+};
 
 export const WithShortcut: Story = {
   args: { shortcut: 'microphone' },
@@ -46,16 +52,19 @@ export const WithShortcut: Story = {
 
 /** Open by default so axe scans the tooltip itself. */
 export const Open: Story = {
+  tags: ['wait-for-tooltip'],
   args: { shortcut: 'microphone', defaultOpen: true },
 };
 
 /** Inverted on the stage: white with dark text. */
 export const OpenOnStage: Story = {
+  tags: ['wait-for-tooltip'],
   args: { shortcut: 'microphone', defaultOpen: true },
   globals: { surface: 'stage' },
 };
 
 export const LongLabel: Story = {
+  tags: ['wait-for-tooltip'],
   args: {
     label: 'Share media: slides, a video, your screen, audio or a link',
     children: <Trigger label="Share media" />,
@@ -64,6 +73,7 @@ export const LongLabel: Story = {
 };
 
 export const Placements: Story = {
+  tags: ['wait-for-tooltip'],
   render: (args) => (
     <div className="grid grid-cols-2 gap-16 p-16">
       {(['top', 'bottom', 'start', 'end'] as const).map((placement) => (
