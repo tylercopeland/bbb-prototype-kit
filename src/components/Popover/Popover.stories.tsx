@@ -72,8 +72,11 @@ const meta = {
     placement: { control: 'radio', options: ['top', 'bottom', 'start', 'end'] },
   },
   decorators: [
+    // Tall enough for the whole Plugins picker above its trigger: when the
+    // card has to scroll, axe measures the clipped rows against the page
+    // behind the card, and over the stage that reads as a contrast failure.
     (Story) => (
-      <div className="flex min-h-96 items-end justify-center p-8">
+      <div className="flex min-h-128 items-end justify-center p-8">
         <Story />
       </div>
     ),

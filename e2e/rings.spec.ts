@@ -68,11 +68,12 @@ test.describe('in forced colors', () => {
 
   /**
    * The colors of the switch glyph inside `root`: the track is the
-   * `aria-hidden` span, the thumb its child. Runs in the page (Playwright
+   * `aria-hidden` span (a menu row's icon is an `aria-hidden` svg, so the
+   * tag matters), the thumb its child. Runs in the page (Playwright
    * serializes it), so it closes over nothing.
    */
   function glyphColors(root: Element) {
-    const track = root.querySelector('[aria-hidden="true"]') as HTMLElement;
+    const track = root.querySelector('span[aria-hidden="true"]') as HTMLElement;
     const thumb = track.firstElementChild as HTMLElement;
     return {
       track: getComputedStyle(track).backgroundColor,
@@ -102,13 +103,14 @@ test.describe('in forced colors', () => {
     };
     const off = await read('components-switch--off');
     const on = await read('components-switch--on');
+    // CanvasText and HighlightText may be the same color (both white in Chromium's
+    // palette), so the thumb is checked against its own track, not across states.
     for (const state of [off, on]) {
       expect(state.thumb).not.toBe(TRANSPARENT);
       expect(state.thumb).not.toBe(state.track);
       expect(state.outline).toBe('2px');
     }
     expect(on.track).not.toBe(off.track);
-    expect(on.thumb).not.toBe(off.thumb);
   });
 
   test('a menu switch glyph is visible off and on', async ({ page }) => {
