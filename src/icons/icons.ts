@@ -26,6 +26,7 @@ import {
   Info,
   Keyboard,
   LayoutGrid,
+  LifeBuoy,
   Lightbulb,
   Lock,
   LockKeyhole,
@@ -113,6 +114,8 @@ export const icons = {
   private: LockKeyhole,
   /** The question alert pill ("Rafaela asked"). */
   question: MessageCircleQuestionMark,
+  /** A breakout room asking for help (B3): the alert pill and the room card. */
+  help: LifeBuoy,
   minimize: Minimize2,
   restore: Maximize2,
 } as const satisfies Record<string, LucideIcon>;

@@ -99,6 +99,7 @@ const entries: Record<IconName, Entry> = {
     note: 'A different meaning from lockChat (a moderator locking public chat), so a different glyph',
   },
   question: { meaning: 'Question asked in chat', used: 'AlertPill (session header)' },
+  help: { meaning: 'Help requested by a breakout room', used: 'AlertPill (session header), room cards (milestone 5)' },
   minimize: { meaning: 'Minimize presentation', used: 'Stage (presentation controls)' },
   restore: { meaning: 'Restore presentation', used: 'Stage (minimized presentation tile)' },
 };
