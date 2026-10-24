@@ -81,6 +81,29 @@ describe('Popover', () => {
     expect(screen.getByRole('button', { name: 'Timer' })).toHaveFocus();
   });
 
+  it('keeps Tab and Shift+Tab inside the popover, wrapping at both ends', async () => {
+    const user = userEvent.setup();
+    render(<Subject />);
+    await user.click(screen.getByRole('button', { name: 'Plugins' }));
+    const dialog = await screen.findByRole('dialog');
+    await waitFor(() => expect(dialog).toHaveFocus());
+    const close = screen.getByRole('button', { name: 'Close' });
+    const last = screen.getByRole('button', { name: 'Timer' });
+    await user.tab();
+    expect(close).toHaveFocus();
+    await user.tab();
+    await user.tab();
+    expect(last).toHaveFocus();
+    await user.tab();
+    expect(close).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(last).toHaveFocus();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    // The page behind the popover is hidden from assistive technology.
+    const trigger = screen.getByRole('button', { name: 'Plugins', hidden: true });
+    expect(trigger.closest('[aria-hidden="true"], [inert]')).not.toBeNull();
+  });
+
   it('reports open state changes', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();

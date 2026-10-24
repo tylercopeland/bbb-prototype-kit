@@ -99,11 +99,12 @@ export interface PopoverProps extends Pick<
 }
 
 /**
- * A non-modal floating dialog anchored to its trigger (X1). Focus moves
- * into it on open, Escape and the close button close it, clicking outside
- * closes it, and focus returns to the trigger. It portals to <body>, so it
- * spreads `useSurfaceProps()` and keeps the stage colors when its trigger
- * is on the action bar.
+ * A floating dialog anchored to its trigger (X1). It is modal while open:
+ * focus moves into it, Tab and Shift+Tab wrap inside it, and the rest of
+ * the page is hidden from assistive technology. Escape, the close button
+ * and a press outside close it, and focus returns to the trigger. It
+ * portals to <body>, so it spreads `useSurfaceProps()` and keeps the stage
+ * colors when its trigger is on the action bar.
  *
  * Menus use `Menu`, not this; this is for pickers and forms.
  */

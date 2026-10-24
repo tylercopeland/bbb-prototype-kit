@@ -107,10 +107,13 @@ export function Dialog({
   const descriptionId = useId();
   const styles = dialogStyles({ kickerTone });
 
+  // With a trigger, DialogTrigger owns the open state (as Popover does): the
+  // trigger then keeps aria-expanded, reopens after Escape and gets focus back.
+  // Without one, the overlay takes the state props itself.
   const overlay = (
     <ModalOverlay
       {...surfaceProps}
-      {...state}
+      {...(trigger ? undefined : state)}
       isDismissable={isDismissable}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       className={dialogOverlayStyles()}
@@ -142,7 +145,7 @@ export function Dialog({
 
   if (!trigger) return overlay;
   return (
-    <DialogTrigger>
+    <DialogTrigger {...state}>
       {trigger}
       {overlay}
     </DialogTrigger>

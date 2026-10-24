@@ -1,5 +1,5 @@
 import { createRef } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Button } from '../Button';
@@ -149,6 +149,34 @@ describe('Sheet', () => {
     expect(box?.parentElement).toHaveAttribute('data-surface', 'stage');
     expect(box).toHaveClass('rounded-none', 'bg-surface');
     expect(box).not.toHaveClass('rounded-t-xl');
+  });
+
+  it('reopens from its trigger after Escape when it started open, and the trigger reports aria-expanded', async () => {
+    const user = userEvent.setup();
+    render(<Subject defaultOpen />);
+    const dialog = screen.getByRole('dialog');
+    await waitFor(() => expect(dialog).toHaveFocus());
+    const trigger = screen.getByRole('button', { name: 'More', hidden: true });
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    // Nothing was focused before a sheet that started open, so there is no focus to return to.
+    await user.click(trigger);
+    expect(await screen.findByRole('dialog', { name: 'More' })).toBeInTheDocument();
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('reports open state changes through its trigger', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(<Subject onOpenChange={onOpenChange} />);
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    await screen.findByRole('dialog');
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    await user.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(onOpenChange).toHaveBeenCalledTimes(2);
   });
 
   it('forwards its ref to the dialog element', () => {

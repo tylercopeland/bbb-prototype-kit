@@ -129,6 +129,34 @@ describe('Dialog', () => {
     expect(box).not.toHaveClass('max-w-104');
   });
 
+  it('reopens from its trigger after Escape when it started open, and the trigger reports aria-expanded', async () => {
+    const user = userEvent.setup();
+    render(<Subject defaultOpen />);
+    const dialog = screen.getByRole('dialog');
+    await waitFor(() => expect(dialog).toHaveFocus());
+    const trigger = screen.getByRole('button', { name: 'Share', hidden: true });
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    // Nothing was focused before a dialog that started open, so there is no focus to return to.
+    await user.click(trigger);
+    expect(await screen.findByRole('dialog', { name: 'Share your screen' })).toBeInTheDocument();
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('reports open state changes through its trigger', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(<Subject onOpenChange={onOpenChange} />);
+    await user.click(screen.getByRole('button', { name: 'Share' }));
+    await screen.findByRole('dialog');
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    await user.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(onOpenChange).toHaveBeenCalledTimes(2);
+  });
+
   it('forwards its ref to the dialog element', () => {
     const ref = createRef<HTMLElement>();
     render(<Subject defaultOpen ref={ref} />);
