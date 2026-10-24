@@ -12,7 +12,7 @@ import { tv, type VariantProps } from '../../styles/tv';
  * badge inside a selected (dark) chip.
  */
 export const badgeStyles = tv({
-  base: 'inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-xs font-bold tabular-nums whitespace-nowrap',
+  base: 'inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-xs font-bold whitespace-nowrap tabular-nums',
   variants: {
     tone: {
       neutral: 'bg-text text-surface',
