@@ -40,7 +40,8 @@ test.describe('stories', () => {
         await page.goto(
           `${storybookUrl}/iframe.html?id=${story.id}&viewMode=story&globals=${encodeURIComponent(mode.globals)}`,
         );
-        await expect(page.locator('#storybook-root')).not.toBeEmpty();
+        // A child element, not text: icon-only stories have no text content.
+        await expect(page.locator('#storybook-root > *').first()).toBeAttached();
         await expect(page.locator('html')).toHaveAttribute('data-theme', /light|dark/);
         if (story.tags?.includes(WAIT_FOR_TOOLTIP))
           await expect(page.getByRole('tooltip').first()).toBeVisible();

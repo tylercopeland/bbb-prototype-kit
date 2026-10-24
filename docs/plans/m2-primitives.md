@@ -383,3 +383,17 @@ Only these three keys are defined now; the rest are added when their flows are b
 - **"Each has stories for every variant, size and state, plus a keyboard test":** the story and test lists in §2. `npm run check` passes. `npm run test:e2e` scans every story in light, dark and stage with zero violations, including open tooltips.
 - **"You approve the API and look":** the owner reviews screenshots of the `ActionBarOnStage` stories (which reproduce `Focus.dc.html` 45–62), the avatars against `docs/screenshots/O2StudentActions.png`, the `Icons` story (X6), `ToggleButton › MicrophoneOn/Off` (X7), `IconButton › WithShortcut` (X5) and `Avatar › SpeakingAndFocused`.
 - **"File pattern and new rules written into CLAUDE.md":** the §1 text and the className lint rule. `component-builder.md` already points to CLAUDE.md, so the milestone 3 agents inherit it.
+
+## Build notes (2026-10-24)
+
+Deviations from the plan above, each the smallest fix that keeps the intent. The full list, with the new tokens, is in `PLAN.md` › Decisions log.
+
+- **§3 / decision 8:** Lucide does ship a smiley (`Smile`), so `react` maps to it and no custom SVG was added.
+- **§2.1:** React Aria's prop is `defaultOpen`, not `defaultIsOpen`. The `Open` stories use `defaultOpen`.
+- **§2.1 / §2.3:** React Aria's `Button` drops `aria-keyshortcuts` (it forwards only `aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`). `useAriaKeyshortcuts` in `IconButton.tsx` sets it on the element through a callback ref. Because the React Compiler lint forbids writing to a forwarded ref, `IconButton` and `ToggleButton` omit `ref` from their props; React Aria triggers reach the button through `ButtonContext`.
+- **§6:** `parameters.e2e.waitFor` is not possible, because `index.json` has tags but no parameters. Stories that open a tooltip on mount carry `tags: ['wait-for-tooltip']` and the e2e waits for `role="tooltip"` before scanning. `IconButton › WithShortcut` and `Avatar › SpeakingAndFocused` open theirs with `autoFocus`; the `Tooltip` stories use `defaultOpen`.
+- **§1:** the icon map is in `src/icons/icons.ts`; `src/icons/index.ts` re-exports it together with `<Icon>` (a map in `index.ts` imported by `Icon.tsx` would be a cycle). `react-refresh/only-export-components` is off for component and icon files, which export styles and hooks by design.
+- **§2.4:** a selected ToggleButton keeps its selected fill on hover and press; the canvas defines no hover state for it.
+- **§2.1:** the key chip also has `font-sans font-medium`, so `<kbd>` does not render in the browser's monospace.
+- **§2.2:** `Button` sizes the leading and trailing icons `sm` (16px) at `size="sm"` and `md` (20px) otherwise; the plan did not say.
+- **§2.5:** the badge sits at `-right-1 -bottom-1` (a 4px overhang); the plan only said "bottom right".
