@@ -269,6 +269,41 @@
       "modes": ["light", "dark", "stage"]
     },
     {
+      "fg": "semantic.color.selected-ring",
+      "bg": "semantic.color.selected",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "The inset ring on a selected toggle: blue-600 on blue-50 4.93; blue-300 on stage-600 6.06; blue-500 on blue-100 3.27"
+    },
+    {
+      "fg": "semantic.color.selected-ring",
+      "bg": "semantic.color.surface-raised",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "The ring against the unselected fill: blue-600 on neutral-100 4.68; blue-300 on stage-600 6.06; blue-500 on stage-600 3.21"
+    },
+    {
+      "fg": "semantic.color.accent",
+      "bg": "semantic.color.surface-sunken",
+      "min": 4.5,
+      "modes": ["light", "dark", "stage"],
+      "note": "Ghost button text on its hover fill: blue-600 on neutral-50 4.99"
+    },
+    {
+      "fg": "semantic.color.icon",
+      "bg": "semantic.color.surface-sunken",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "Ghost icon button on its hover fill: neutral-700 on neutral-50 6.67"
+    },
+    {
+      "fg": "semantic.color.danger-text",
+      "bg": "semantic.color.surface-sunken",
+      "min": 4.5,
+      "modes": ["light", "dark", "stage"],
+      "note": "Danger text over the row hover fill"
+    },
+    {
       "fg": "semantic.color.selected-border",
       "bg": "semantic.color.surface-stage",
       "min": 3,
@@ -541,6 +576,57 @@
       "fg": "primitive.color.room.8",
       "bg": "primitive.color.stage.900",
       "min": 3
+    },
+    {
+      "fg": "semantic.color.on-avatar",
+      "bg": "primitive.color.avatar.1",
+      "min": 4.5,
+      "note": "Initials on the avatar palette"
+    },
+    {
+      "fg": "semantic.color.on-avatar",
+      "bg": "primitive.color.avatar.2",
+      "min": 4.5
+    },
+    {
+      "fg": "semantic.color.on-avatar",
+      "bg": "primitive.color.avatar.3",
+      "min": 4.5
+    },
+    {
+      "fg": "semantic.color.on-avatar",
+      "bg": "primitive.color.avatar.4",
+      "min": 4.5
+    },
+    {
+      "fg": "semantic.color.on-avatar",
+      "bg": "primitive.color.avatar.5",
+      "min": 4.5
+    },
+    {
+      "fg": "semantic.color.on-avatar",
+      "bg": "primitive.color.avatar.6",
+      "min": 4.5
+    },
+    {
+      "fg": "semantic.color.on-avatar",
+      "bg": "primitive.color.avatar.7",
+      "min": 4.5
+    },
+    {
+      "fg": "semantic.color.on-avatar",
+      "bg": "primitive.color.avatar.8",
+      "min": 4.5
+    },
+    {
+      "fg": "semantic.color.on-avatar",
+      "bg": "primitive.color.avatar.9",
+      "min": 4.5
+    },
+    {
+      "fg": "semantic.color.on-avatar",
+      "bg": "primitive.color.avatar.10",
+      "min": 4.5
     },
     {
       "fg": "primitive.color.neutral.0",

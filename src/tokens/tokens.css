@@ -41,6 +41,7 @@
   --color-blue-100: #e6eef9;
   --color-blue-300: #8ab8ff;
   --color-blue-400: #5b8fe0;
+  --color-blue-500: #4d82d8;
   --color-blue-600: #1f62d0;
   --color-blue-700: #1a53b0;
 
@@ -162,6 +163,8 @@
   --color-selected: var(--bbb-selected);
   --color-selected-text: var(--bbb-selected-text);
   --color-selected-border: var(--bbb-selected-border);
+  --color-selected-ring: var(--bbb-selected-ring);
+  --color-on-avatar: var(--bbb-on-avatar);
   --color-insight: var(--bbb-insight);
   --color-on-insight: var(--bbb-on-insight);
   --color-insight-text: var(--bbb-insight-text);
@@ -209,6 +212,8 @@
   --bbb-selected: var(--color-blue-50);
   --bbb-selected-text: var(--color-blue-600);
   --bbb-selected-border: var(--color-blue-600);
+  --bbb-selected-ring: var(--color-blue-600);
+  --bbb-on-avatar: var(--color-neutral-0);
   --bbb-insight: var(--color-purple-600);
   --bbb-on-insight: var(--color-neutral-0);
   --bbb-insight-text: var(--color-purple-700);
@@ -250,6 +255,7 @@
   --bbb-selected: var(--color-stage-600);
   --bbb-selected-text: var(--color-neutral-0);
   --bbb-selected-border: var(--color-blue-300);
+  --bbb-selected-ring: var(--color-blue-300);
   --bbb-insight: var(--color-purple-500);
   --bbb-insight-text: var(--color-purple-300);
   --bbb-insight-soft: var(--color-stage-600);
@@ -284,6 +290,7 @@
   --bbb-selected: var(--color-blue-100);
   --bbb-selected-text: var(--color-stage-800);
   --bbb-selected-border: var(--color-blue-400);
+  --bbb-selected-ring: var(--color-blue-500);
   --bbb-insight: var(--color-purple-500);
   --bbb-insight-text: var(--color-purple-300);
   --bbb-insight-soft: var(--color-stage-600);
