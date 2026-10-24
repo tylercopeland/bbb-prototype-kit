@@ -96,4 +96,44 @@ describe('Button', () => {
     expect(button).toHaveClass('whitespace-nowrap', 'max-w-full');
     expect(button.querySelector('span')).toHaveClass('truncate');
   });
+
+  const LONG = 'Share media: slides, a video, your screen, audio or a link';
+
+  /** jsdom has no layout, so the label's overflow is set by hand. */
+  function setLabelOverflow(button: HTMLElement, scrollWidth: number, clientWidth: number) {
+    const label = button.querySelector('span') as HTMLSpanElement;
+    Object.defineProperty(label, 'scrollWidth', { value: scrollWidth, configurable: true });
+    Object.defineProperty(label, 'clientWidth', { value: clientWidth, configurable: true });
+  }
+
+  it('shows its full label in a tooltip on focus and hover when it is truncated, and Escape closes it', async () => {
+    const user = userEvent.setup();
+    render(<Button>{LONG}</Button>);
+    const button = screen.getByRole('button', { name: LONG });
+    setLabelOverflow(button, 320, 160);
+    await user.tab();
+    const tooltip = await screen.findByRole('tooltip');
+    expect(tooltip).toHaveTextContent(LONG);
+    expect(button).toHaveAccessibleDescription(LONG);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    expect(button).toHaveFocus();
+    // Hover, in pointer modality, opens it as well.
+    await user.pointer({ target: document.body, coords: { x: 0, y: 0 } });
+    await user.hover(button);
+    expect(await screen.findByRole('tooltip', {}, { timeout: 1500 })).toHaveTextContent(LONG);
+    await user.unhover(button);
+  });
+
+  it('opens no tooltip when the label fits', async () => {
+    const user = userEvent.setup();
+    render(<Button>{LONG}</Button>);
+    const button = screen.getByRole('button', { name: LONG });
+    setLabelOverflow(button, 160, 160);
+    await user.tab();
+    expect(button).toHaveFocus();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    expect(button).not.toHaveAttribute('aria-describedby');
+  });
 });
