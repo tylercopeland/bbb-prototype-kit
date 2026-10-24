@@ -39,9 +39,9 @@ export const MultiLine: Story = {
   },
 };
 
-/** A private thread (Focus.dc.html 474–478): the label names the person. */
+/** A private thread (Focus.dc.html 474–478): the label names the person and the lock sits before the text. */
 export const DirectMessage: Story = {
-  args: { label: 'Message Rafaela privately', placeholder: 'Message Rafaela privately' },
+  args: { label: 'Message Rafaela privately', placeholder: 'Message Rafaela privately', icon: 'private' },
 };
 
 /** With a visible label and the key hint as its description. */

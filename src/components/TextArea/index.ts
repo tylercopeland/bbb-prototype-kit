@@ -1,2 +1,2 @@
-export { TextArea, textAreaBoxStyles, textAreaInputStyles } from './TextArea';
+export { TextArea, textAreaBoxStyles, textAreaIconStyles, textAreaInputStyles } from './TextArea';
 export type { TextAreaProps } from './TextArea';

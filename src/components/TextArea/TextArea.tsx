@@ -7,6 +7,7 @@ import {
   composeRenderProps,
   type TextFieldProps as RacTextFieldProps,
 } from 'react-aria-components';
+import { Icon, type IconName } from '../../icons';
 import { tv } from '../../styles/tv';
 import { IconButton } from '../IconButton';
 import { fieldDescriptionStyles, fieldLabelStyles, fieldStyles } from '../TextField';
@@ -32,6 +33,11 @@ export const textAreaInputStyles = tv({
   base: 'field-sizing-content max-h-40 min-w-0 flex-1 resize-none overflow-y-auto bg-transparent py-1 text-md leading-6 text-text outline-none placeholder:text-text-muted data-disabled:text-text-muted',
 });
 
+/** A glyph before the text (the lock of a private thread, Focus.dc.html 475), centred on the first line. */
+export const textAreaIconStyles = tv({
+  base: 'mb-2 shrink-0 self-end text-icon',
+});
+
 export interface TextAreaProps extends Omit<
   RacTextFieldProps,
   | 'className'
@@ -51,6 +57,8 @@ export interface TextAreaProps extends Omit<
   placeholder?: string;
   /** Help text under the box; it becomes the description. */
   description?: string;
+  /** A decorative glyph inside the box, before the text: the lock of a private thread. */
+  icon?: IconName;
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
@@ -81,6 +89,7 @@ export function TextArea({
   labelHidden = false,
   placeholder,
   description,
+  icon,
   value: controlledValue,
   defaultValue = '',
   onChange,
@@ -126,6 +135,7 @@ export function TextArea({
     >
       <Label className={fieldLabelStyles({ isHidden: labelHidden })}>{label}</Label>
       <div className={textAreaBoxStyles()} data-disabled={isDisabled || undefined}>
+        {icon && <Icon name={icon} size="sm" className={textAreaIconStyles()} />}
         <RacTextArea
           ref={ref}
           rows={1}
