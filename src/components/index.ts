@@ -8,6 +8,7 @@ export * from './Dialog';
 export * from './IconButton';
 export * from './Menu';
 export * from './Popover';
+export * from './SessionHeader';
 export * from './Sheet';
 export * from './Stepper';
 export * from './Surface';
