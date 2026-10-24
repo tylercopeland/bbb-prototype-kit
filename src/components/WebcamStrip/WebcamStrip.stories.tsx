@@ -34,6 +34,19 @@ export const Row: Story = {
   args: { direction: 'row' },
 };
 
+/** Nobody yet (the room before anyone joins): an empty list named "Webcams" and no more button. */
+export const NoParticipants: Story = {
+  args: { participants: [], names: {} },
+  decorators: [
+    (Story) => (
+      <div className="flex flex-col gap-2">
+        <Story />
+        <p className="text-sm text-text-muted">No webcams: nobody has joined yet.</p>
+      </div>
+    ),
+  ],
+};
+
 /** Alone in the room: your own tile and no more button. */
 export const OneParticipant: Story = {
   args: forFixture('one'),

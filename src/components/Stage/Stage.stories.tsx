@@ -93,6 +93,21 @@ export const Grid: Story = {
   args: { layout: 'grid', ...forFixture('four') },
 };
 
+/** Nothing to present and nobody in the room: an empty grid named "Webcams". */
+export const EmptyGrid: Story = {
+  args: { layout: 'grid', participants: [], names: {} },
+  decorators: [
+    (Story) => (
+      <div className="relative flex h-dvh w-full">
+        <Story />
+        <p className="absolute inset-x-0 bottom-4 text-center text-sm text-text-on-stage-muted">
+          Empty stage: nobody has joined yet.
+        </p>
+      </div>
+    ),
+  ],
+};
+
 /** Long names truncate on the plates. */
 export const LongNames: Story = {
   args: { layout: 'minimized', ...forFixture('longNames') },

@@ -75,6 +75,13 @@ export const MenuOpen: Story = {
   args: { openMenu: 'anton' },
 };
 
+/** Nobody in the room at all: the chips at zero and "No one is here yet." */
+export const NoParticipants: Story = {
+  render: () => (
+    <ParticipantList hands={[]} others={[]} counts={{ all: 0, hands: 0, low: 0 }} filter="all" now={FIXTURE_NOW} />
+  ),
+};
+
 /** Alone in the room: your own row and the empty filters. */
 export const OneParticipant: Story = { args: { people: 'one' } };
 
