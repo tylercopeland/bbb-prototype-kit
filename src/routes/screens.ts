@@ -7,6 +7,7 @@
  */
 import type { ComponentType } from 'react';
 import type { Artboard } from './artboards';
+import { RoomScreen } from './room/RoomScreen';
 
 export interface ScreenEntry {
   /** The milestone that builds this artboard (PLAN.md). */
@@ -32,6 +33,9 @@ const screens: Record<string, ComponentType> = {};
 export function registerScreen(group: Artboard['group'], stem: string, Screen: ComponentType): void {
   screens[`${group}/${stem}`] = Screen;
 }
+
+// Milestone 4: the room shell renders every Focus artboard of the set from the store.
+for (const stem of MILESTONE_4) registerScreen('desktop', stem, RoomScreen);
 
 export function screenFor(artboard: Pick<Artboard, 'group' | 'stem'>): ScreenEntry {
   const milestone = artboard.group === 'mobile' ? 6 : MILESTONE_4.has(artboard.stem) ? 4 : 5;
