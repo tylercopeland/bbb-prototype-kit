@@ -4,7 +4,7 @@
  * shows no green, and a focused speaking selected toggle shows all three.
  */
 import { test, expect, type Page } from '@playwright/test';
-import { storyReady, storyUrl } from './storybook.spec.ts';
+import { storyReady, storyUrl } from './stories.ts';
 
 const globals = 'theme:light;surface:panel;a11y.manual:!true';
 

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import {
   Button as RacButton,
   composeRenderProps,
@@ -91,6 +91,7 @@ export interface ButtonProps extends Omit<RacButtonProps, 'className' | 'childre
   iconEnd?: IconName;
   children: ReactNode;
   className?: string;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /**

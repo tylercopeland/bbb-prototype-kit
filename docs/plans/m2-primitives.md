@@ -397,3 +397,17 @@ Deviations from the plan above, each the smallest fix that keeps the intent. The
 - **§2.1:** the key chip also has `font-sans font-medium`, so `<kbd>` does not render in the browser's monospace.
 - **§2.2:** `Button` sizes the leading and trailing icons `sm` (16px) at `size="sm"` and `md` (20px) otherwise; the plan did not say.
 - **§2.5:** the badge sits at `-right-1 -bottom-1` (a 4px overhang); the plan only said "bottom right".
+
+### After the independent review (2026-10-24)
+
+The reviewer's blocking, should-fix and nit items were all addressed; `PLAN.md` › Decisions log has the full list. Where they change this plan:
+
+- **§2.4 (blocking):** a selected toggle was color-only. `data-selected` now also draws the inset 2px `selected-ring` (new token: blue-600 / blue-300 / blue-500 `#4d82d8` by mode, at least 3:1 on the selected fill and on surface-raised everywhere; `tokens:check` requires the family) and a Highlight border in forced colors. `tone` is `selectedTone: 'accent' | 'hand'`; `variant` and the danger tone are fixed to soft / neutral. While speaking the glyph is `speaking` and a hidden "Speaking" describes the button.
+- **§2.5 / §1:** the speaking ring leaked onto focused children; the ring variables are registered `inherits: false` and `e2e/rings.spec.ts` checks the composition.
+- **§2.1:** icon controls pass `labelHidden`, so the description is the shortcut alone, with a space before the key chip. `Tooltip` takes `className`.
+- **§2.3 / §2.4:** `ref` is back, merged with `mergeRefs` from `react-aria` (explicit dependency) in `useAriaKeyshortcuts`, which lives in `src/shortcuts.ts`. Disabled icon controls are a focusable `aria-disabled` button inside `Focusable`, so their tooltip still works.
+- **§1:** `src/styles/tv.ts` (`createTV` with the token scales) is the project's `tv`; one `ControlSize` and `iconSizeFor` come from Button; `Icon` and `Surface` use `tv()`; every story file has a literal `Stage` story; `useSurfaceProps()` replaces hand-written `data-surface`.
+- **§2.5:** Avatar's `id` is `participantId`; a badge is only allowed at md and lg (by type); `on-avatar` replaces `text-white`; the label prefers the badge state; initials use NFC and `Intl.Segmenter`, strip Portuguese honorifics, take one grapheme for CJK and fall back to `?`. `SpeakingAndFocused` moved to ToggleButton, since avatar stacks will be buttons.
+- **§3:** `breakouts` is `DoorOpen`; `moreVertical` is folded into `more`.
+- **§6:** lint also rejects a bare-variable `className`, a `composeRenderProps` callback that does not call a `*Styles()` result, and `data-surface` outside `Surface`. The e2e readiness check requires a real descendant and no Storybook error display; autofocused stories are waited for automatically.
+- **Left as is, by the reviewer's instruction:** `rounded-control` is 8px where the canvas draws the action bar at 12px; the owner decides from the screenshots.

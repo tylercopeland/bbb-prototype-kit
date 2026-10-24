@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -70,6 +71,12 @@ describe('Button', () => {
     const button = screen.getByRole('button', { name: 'Stop sharing' });
     expect(button).toHaveClass('w-full', 'bg-danger', 'text-on-danger', 'rounded-full', 'h-control-lg');
     expect(button).not.toHaveClass('rounded-control', 'h-control-md');
+  });
+
+  it('forwards its ref to the button element', () => {
+    const ref = createRef<HTMLButtonElement>();
+    render(<Button ref={ref}>Join</Button>);
+    expect(ref.current).toBe(screen.getByRole('button', { name: 'Join' }));
   });
 
   it('truncates its label instead of wrapping', () => {
