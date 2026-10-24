@@ -26,6 +26,8 @@ async function lintElement({ attrs, tag = 'div' }: Fixture) {
 const c = 'x';
 const x = 1;
 const s = {};
+const buttonStyles = (o: { className?: string }) => o.className ?? '';
+const cn = (v: string) => v;
 export const Fixture = () => <${tag} ${attrs} />;
 `);
 }
@@ -142,6 +144,30 @@ const rejected: Fixture[] = [
     tag: 'Button',
     message: /Route render-prop classNames through tv\(\)/,
   },
+  { name: 'a bare variable as className', attrs: 'className={c}', message: /bare variable as className/ },
+  {
+    name: 'a composeRenderProps callback that returns a string',
+    attrs: "className={composeRenderProps(c, (x) => 'bg-surface')}",
+    tag: 'Button',
+    message: /callback must be/,
+  },
+  {
+    name: 'a composeRenderProps callback that calls something other than a tv() result',
+    attrs: 'className={composeRenderProps(c, (x) => cn(x))}',
+    tag: 'Button',
+    message: /callback must be/,
+  },
+  {
+    name: 'a composeRenderProps callback with a block body',
+    attrs: 'className={composeRenderProps(c, (x) => { return buttonStyles({ className: x }); })}',
+    tag: 'Button',
+    message: /callback must be/,
+  },
+  {
+    name: 'a raw data-surface attribute',
+    attrs: 'data-surface="stage"',
+    message: /Write data-surface only in Surface/,
+  },
 ];
 
 /** Whole-module fixtures, for rules that apply outside a JSX attribute. */
@@ -177,10 +203,11 @@ const accepted: Fixture[] = [
   { name: 'onClick on a button', attrs: 'onClick={() => {}}', tag: 'button' },
   { name: 'spacing, breakpoints and sizes', attrs: 'className="p-2 sm:grid-cols-4 size-16"' },
   {
-    name: 'a className composed with composeRenderProps',
-    attrs: 'className={composeRenderProps(c, (x) => x)}',
+    name: 'a className composed with composeRenderProps and a tv() result',
+    attrs: 'className={composeRenderProps(c, (x) => buttonStyles({ className: x }))}',
     tag: 'Button',
   },
+  { name: 'a className from a tv() call', attrs: 'className={buttonStyles({ className: c })}' },
 ];
 
 describe('token lint rules reject', () => {

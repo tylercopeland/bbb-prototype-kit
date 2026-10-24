@@ -4,16 +4,18 @@
  * static output on port 6007 (see playwright.config.ts).
  */
 import { readFileSync } from 'node:fs';
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { storybookUrl } from './ports.ts';
 
 type IndexEntry = { id: string; title: string; name: string; type: 'story' | 'docs'; tags?: string[] };
+type StoryIndex = { entries: Record<string, IndexEntry> };
 
 // A story tagged `wait-for-tooltip` opens a tooltip on mount (defaultOpen or
 // autoFocus); the scan waits for it so the portal is part of every run.
 const WAIT_FOR_TOOLTIP = 'wait-for-tooltip';
-type StoryIndex = { entries: Record<string, IndexEntry> };
+// Something a story renders: a control, a landmark or widget, a glyph, text.
+const RENDERED = '#storybook-root :is(button, [role], svg, span, p, table, img, input)';
 
 const index = JSON.parse(readFileSync('storybook-static/index.json', 'utf8')) as StoryIndex;
 const stories = Object.values(index.entries).filter((e) => e.type === 'story');
@@ -26,6 +28,29 @@ const modes = [
   { name: 'stage', globals: 'theme:light;surface:stage;a11y.manual:!true', stage: true },
 ];
 
+/** Waits until the story has rendered something real and Storybook shows no error. */
+export async function storyReady(page: Page, story: Pick<IndexEntry, 'tags'>) {
+  await expect(page.locator(RENDERED).first()).toBeAttached();
+  await expect(page.locator('body')).not.toHaveClass(/sb-show-errordisplay/);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', /light|dark/);
+  if (story.tags?.includes(WAIT_FOR_TOOLTIP)) {
+    await expect(page.getByRole('tooltip').first()).toBeVisible();
+  } else if (await page.evaluate(() => document.activeElement?.closest('#storybook-root') !== null)) {
+    // The story focused something on mount (autoFocus): if that control has a
+    // tooltip it opens at once, so give it one frame before scanning.
+    await page
+      .getByRole('tooltip')
+      .first()
+      .waitFor({ state: 'visible', timeout: 1000 })
+      .catch(() => undefined);
+  }
+  await page.waitForFunction(() => !(window as { axe?: { _running?: boolean } }).axe?._running);
+}
+
+export function storyUrl(id: string, globals: string) {
+  return `${storybookUrl}/iframe.html?id=${id}&viewMode=story&globals=${encodeURIComponent(globals)}`;
+}
+
 test.describe('stories', () => {
   test('index lists at least one story', () => {
     expect(stories.length).toBeGreaterThan(0);
@@ -37,15 +62,8 @@ test.describe('stories', () => {
       // up under two modes; each effective theme and surface is scanned once.
       const scanned = new Set<string>();
       for (const mode of modes) {
-        await page.goto(
-          `${storybookUrl}/iframe.html?id=${story.id}&viewMode=story&globals=${encodeURIComponent(mode.globals)}`,
-        );
-        // A child element, not text: icon-only stories have no text content.
-        await expect(page.locator('#storybook-root > *').first()).toBeAttached();
-        await expect(page.locator('html')).toHaveAttribute('data-theme', /light|dark/);
-        if (story.tags?.includes(WAIT_FOR_TOOLTIP))
-          await expect(page.getByRole('tooltip').first()).toBeVisible();
-        await page.waitForFunction(() => !(window as { axe?: { _running?: boolean } }).axe?._running);
+        await page.goto(storyUrl(story.id, mode.globals));
+        await storyReady(page, story);
         const theme = await page.locator('html').getAttribute('data-theme');
         const onStage = (await page.locator('[data-surface="stage"]').count()) > 0;
         if (mode.stage) expect(onStage, 'stage mode wraps the story in data-surface="stage"').toBe(true);
