@@ -1,15 +1,47 @@
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   createRoom,
+  roomReducer,
   FIXTURE_NOW,
   selectPeople,
   selectPeopleFilterCounts,
   type ParticipantFixture,
   type PeopleFilter,
+  type RoomState,
 } from '../../mocks';
 import { ParticipantList } from './ParticipantList';
+
+/** The list over a live state: Remove from session takes the person out, as the room does. */
+function Removable({ people = 'class', filter = 'all' }: { people?: ParticipantFixture; filter?: PeopleFilter }) {
+  const [state, setState] = useState<RoomState>(() => createRoom({ participants: people }));
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const { hands, others } = selectPeople(filter)(state);
+  return (
+    <ParticipantList
+      hands={hands}
+      others={others}
+      counts={selectPeopleFilterCounts(state)}
+      filter={filter}
+      now={FIXTURE_NOW}
+      openMenu={openMenu}
+      onMenuOpenChange={(id, open) => setOpenMenu(open ? id : null)}
+      onAction={(participantId, action) => {
+        if (action.type === 'remove') setState((s) => roomReducer(s, { type: 'removeParticipant', participantId }));
+      }}
+    />
+  );
+}
+
+async function remove(user: ReturnType<typeof userEvent.setup>, name: string) {
+  await user.click(screen.getByRole('button', { name: `More actions for ${name}` }));
+  await user.click(await screen.findByRole('menuitem', { name: 'Remove from session' }));
+  await user.click(await screen.findByRole('button', { name: 'Remove' }));
+  await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+  expect(screen.queryByText(name)).not.toBeInTheDocument();
+}
 
 function Subject({
   people = 'class',
@@ -113,5 +145,20 @@ describe('ParticipantList', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Make presenter' }));
     expect(onAction).toHaveBeenCalledWith('anton', { type: 'makePresenter' });
     expect(onMenuOpenChange).toHaveBeenCalledWith('anton', false);
+  });
+
+  it('after a removal, focuses the next row’s ⋯ button, then the previous one, then the heading (WCAG 2.4.3)', async () => {
+    const user = userEvent.setup();
+    render(<Removable people="four" />);
+    // Bruno (the one raised hand) is followed by Everyone: you (no ⋯), Frederick, Ellen.
+    await remove(user, 'Bruno');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'More actions for Frederick Dixon' })).toHaveFocus());
+    expect(screen.queryByRole('heading', { name: /Raised hands/ })).not.toBeInTheDocument();
+    // Ellen is last: the previous row with actions is Frederick.
+    await remove(user, 'Ellen');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'More actions for Frederick Dixon' })).toHaveFocus());
+    // Frederick was the last person with actions: the section heading takes focus.
+    await remove(user, 'Frederick Dixon');
+    await waitFor(() => expect(screen.getByRole('heading', { level: 3, name: 'Everyone 1' })).toHaveFocus());
   });
 });

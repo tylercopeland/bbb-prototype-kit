@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router';
+import type { RoomAction } from '../../mocks';
 import { createTestRouter } from '../router';
 
 function renderAt(path: string) {
   return render(<RouterProvider router={createTestRouter(path)} />);
+}
+
+/** Acts as another participant through the mounted store (`RoomProvider` exposes it as `window.bbbRoom`). */
+function dispatch(action: RoomAction) {
+  act(() => window.bbbRoom?.dispatch(action));
 }
 
 const F1 = '/desktop/F1Bar-4roh-l8ju';
@@ -61,6 +67,8 @@ describe('RoomScreen', () => {
     expect(screen.getByText('Only you and Rafaela can see this conversation. Moderators can’t read it.')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Message Rafaela privately' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Back to direct messages' })).toBeInTheDocument();
+    // A deep link to a thread focuses nothing: only "Message privately" does.
+    expect(screen.getByRole('textbox', { name: 'Message Rafaela privately' })).not.toHaveFocus();
     screen.getByRole('complementary').remove();
 
     renderAt(G5);
@@ -75,7 +83,7 @@ describe('RoomScreen', () => {
     expect(screen.getByText(/Quiet for 15\+ minutes/)).toBeInTheDocument();
   });
 
-  it('toggles the panel from the action bar and closes it from the panel', async () => {
+  it('toggles the panel from the action bar, and closing it from the panel returns focus to its toggle', async () => {
     const user = userEvent.setup();
     renderAt(F1);
     await user.click(screen.getByRole('button', { name: 'People' }));
@@ -88,22 +96,30 @@ describe('RoomScreen', () => {
     expect(screen.getByRole('complementary', { name: 'People' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close panel' }));
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'People' })).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: 'Chat' }));
+    await user.click(screen.getByRole('button', { name: 'Close panel' }));
+    expect(screen.getByRole('button', { name: 'Chat' })).toHaveFocus();
   });
 
-  it('raising a hand shows up in People and is announced; Alt + H does the same', async () => {
+  it('raising a hand shows up in People; a student’s hand is announced, your own is not; Alt + H lowers it', async () => {
     const user = userEvent.setup();
     renderAt(G1);
     await user.click(screen.getByRole('button', { name: 'Raise hand' }));
     expect(screen.getByRole('button', { name: 'Raise hand' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('list', { name: 'Raised hands 5' })).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('raised their hand');
-    expect(screen.getByRole('button', { name: '5 raised' })).toBeInTheDocument();
+    // You pressed the toggle and it reports its state: no announcement for your own hand.
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    dispatch({ type: 'raiseHand', participantId: 'anton' });
+    expect(screen.getByRole('list', { name: 'Raised hands 6' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Anton raised their hand');
     await user.keyboard('{Alt>}h{/Alt}');
     expect(screen.getByRole('button', { name: 'Raise hand' })).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByRole('list', { name: 'Raised hands 4' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Raised hands 5' })).toBeInTheDocument();
   });
 
-  it('sending a message adds it to chat, and "Message privately" opens the thread', async () => {
+  it('sending a message adds it to chat; "Message privately" focuses the thread composer and "Back" the row', async () => {
     const user = userEvent.setup();
     renderAt(G2);
     await user.click(screen.getByRole('textbox', { name: 'Message everyone' }));
@@ -117,11 +133,14 @@ describe('RoomScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Message Bruno privately' }));
     expect(screen.getByRole('complementary', { name: 'Chat' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 3, name: 'Bruno' })).toBeInTheDocument();
-    await user.click(screen.getByRole('textbox', { name: 'Message Bruno privately' }));
+    const composer = screen.getByRole('textbox', { name: 'Message Bruno privately' });
+    expect(composer).toHaveFocus();
     await user.keyboard('Yes, here it is{Enter}');
     expect(within(screen.getByRole('list', { name: 'Messages with Bruno' })).getAllByRole('listitem')).toHaveLength(4);
     await user.click(screen.getByRole('button', { name: 'Back to direct messages' }));
-    expect(screen.getByRole('button', { name: /^Bruno You: Yes, here it is/ })).toBeInTheDocument();
+    const row = screen.getByRole('button', { name: /^Bruno You: Yes, here it is/ });
+    expect(row).toBeInTheDocument();
+    expect(row).toHaveFocus();
   });
 
   it('the student menu acts on the store, and Alt + M and Alt + V toggle your own media', async () => {
@@ -139,12 +158,26 @@ describe('RoomScreen', () => {
     expect(screen.getByRole('button', { name: 'Camera' })).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('Leave confirms, then returns to the index', async () => {
+  it('removing a person announces it and moves focus to the next row’s ⋯ button', async () => {
+    const user = userEvent.setup();
+    renderAt(G1);
+    await user.click(screen.getByRole('button', { name: 'More actions for Anton Georgiev' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Remove from session' }));
+    await user.click(await screen.findByRole('button', { name: 'Remove' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(screen.queryByText('Anton Georgiev')).not.toBeInTheDocument();
+    expect(screen.getByText(/13 people/)).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Anton removed');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'More actions for Michelle Winkler' })).toHaveFocus());
+  });
+
+  it('Leave confirms, then returns to the index with focus on its heading', async () => {
     const user = userEvent.setup();
     renderAt(F1);
     await user.click(screen.getByRole('button', { name: 'Leave session' }));
     const dialog = await screen.findByRole('alertdialog', { name: 'Leave the session?' });
     await user.click(within(dialog).getByRole('button', { name: 'Leave session' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'BigBlueButton 4.0 prototype' })).toBeInTheDocument();
+    const heading = await screen.findByRole('heading', { level: 1, name: 'BigBlueButton 4.0 prototype' });
+    await waitFor(() => expect(heading).toHaveFocus());
   });
 });

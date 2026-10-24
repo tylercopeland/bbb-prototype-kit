@@ -1,4 +1,4 @@
-import { useRef, useState, type ComponentProps } from 'react';
+import { useRef, useState, type ComponentProps, type Ref } from 'react';
 import { Focusable, type Key, type Selection } from 'react-aria-components';
 import { Icon, type IconName } from '../../icons';
 import { participantSubline } from '../../mocks/selectors';
@@ -96,6 +96,8 @@ export interface ParticipantRowProps extends Omit<ComponentProps<'li'>, 'childre
   /** "Message privately": opens the direct thread. */
   onMessage?: () => void;
   onAction?: (action: ParticipantAction) => void;
+  /** The ⋯ button, so the list can move focus to a neighbouring row when this one is removed (WCAG 2.4.3). */
+  moreRef?: Ref<HTMLButtonElement>;
   className?: string;
 }
 
@@ -117,6 +119,7 @@ export function ParticipantRow({
   onMenuOpenChange,
   onMessage,
   onAction,
+  moreRef,
   className,
   ...props
 }: ParticipantRowProps) {
@@ -203,7 +206,7 @@ export function ParticipantRow({
             isOpen={isMenuOpen}
             onOpenChange={setMenuOpen}
             onAction={onMenuAction}
-            trigger={<IconButton label={`More actions for ${p.name}`} icon="more" variant="soft" size="sm" />}
+            trigger={<IconButton ref={moreRef} label={`More actions for ${p.name}`} icon="more" variant="soft" size="sm" />}
             header={
               <>
                 <Avatar aria-hidden="true" name={p.name} participantId={p.id} size="lg" />

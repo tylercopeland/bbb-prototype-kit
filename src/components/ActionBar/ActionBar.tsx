@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, Ref } from 'react';
 import type { AudioState, Panel } from '../../mocks/types';
 import { tv } from '../../styles/tv';
 import { ConfirmDialog } from '../Dialog';
@@ -51,6 +51,12 @@ export interface ActionBarProps extends Omit<ComponentProps<'nav'>, 'children'> 
   onSettings?: () => void;
   /** Called after the person confirms in the Leave dialog. */
   onLeave?: () => void;
+  /**
+   * Refs to the panel toggles (and Plugins, which opens the Poll panel), so
+   * the room can return focus to the right one when a panel's close button
+   * unmounts under the keyboard (WCAG 2.4.3).
+   */
+  panelRefs?: Partial<Record<ActionBarPanel | 'plugins', Ref<HTMLButtonElement>>>;
   className?: string;
 }
 
@@ -84,6 +90,7 @@ export function ActionBar({
   onAnalytics,
   onSettings,
   onLeave,
+  panelRefs,
   className,
   ...props
 }: ActionBarProps) {
@@ -95,6 +102,7 @@ export function ActionBar({
     <nav aria-label="Actions" {...props} className={styles.root({ className })}>
       <div className={styles.panels()}>
         <ToggleButton
+          ref={panelRefs?.people}
           label="People"
           icon="people"
           isSelected={peopleOpen}
@@ -102,14 +110,27 @@ export function ActionBar({
           badge={raisedHands > 0 && !peopleOpen ? { count: raisedHands, label: `${raisedHands} raised hands` } : undefined}
         />
         <ToggleButton
+          ref={panelRefs?.chat}
           label="Chat"
           icon="chat"
           isSelected={chatOpen}
           onChange={() => onTogglePanel('chat')}
           badge={unread > 0 && !chatOpen ? { count: unread, label: `${unread} unread` } : undefined}
         />
-        <ToggleButton label="Shared notes" icon="notes" isSelected={panel === 'notes'} onChange={() => onTogglePanel('notes')} />
-        <ToggleButton label="Plugins" icon="plugins" isSelected={pluginsOpen} onChange={() => onTogglePlugins?.()} />
+        <ToggleButton
+          ref={panelRefs?.notes}
+          label="Shared notes"
+          icon="notes"
+          isSelected={panel === 'notes'}
+          onChange={() => onTogglePanel('notes')}
+        />
+        <ToggleButton
+          ref={panelRefs?.plugins}
+          label="Plugins"
+          icon="plugins"
+          isSelected={pluginsOpen}
+          onChange={() => onTogglePlugins?.()}
+        />
       </div>
       <div className={styles.media()}>
         {audioJoined ? (

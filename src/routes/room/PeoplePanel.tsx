@@ -1,15 +1,21 @@
 /**
  * The People tab of the side panel: reads the list, the filter and the
  * open menu from the store and maps every row action to a store action.
+ * "Message privately" also asks the screen to focus the thread's composer,
+ * because the row that was pressed unmounts with the People tab (WCAG
+ * 2.4.3). Removing a person is announced by the `RoomProvider` and focus
+ * is moved by `ParticipantList` itself.
  */
 import { useMemo } from 'react';
 import { ParticipantList, type ParticipantAction } from '../../components';
 import { useRoom, useRoomDispatch } from '../../mocks/context';
 import { selectPeople, selectPeopleFilterCounts } from '../../mocks/selectors';
 import type { ParticipantId } from '../../mocks/types';
+import { useRoomFocus } from './focus';
 
 export function PeoplePanel() {
   const dispatch = useRoomDispatch();
+  const { requestFocus } = useRoomFocus();
   const filter = useRoom((s) => s.ui.peopleFilter);
   const people = useMemo(() => selectPeople(filter), [filter]);
   const { hands, others } = useRoom(people);
@@ -32,6 +38,11 @@ export function PeoplePanel() {
     }
   };
 
+  const onMessage = (participantId: ParticipantId) => {
+    requestFocus({ kind: 'composer' });
+    dispatch({ type: 'openDm', participantId });
+  };
+
   return (
     <ParticipantList
       hands={hands}
@@ -42,7 +53,7 @@ export function PeoplePanel() {
       now={now}
       openMenu={openMenu}
       onMenuOpenChange={(id, open) => dispatch({ type: 'openPeopleMenu', participantId: open ? id : null })}
-      onMessage={(id) => dispatch({ type: 'openDm', participantId: id })}
+      onMessage={onMessage}
       onAction={onAction}
     />
   );

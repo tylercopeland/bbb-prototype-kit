@@ -1,4 +1,4 @@
-import { useRef, useState, type ComponentProps } from 'react';
+import { useRef, useState, type ComponentProps, type Ref } from 'react';
 import { Button as RacButton } from 'react-aria-components';
 import { formatTimeOfDay } from '../../mocks/time';
 import type { DirectSummary } from '../../mocks/selectors';
@@ -56,6 +56,12 @@ export interface DMListProps extends Omit<ComponentProps<'div'>, 'children'> {
   onOpen?: (participantId: ParticipantId) => void;
   /** The "People" link in the hint: open the People panel to start a new conversation. */
   onPickPerson?: () => void;
+  /**
+   * Each row's button as it mounts and unmounts (`null`), so the owner can
+   * move focus to the thread a person just left with "Back to direct
+   * messages" instead of losing it with the back button (WCAG 2.4.3).
+   */
+  rowRef?: (participantId: ParticipantId, element: HTMLButtonElement | null) => void;
   className?: string;
 }
 
@@ -66,7 +72,7 @@ export interface DMListProps extends Omit<ComponentProps<'div'>, 'children'> {
  * ("1 unread"), never a colored dot alone. With no conversations the list
  * says so, and the hint below always points to People.
  */
-export function DMList({ threads, onOpen, onPickPerson, className, ...props }: DMListProps) {
+export function DMList({ threads, onOpen, onPickPerson, rowRef, className, ...props }: DMListProps) {
   const styles = dmListStyles();
   return (
     <div {...props} className={styles.root({ className })}>
@@ -76,7 +82,11 @@ export function DMList({ threads, onOpen, onPickPerson, className, ...props }: D
         <ul aria-label="Direct messages" className={styles.list()}>
           {threads.map((t) => (
             <li key={t.thread.with}>
-              <DMRow summary={t} onPress={() => onOpen?.(t.thread.with)} />
+              <DMRow
+                summary={t}
+                ref={rowRef ? (el) => rowRef(t.thread.with, el) : undefined}
+                onPress={() => onOpen?.(t.thread.with)}
+              />
             </li>
           ))}
         </ul>
@@ -91,7 +101,7 @@ export function DMList({ threads, onOpen, onPickPerson, className, ...props }: D
   );
 }
 
-function DMRow({ summary, onPress }: { summary: DirectSummary; onPress: () => void }) {
+function DMRow({ summary, ref, onPress }: { summary: DirectSummary; ref?: Ref<HTMLButtonElement>; onPress: () => void }) {
   const isUnread = summary.unread > 0;
   const text = dmRowTextStyles({ isUnread });
   const name = summary.person?.name ?? 'Someone who left';
@@ -103,7 +113,7 @@ function DMRow({ summary, onPress }: { summary: DirectSummary; onPress: () => vo
   };
   return (
     <Tooltip label={name} isOpen={isTooltipOpen} onOpenChange={onTooltipOpenChange}>
-      <RacButton onPress={onPress} className={dmRowStyles({ isUnread })}>
+      <RacButton ref={ref} onPress={onPress} className={dmRowStyles({ isUnread })}>
         <Avatar aria-hidden="true" name={name} participantId={summary.thread.with} />
         {/* The spaces keep the name "Rafaela Monaco, Can I…, 9:06, 1 unread" readable; flex drops them visually. */}
         <span className={text.body()}>

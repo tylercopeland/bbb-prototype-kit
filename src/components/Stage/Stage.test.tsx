@@ -24,7 +24,7 @@ describe('Stage', () => {
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('BigBlueButton 4.0, refined');
     expect(screen.getByText('Slide').closest('p')).toHaveTextContent('Slide 3 / 12');
     expect(screen.getByRole('list', { name: 'Webcams' }).querySelectorAll('figure')).toHaveLength(5);
-    expect(screen.getByRole('button', { name: 'Show all 14 people' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+9 more, show all 14 people' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Minimize presentation' })).toBeInTheDocument();
   });
 
@@ -95,7 +95,7 @@ describe('Stage', () => {
     const onShowAll = vi.fn();
     render(<Stage layout="presentation" {...forFixture('thirty')} onMinimize={onMinimize} onShowAll={onShowAll} />);
     await user.click(screen.getByRole('button', { name: 'Minimize presentation' }));
-    await user.click(screen.getByRole('button', { name: 'Show all 30 people' }));
+    await user.click(screen.getByRole('button', { name: '+25 more, show all 30 people' }));
     expect(onMinimize).toHaveBeenCalledTimes(1);
     expect(onShowAll).toHaveBeenCalledTimes(1);
   });

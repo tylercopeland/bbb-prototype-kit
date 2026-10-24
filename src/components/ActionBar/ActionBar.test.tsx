@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -125,6 +126,20 @@ describe('ActionBar', () => {
     await user.click(screen.getAllByRole('button', { name: 'Leave session' }).at(-1)!);
     expect(onLeave).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+  });
+
+  it('hands out the panel toggles through panelRefs, so the room can return focus to them', () => {
+    const people = createRef<HTMLButtonElement>();
+    const chat = createRef<HTMLButtonElement>();
+    const notes = createRef<HTMLButtonElement>();
+    const plugins = createRef<HTMLButtonElement>();
+    render(<Subject panelRefs={{ people, chat, notes, plugins }} />);
+    expect(people.current).toBe(button('People'));
+    expect(chat.current).toBe(button('Chat'));
+    expect(notes.current).toBe(button('Shared notes'));
+    expect(plugins.current).toBe(button('Plugins'));
+    chat.current?.focus();
+    expect(button('Chat')).toHaveFocus();
   });
 
   it('reaches every control with Tab', async () => {

@@ -15,7 +15,8 @@ describe('WebcamStrip', () => {
     const list = screen.getByRole('list', { name: 'Webcams' });
     expect(screen.getAllByRole('figure')).toHaveLength(5);
     expect(list.querySelectorAll('li')).toHaveLength(6);
-    const more = screen.getByRole('button', { name: 'Show all 14 people' });
+    // The name starts with the visible text, so "click plus nine more" works (WCAG 2.5.3).
+    const more = screen.getByRole('button', { name: '+9 more, show all 14 people' });
     expect(more).toHaveTextContent('+9 more');
     // Speakers first, then the hands by longest wait.
     expect(screen.getAllByRole('figure').map((f) => f.querySelector('figcaption span')?.textContent)).toEqual([
@@ -40,7 +41,7 @@ describe('WebcamStrip', () => {
     rerender(<WebcamStrip {...forFixture('one')} />);
     expect(screen.getAllByRole('figure')).toHaveLength(1);
     rerender(<WebcamStrip {...forFixture('thirty')} />);
-    expect(screen.getByRole('button', { name: 'Show all 30 people' })).toHaveTextContent('+25 more');
+    expect(screen.getByRole('button', { name: '+25 more, show all 30 people' })).toHaveTextContent('+25 more');
   });
 
   it('tells two Anas apart on the plates (B9)', () => {
@@ -54,7 +55,7 @@ describe('WebcamStrip', () => {
     const onShowAll = vi.fn();
     render(<WebcamStrip {...forFixture('class')} onShowAll={onShowAll} />);
     await user.tab();
-    expect(screen.getByRole('button', { name: 'Show all 14 people' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: '+9 more, show all 14 people' })).toHaveFocus();
     await user.keyboard('{Enter}');
     expect(onShowAll).toHaveBeenCalledTimes(1);
   });

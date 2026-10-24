@@ -68,6 +68,17 @@ describe('DMList', () => {
     expect(row).toHaveFocus();
   });
 
+  it('reports each row’s button through rowRef, so the owner can return focus to a thread', () => {
+    const rows = new Map<string, HTMLButtonElement | null>();
+    const { unmount } = render(<DMList threads={threadsFor('class')} rowRef={(id, el) => rows.set(id, el)} />);
+    expect(rows.get('rafaela')).toBe(screen.getByRole('button', { name: /^Rafaela Monaco/ }));
+    expect(rows.get('bruno')).toBe(screen.getByRole('button', { name: /^Bruno/ }));
+    rows.get('bruno')?.focus();
+    expect(screen.getByRole('button', { name: /^Bruno/ })).toHaveFocus();
+    unmount();
+    expect(rows.get('rafaela')).toBeNull();
+  });
+
   it('merges a className', () => {
     const { container } = render(<DMList threads={[]} className="p-4" />);
     expect(container.firstElementChild).toHaveClass('p-4');

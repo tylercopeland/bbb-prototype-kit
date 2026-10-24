@@ -3,6 +3,11 @@
  * changes in it through `Announcer`, from one effect here, never from
  * components (see `announcements.ts` for the rules). Read the store with
  * `useRoom(selector)` and change it with `useRoomDispatch()`.
+ *
+ * While mounted it also exposes the store as `window.bbbRoom`, so the
+ * end-to-end tests (and a reviewer in the console) can act as another
+ * participant: `bbbRoom.dispatch({ type: 'raiseHand', participantId: 'anton' })`.
+ * Nothing in the app reads it.
  */
 import { useEffect, useState, type ReactNode } from 'react';
 import { useAnnouncer } from '../components/Announcer';
@@ -10,6 +15,13 @@ import { announcementsFor } from './announcements';
 import { RoomStoreContext } from './context';
 import { createRoomStore, type RoomStore } from './store';
 import type { RoomState } from './types';
+
+declare global {
+  interface Window {
+    /** The mounted room's store, for tests and the console. */
+    bbbRoom?: RoomStore;
+  }
+}
 
 export interface RoomProviderProps {
   /** The state the store starts from; later changes to this prop are ignored. */
@@ -45,6 +57,13 @@ export function RoomProvider({ initialState, store: givenStore, liveClock = fals
     const timer = setInterval(() => store.dispatch({ type: 'tick', now: base + (Date.now() - start) }), 1000);
     return () => clearInterval(timer);
   }, [liveClock, store]);
+
+  useEffect(() => {
+    window.bbbRoom = store;
+    return () => {
+      if (window.bbbRoom === store) delete window.bbbRoom;
+    };
+  }, [store]);
 
   return <RoomStoreContext.Provider value={store}>{children}</RoomStoreContext.Provider>;
 }

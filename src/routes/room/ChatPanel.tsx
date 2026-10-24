@@ -3,6 +3,12 @@
  * (owner decision 2026-10-24), the public messages with the composer, the
  * Direct list, and the private thread with its back button, lock and note
  * (canvas notes › How the panel works). Everything comes from the store.
+ *
+ * Focus (WCAG 2.4.3): a thread opened with "Message privately" focuses its
+ * composer, and "Back to direct messages" focuses that person's row in the
+ * Direct list (or the Direct tab when the row is gone), because the control
+ * that was pressed unmounts in both cases. The request comes from the
+ * screen's `RoomFocusContext` and is taken in the target's mount effect.
  */
 import { useEffect, useMemo, useRef } from 'react';
 import type { Key } from 'react-aria-components';
@@ -13,6 +19,7 @@ import { selectDirectList, selectOpenThread, selectParticipant, selectSelf, sele
 import { formatTimeOfDay } from '../../mocks/time';
 import type { ChatMessage as Message } from '../../mocks/types';
 import { tv } from '../../styles/tv';
+import { useRoomFocus } from './focus';
 
 const chatPanelStyles = tv({
   slots: {
@@ -53,11 +60,26 @@ function ChatScopes() {
   const unreadDirect = useRoom(selectUnreadDirect);
   const threads = useRoom(selectDirectList);
   const onChange = (key: Key) => dispatch({ type: 'setScope', scope: key === 'direct' ? 'direct' : 'everyone' });
+
+  // After "Back": the row of the thread just left takes focus; when that
+  // thread is gone (the person left), the Direct tab does.
+  const { takeFocus } = useRoomFocus();
+  const directTabRef = useRef<HTMLDivElement>(null);
+  const rows = useRef(new Map<string, HTMLButtonElement>());
+  useEffect(() => {
+    const request = takeFocus('dmRow');
+    if (request) (rows.current.get(request.participantId) ?? directTabRef.current)?.focus();
+  }, [takeFocus]);
+
   return (
     <Tabs selectedKey={scope} onSelectionChange={onChange} className={styles.tabs()}>
       <TabList label="Chat type" className={styles.tabList()}>
         <Tab id="everyone">Everyone</Tab>
-        <Tab id="direct" badge={unreadDirect > 0 ? { count: unreadDirect, label: `${unreadDirect} unread` } : undefined}>
+        <Tab
+          id="direct"
+          ref={directTabRef}
+          badge={unreadDirect > 0 ? { count: unreadDirect, label: `${unreadDirect} unread` } : undefined}
+        >
           Direct
         </Tab>
       </TabList>
@@ -68,6 +90,10 @@ function ChatScopes() {
       <TabPanel id="direct" className={styles.panel()}>
         <DMList
           threads={threads}
+          rowRef={(id, el) => {
+            if (el) rows.current.set(id, el);
+            else rows.current.delete(id);
+          }}
           onOpen={(id) => dispatch({ type: 'openDm', participantId: id })}
           onPickPerson={() => dispatch({ type: 'setPanel', panel: 'people' })}
         />
@@ -114,12 +140,24 @@ function Thread() {
   const me = useRoom(selectSelf)?.id;
   const messages = thread?.messages ?? [];
   const ref = useStickToBottom(messages.length);
+
+  // Opened from "Message privately": the composer takes focus on mount.
+  const { requestFocus, takeFocus } = useRoomFocus();
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (takeFocus('composer')) composerRef.current?.focus();
+  }, [takeFocus]);
+
   if (!other || dm === null) return null;
   const first = other.name.trim().split(/\s+/)[0];
+  const back = () => {
+    requestFocus({ kind: 'dmRow', participantId: dm });
+    dispatch({ type: 'closeDm' });
+  };
   return (
     <>
       <div className={styles.threadHeader()}>
-        <IconButton label="Back to direct messages" icon="back" onPress={() => dispatch({ type: 'closeDm' })} />
+        <IconButton label="Back to direct messages" icon="back" onPress={back} />
         <Avatar aria-hidden="true" name={other.name} participantId={other.id} />
         <div className={styles.threadName()}>
           <h3 className={styles.name()}>{other.name}</h3>
@@ -146,7 +184,7 @@ function Thread() {
           </ChatMessage>
         ))}
       </ol>
-      <Composer to={dm} />
+      <Composer ref={composerRef} to={dm} />
     </>
   );
 }

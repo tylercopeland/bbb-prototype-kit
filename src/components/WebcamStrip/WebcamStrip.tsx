@@ -53,9 +53,11 @@ export interface WebcamStripProps extends Omit<ComponentProps<'ul'>, 'children'>
 
 /**
  * A list named "Webcams" of the first `max` people as tiles, plus a
- * "+N more" button named "Show all N people" for the remainder (X15: the
- * count and the remainder come from the data, never a literal). With
- * everyone fitting there is no button; with nobody there is an empty list.
+ * "+N more" button for the remainder (X15: the count and the remainder
+ * come from the data, never a literal). Its name starts with the visible
+ * text, "+9 more, show all 14 people", so speech input can press it (WCAG
+ * 2.5.3). With everyone fitting there is no button; with nobody there is
+ * an empty list.
  */
 export function WebcamStrip({
   participants,
@@ -78,7 +80,7 @@ export function WebcamStrip({
       {rest > 0 && (
         <li className="flex">
           <Button
-            aria-label={`Show all ${participants.length} people`}
+            aria-label={`+${rest} more, show all ${participants.length} people`}
             onPress={onShowAll}
             className={webcamStripMoreStyles({ direction })}
           >

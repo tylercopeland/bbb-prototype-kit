@@ -25,12 +25,19 @@ export function announcementsFor(previous: RoomState, next: RoomState): Announce
   const me = selectSelf(next)?.id;
   const nameOf = (id: string) => names[id] ?? next.participants.find((p) => p.id === id)?.name ?? 'Someone';
 
-  // Raised hands.
+  // Raised hands. Not your own: you pressed the button, and the toggle reports its state.
   const wasUp = new Set(previous.participants.filter((p) => p.handRaisedAt !== null).map((p) => p.id));
   for (const p of next.participants) {
-    if (p.handRaisedAt !== null && !wasUp.has(p.id)) {
+    if (p.handRaisedAt !== null && !wasUp.has(p.id) && p.id !== me) {
       out.push({ message: `${nameOf(p.id)} raised their hand`, politeness: 'polite' });
     }
+  }
+
+  // Someone removed from the session: their row is gone, so the list cannot say it.
+  const stillHere = new Set(next.participants.map((p) => p.id));
+  const previousNames = selectDisplayNames(previous);
+  for (const p of previous.participants) {
+    if (!stillHere.has(p.id)) out.push({ message: `${previousNames[p.id] ?? p.name} removed`, politeness: 'polite' });
   }
 
   // New chat messages from other people.

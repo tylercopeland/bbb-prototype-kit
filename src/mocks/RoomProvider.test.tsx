@@ -73,6 +73,11 @@ describe('RoomProvider', () => {
     );
     act(() => store.dispatch({ type: 'raiseHand', participantId: 'anton' }));
     expect(polite()).toHaveTextContent('Anton raised their hand');
+    // Your own hand is not announced: you pressed the toggle, and it reports its state.
+    act(() => store.dispatch({ type: 'raiseHand', participantId: 'helena' }));
+    expect(polite()).not.toHaveTextContent('Helena');
+    act(() => store.dispatch({ type: 'removeParticipant', participantId: 'ellen' }));
+    expect(polite()).toHaveTextContent('Ellen removed');
     act(() => store.dispatch({ type: 'sendMessage', from: 'bruno', text: 'Can we go back a slide?' }));
     expect(polite()).toHaveTextContent('Bruno: Can we go back a slide?');
     act(() => store.dispatch({ type: 'sendMessage', from: 'helena', text: 'Sure' }));
@@ -85,6 +90,18 @@ describe('RoomProvider', () => {
     expect(assertive()).toHaveTextContent('Rooms close in 60 seconds');
     act(() => store.dispatch({ type: 'bringEveryoneBack' }));
     expect(assertive()).toHaveTextContent('Breakout rooms closed. Everyone is back in the main room');
+  });
+
+  it('exposes the mounted store as window.bbbRoom for the end-to-end tests, and removes it on unmount', () => {
+    const store = createRoomStore(createRoom());
+    const { unmount } = render(
+      <RoomProvider store={store}>
+        <Hands />
+      </RoomProvider>,
+    );
+    expect(window.bbbRoom).toBe(store);
+    unmount();
+    expect(window.bbbRoom).toBeUndefined();
   });
 
   it('never announces the clock', () => {
