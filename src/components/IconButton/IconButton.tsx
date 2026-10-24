@@ -1,19 +1,22 @@
-import { useCallback } from 'react';
+import type { Ref } from 'react';
 import {
+  Focusable,
   Button as RacButton,
   composeRenderProps,
   type ButtonProps as RacButtonProps,
 } from 'react-aria-components';
-import { tv, type VariantProps } from 'tailwind-variants';
 import { Icon, type IconName } from '../../icons';
-import { ariaKeyshortcuts, type ShortcutId } from '../../shortcuts';
-import { buttonStyles, type ButtonTone, type ButtonVariant, type ControlSize } from '../Button';
+import { useAriaKeyshortcuts, type ShortcutId } from '../../shortcuts';
+import { tv } from '../../styles/tv';
+import { buttonStyles, iconSizeFor, type ButtonTone, type ButtonVariant, type ControlSize } from '../Button';
 import { Tooltip, type TooltipPlacement } from '../Tooltip';
 
 /**
  * Icon-only control: a square of the control size with one radius (X2),
  * `hit-area` for the sizes under 44px (X14), and the Button colors. The
- * ghost icon color is `text-icon`. ToggleButton extends these styles.
+ * ghost icon color is `text-icon`. A disabled icon control is not natively
+ * disabled (see IconButton), so its colors come from the `isDisabled`
+ * variant rather than `data-disabled`. ToggleButton extends these styles.
  */
 export const iconButtonStyles = tv({
   extend: buttonStyles,
@@ -24,40 +27,23 @@ export const iconButtonStyles = tv({
       lg: 'w-control-lg p-0',
       touch: 'w-control-touch p-0',
     },
+    isDisabled: {
+      true: '',
+    },
   },
-  compoundVariants: [{ variant: 'ghost', tone: 'neutral', class: 'text-icon' }],
+  compoundVariants: [
+    { variant: 'ghost', tone: 'neutral', class: 'text-icon' },
+    { isDisabled: true, variant: 'primary', class: 'bg-surface-raised text-text-muted' },
+    { isDisabled: true, variant: 'secondary', class: 'border-border bg-surface text-text-muted' },
+    { isDisabled: true, variant: 'soft', class: 'bg-surface-raised text-text-muted' },
+    { isDisabled: true, variant: 'ghost', class: 'bg-transparent text-text-muted' },
+  ],
   defaultVariants: { variant: 'ghost', tone: 'neutral', size: 'md' },
 });
 
-export type IconButtonSize = NonNullable<VariantProps<typeof iconButtonStyles>['size']>;
-
-/** 16px glyph in the 32px control, 20px in the others. */
-export function iconSizeFor(size: ControlSize) {
-  return size === 'sm' ? 'sm' : 'md';
-}
-
-/**
- * React Aria's Button forwards only the labelling `aria-*` props to the
- * DOM, so `aria-keyshortcuts` is set on the element itself through this
- * callback ref. Components built on it take no `ref` prop: React Aria
- * triggers (TooltipTrigger, MenuTrigger, DialogTrigger) reach the button
- * through context instead.
- */
-export function useAriaKeyshortcuts<T extends HTMLElement>(shortcut: ShortcutId | undefined) {
-  const value = shortcut ? ariaKeyshortcuts(shortcut) : undefined;
-  return useCallback(
-    (el: T | null) => {
-      if (!el) return;
-      if (value) el.setAttribute('aria-keyshortcuts', value);
-      else el.removeAttribute('aria-keyshortcuts');
-    },
-    [value],
-  );
-}
-
 export interface IconButtonProps extends Omit<
   RacButtonProps,
-  'className' | 'children' | 'aria-label' | 'ref'
+  'className' | 'children' | 'aria-label' | 'isDisabled'
 > {
   /** The accessible name and the tooltip text. */
   label: string;
@@ -67,16 +53,22 @@ export interface IconButtonProps extends Omit<
   /** @default 'neutral' */
   tone?: ButtonTone;
   /** @default 'md' */
-  size?: IconButtonSize;
+  size?: ControlSize;
   /** Adds `aria-keyshortcuts` and the key chip in the tooltip. */
   shortcut?: ShortcutId;
   /** @default 'top' */
   tooltipPlacement?: TooltipPlacement;
+  /**
+   * Disabled icon controls stay focusable and hoverable (`aria-disabled`,
+   * no press handler) so their tooltip can still say what they are.
+   */
+  isDisabled?: boolean;
   className?: string;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /**
- * An icon-only button with a required name and a tooltip that repeats it
+ * An icon-only button with a required name and a tooltip that shows it
  * with its shortcut (X5). Leave is
  * `variant="soft" tone="danger" size="touch" icon="leave" label="Leave session"`.
  */
@@ -88,12 +80,36 @@ export function IconButton({
   size = 'md',
   shortcut,
   tooltipPlacement,
+  isDisabled = false,
   className,
+  ref,
   ...props
 }: IconButtonProps) {
-  const buttonRef = useAriaKeyshortcuts<HTMLButtonElement>(shortcut);
+  const buttonRef = useAriaKeyshortcuts<HTMLButtonElement>(shortcut, ref);
+  const glyph = <Icon name={icon} size={iconSizeFor(size)} />;
+
+  if (isDisabled) {
+    // A native disabled button drops hover and focus, and with them the
+    // tooltip (React Aria's recommendation is a Focusable wrapper).
+    return (
+      <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement}>
+        <Focusable>
+          <button
+            type="button"
+            ref={buttonRef}
+            aria-label={label}
+            aria-disabled="true"
+            className={iconButtonStyles({ variant, tone, size, isDisabled: true, className })}
+          >
+            {glyph}
+          </button>
+        </Focusable>
+      </Tooltip>
+    );
+  }
+
   return (
-    <Tooltip label={label} shortcut={shortcut} placement={tooltipPlacement}>
+    <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement}>
       <RacButton
         {...props}
         ref={buttonRef}
@@ -102,7 +118,7 @@ export function IconButton({
           iconButtonStyles({ variant, tone, size, className: cls }),
         )}
       >
-        <Icon name={icon} size={iconSizeFor(size)} />
+        {glyph}
       </RacButton>
     </Tooltip>
   );

@@ -24,6 +24,7 @@ describe('Tooltip', () => {
     const tooltip = await screen.findByRole('tooltip');
     expect(tooltip).toHaveTextContent('Microphone');
     expect(trigger).toHaveAttribute('aria-describedby', tooltip.id);
+    expect(trigger).toHaveAccessibleDescription('Microphone');
   });
 
   it('closes on Escape', async () => {
@@ -47,14 +48,22 @@ describe('Tooltip', () => {
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
-  it('renders the shortcut as a key chip', async () => {
+  it('renders the shortcut as a key chip after a space', async () => {
     const user = userEvent.setup();
     render(<Subject shortcut="microphone" />);
     await user.tab();
     const tooltip = await screen.findByRole('tooltip');
-    const kbd = tooltip.querySelector('kbd');
-    expect(kbd).toHaveTextContent('Alt + M');
-    expect(tooltip).toHaveTextContent('MicrophoneAlt + M');
+    expect(tooltip.querySelector('kbd')).toHaveTextContent('Alt + M');
+    expect(tooltip).toHaveTextContent('Microphone Alt + M');
+  });
+
+  it('describes an icon control by the shortcut only, not its name again', async () => {
+    const user = userEvent.setup();
+    render(<Subject shortcut="microphone" labelHidden />);
+    await user.tab();
+    const trigger = screen.getByRole('button', { name: 'Microphone' });
+    await screen.findByRole('tooltip');
+    expect(trigger).toHaveAccessibleDescription('Alt + M');
   });
 
   it('carries data-surface when its trigger sits on the stage', () => {
@@ -66,8 +75,11 @@ describe('Tooltip', () => {
     expect(screen.getByRole('tooltip')).toHaveAttribute('data-surface', 'stage');
   });
 
-  it('has no data-surface on a panel', () => {
-    render(<Subject defaultOpen />);
-    expect(screen.getByRole('tooltip')).not.toHaveAttribute('data-surface');
+  it('has no data-surface on a panel, and merges a className', () => {
+    render(<Subject defaultOpen className="max-w-32" />);
+    const tooltip = screen.getByRole('tooltip');
+    expect(tooltip).not.toHaveAttribute('data-surface');
+    expect(tooltip).toHaveClass('max-w-32', 'bg-text');
+    expect(tooltip).not.toHaveClass('max-w-64');
   });
 });

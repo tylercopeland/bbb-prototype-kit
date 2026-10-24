@@ -63,6 +63,12 @@ export const OpenOnStage: Story = {
   globals: { surface: 'stage' },
 };
 
+/** The closed trigger on the stage; hover or focus it. */
+export const Stage: Story = {
+  args: { shortcut: 'microphone' },
+  globals: { surface: 'stage' },
+};
+
 export const LongLabel: Story = {
   tags: ['wait-for-tooltip'],
   args: {

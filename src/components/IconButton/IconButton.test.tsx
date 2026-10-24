@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -14,26 +15,37 @@ describe('IconButton', () => {
     expect(svg).toHaveAttribute('data-icon', 'close');
   });
 
-  it('shows its tooltip on Tab', async () => {
+  it('shows its tooltip on Tab without repeating its name in the description', async () => {
     const user = userEvent.setup();
-    render(<IconButton label="Mute everyone" icon="microphoneOff" />);
+    render(<IconButton label="Settings" icon="settings" />);
     await user.tab();
     const tooltip = await screen.findByRole('tooltip');
-    expect(tooltip).toHaveTextContent('Mute everyone');
-    expect(screen.getByRole('button', { name: 'Mute everyone' })).toHaveAttribute(
-      'aria-describedby',
-      tooltip.id,
-    );
+    expect(tooltip).toHaveTextContent('Settings');
+    const button = screen.getByRole('button', { name: 'Settings' });
+    expect(button).toHaveAttribute('aria-describedby', tooltip.id);
+    expect(button).toHaveAccessibleDescription('');
   });
 
-  it('exposes the shortcut as aria-keyshortcuts and in the tooltip', async () => {
+  it('closes the tooltip on Escape and keeps focus', async () => {
     const user = userEvent.setup();
-    render(<IconButton label="Raise hand" icon="raiseHand" shortcut="raiseHand" />);
-    const button = screen.getByRole('button', { name: 'Raise hand' });
-    expect(button).toHaveAttribute('aria-keyshortcuts', 'Alt+H');
+    render(<IconButton label="Settings" icon="settings" />);
+    await user.tab();
+    const button = screen.getByRole('button', { name: 'Settings' });
+    expect(await screen.findByRole('tooltip')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    expect(button).toHaveFocus();
+  });
+
+  it('exposes the shortcut as aria-keyshortcuts and as the tooltip description', async () => {
+    const user = userEvent.setup();
+    render(<IconButton label="Join audio" icon="audioNotJoined" shortcut="microphone" />);
+    const button = screen.getByRole('button', { name: 'Join audio' });
+    expect(button).toHaveAttribute('aria-keyshortcuts', 'Alt+M');
     await user.tab();
     const tooltip = await screen.findByRole('tooltip');
-    expect(tooltip.querySelector('kbd')).toHaveTextContent('Alt + H');
+    expect(tooltip.querySelector('kbd')).toHaveTextContent('Alt + M');
+    expect(button).toHaveAccessibleDescription('Alt + M');
   });
 
   it('has no aria-keyshortcuts without a shortcut', () => {
@@ -51,9 +63,28 @@ describe('IconButton', () => {
     expect(onPress).toHaveBeenCalledTimes(2);
   });
 
-  it('is disabled with isDisabled', () => {
-    render(<IconButton label="Close" icon="close" isDisabled />);
-    expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled();
+  it('stays focusable when disabled, keeps its tooltip, and does nothing on press', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    render(<IconButton label="Close" icon="close" isDisabled onPress={onPress} shortcut="microphone" />);
+    const button = screen.getByRole('button', { name: 'Close' });
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute('aria-keyshortcuts', 'Alt+M');
+    expect(button).toHaveClass('text-text-muted');
+    await user.tab();
+    expect(button).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Close');
+    await user.keyboard('{Enter}');
+    await user.click(button);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('forwards its ref to the button element', () => {
+    const ref = createRef<HTMLButtonElement>();
+    render(<IconButton ref={ref} label="Close" icon="close" shortcut="camera" />);
+    expect(ref.current).toBe(screen.getByRole('button', { name: 'Close' }));
+    expect(ref.current).toHaveAttribute('aria-keyshortcuts', 'Alt+V');
   });
 
   it('draws Leave as the soft danger touch square', () => {

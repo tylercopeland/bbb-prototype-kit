@@ -1,26 +1,35 @@
+import { useId, type Ref } from 'react';
 import {
+  Focusable,
   ToggleButton as RacToggleButton,
   composeRenderProps,
   type ToggleButtonProps as RacToggleButtonProps,
 } from 'react-aria-components';
-import { tv, type VariantProps } from 'tailwind-variants';
 import { Icon, type IconName } from '../../icons';
-import type { ShortcutId } from '../../shortcuts';
-import { iconButtonStyles, iconSizeFor, useAriaKeyshortcuts, type IconButtonSize } from '../IconButton';
+import { useAriaKeyshortcuts, type ShortcutId } from '../../shortcuts';
+import { tv, type VariantProps } from '../../styles/tv';
+import { iconSizeFor, type ControlSize } from '../Button';
+import { iconButtonStyles } from '../IconButton';
 import { Tooltip, type TooltipPlacement } from '../Tooltip';
 
 /**
  * The mic and camera pattern (X7): the soft icon square, and `data-selected`
  * swaps it to the selected pair (blue-100 / stage-800 on the stage, exactly
- * the canvas fill). `tone="hand"` turns the selected state amber. Hover and
- * press leave a selected control as it is. `isSpeaking` adds the green ring,
- * which is the only time green appears on the action bar.
+ * the canvas fill) plus the inset `selected-ring`, so the state never rests
+ * on color alone. `selectedTone="hand"` turns the selected state amber.
+ * Hover and press leave a selected control as it is. `isSpeaking` adds the
+ * green ring, the only time green appears on the action bar.
+ *
+ * It fixes `variant="soft"` and `tone="neutral"`: every toggle on the canvas
+ * sits on the soft fill, and the selected and speaking states carry the
+ * meaning, so there is nothing for a variant or a danger tone to do.
  */
 export const toggleButtonStyles = tv({
   extend: iconButtonStyles,
+  base: 'data-selected:selected-ring',
   variants: {
-    tone: {
-      neutral:
+    selectedTone: {
+      accent:
         'data-selected:bg-selected data-selected:text-selected-text data-selected:data-hovered:bg-selected data-selected:data-pressed:bg-selected',
       hand: 'data-selected:bg-status-hand data-selected:text-on-status-hand data-selected:data-hovered:bg-status-hand data-selected:data-pressed:bg-status-hand',
     },
@@ -28,14 +37,14 @@ export const toggleButtonStyles = tv({
       true: 'ring-speaking',
     },
   },
-  defaultVariants: { variant: 'soft', tone: 'neutral', size: 'touch' },
+  defaultVariants: { variant: 'soft', tone: 'neutral', size: 'touch', selectedTone: 'accent' },
 });
 
-export type ToggleButtonTone = Extract<VariantProps<typeof toggleButtonStyles>['tone'], 'neutral' | 'hand'>;
+export type ToggleButtonSelectedTone = NonNullable<VariantProps<typeof toggleButtonStyles>['selectedTone']>;
 
 export interface ToggleButtonProps extends Omit<
   RacToggleButtonProps,
-  'className' | 'children' | 'aria-label' | 'ref'
+  'className' | 'children' | 'aria-label' | 'isDisabled'
 > {
   /** Fixed: "Microphone", "Camera" or "Raise hand". The state is `aria-pressed`, never the name. */
   label: string;
@@ -44,22 +53,31 @@ export interface ToggleButtonProps extends Omit<
   /** Shown while selected; the icon may swap, the label never does. @default icon */
   selectedIcon?: IconName;
   /** @default 'touch' */
-  size?: IconButtonSize;
+  size?: ControlSize;
   /** Adds `aria-keyshortcuts` and the key chip in the tooltip. */
   shortcut?: ShortcutId;
-  /** The green speaking ring. Only while sound is coming through, so green means one thing everywhere. */
+  /**
+   * Sound is coming through: the green ring, the `speaking` glyph in place
+   * of the mic, and a "Speaking" description for assistive technology.
+   */
   isSpeaking?: boolean;
-  /** `hand` colors the selected state amber, for Raise hand. @default 'neutral' */
-  tone?: ToggleButtonTone;
+  /** `hand` colors the selected state amber, for Raise hand. @default 'accent' */
+  selectedTone?: ToggleButtonSelectedTone;
   /** @default 'top' */
   tooltipPlacement?: TooltipPlacement;
+  /** Disabled toggles stay focusable and hoverable (`aria-disabled`) so their tooltip still names them. */
+  isDisabled?: boolean;
   className?: string;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /**
  * An icon toggle on React Aria's ToggleButton. Screen readers hear
  * "Microphone, toggle button, pressed": the label stays fixed and the state
- * is exposed through `isSelected` / `aria-pressed`.
+ * is exposed through `isSelected` / `aria-pressed`. While speaking, the
+ * button is described by a hidden "Speaking" (not a live region); that
+ * description takes the place of the tooltip's shortcut text, which is
+ * still available through `aria-keyshortcuts`.
  *
  * It is a two-state control. "Audio not joined" is a third state that is
  * not a prop here: in milestone 4 the action bar renders a "Join audio"
@@ -73,26 +91,75 @@ export function ToggleButton({
   size = 'touch',
   shortcut,
   isSpeaking = false,
-  tone,
+  selectedTone,
   tooltipPlacement,
+  isDisabled = false,
   className,
+  ref,
   ...props
 }: ToggleButtonProps) {
-  const buttonRef = useAriaKeyshortcuts<HTMLButtonElement>(shortcut);
+  const buttonRef = useAriaKeyshortcuts<HTMLButtonElement>(shortcut, ref);
+  const speakingId = useId();
+  const describedBy = isSpeaking ? speakingId : undefined;
+  const glyphFor = (selected: boolean) => (
+    <Icon
+      name={isSpeaking ? 'speaking' : selected ? (selectedIcon ?? icon) : icon}
+      size={iconSizeFor(size)}
+    />
+  );
+  const status = isSpeaking && (
+    <span id={speakingId} hidden>
+      Speaking
+    </span>
+  );
+
+  if (isDisabled) {
+    const selected = props.isSelected ?? props.defaultSelected ?? false;
+    return (
+      <>
+        <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement}>
+          <Focusable>
+            <button
+              type="button"
+              ref={buttonRef}
+              aria-label={label}
+              aria-pressed={selected}
+              aria-disabled="true"
+              aria-describedby={describedBy}
+              data-selected={selected || undefined}
+              className={toggleButtonStyles({
+                selectedTone,
+                size,
+                isSpeaking,
+                isDisabled: true,
+                className,
+              })}
+            >
+              {glyphFor(selected)}
+            </button>
+          </Focusable>
+        </Tooltip>
+        {status}
+      </>
+    );
+  }
+
   return (
-    <Tooltip label={label} shortcut={shortcut} placement={tooltipPlacement}>
-      <RacToggleButton
-        {...props}
-        ref={buttonRef}
-        aria-label={label}
-        className={composeRenderProps(className, (cls) =>
-          toggleButtonStyles({ tone, size, isSpeaking, className: cls }),
-        )}
-      >
-        {({ isSelected }) => (
-          <Icon name={isSelected ? (selectedIcon ?? icon) : icon} size={iconSizeFor(size)} />
-        )}
-      </RacToggleButton>
-    </Tooltip>
+    <>
+      <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement}>
+        <RacToggleButton
+          {...props}
+          ref={buttonRef}
+          aria-label={label}
+          aria-describedby={describedBy}
+          className={composeRenderProps(className, (cls) =>
+            toggleButtonStyles({ selectedTone, size, isSpeaking, className: cls }),
+          )}
+        >
+          {({ isSelected }) => glyphFor(isSelected)}
+        </RacToggleButton>
+      </Tooltip>
+      {status}
+    </>
   );
 }

@@ -61,13 +61,21 @@ describe('Button', () => {
     for (const icon of icons) expect(icon).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('merges a consumer className with the variant classes', () => {
+  it('merges a consumer className with the variant classes, overriding the same scale', () => {
     render(
-      <Button variant="primary" tone="danger" className="w-full">
+      <Button variant="primary" tone="danger" className="h-control-lg w-full rounded-full">
         Stop sharing
       </Button>,
     );
     const button = screen.getByRole('button', { name: 'Stop sharing' });
-    expect(button).toHaveClass('w-full', 'bg-danger', 'text-on-danger', 'h-control-md');
+    expect(button).toHaveClass('w-full', 'bg-danger', 'text-on-danger', 'rounded-full', 'h-control-lg');
+    expect(button).not.toHaveClass('rounded-control', 'h-control-md');
+  });
+
+  it('truncates its label instead of wrapping', () => {
+    render(<Button>Share media: slides, a video, your screen, audio or a link</Button>);
+    const button = screen.getByRole('button');
+    expect(button).toHaveClass('whitespace-nowrap', 'max-w-full');
+    expect(button.querySelector('span')).toHaveClass('truncate');
   });
 });

@@ -1,2 +1,2 @@
-export { IconButton, iconButtonStyles, iconSizeFor, useAriaKeyshortcuts } from './IconButton';
-export type { IconButtonProps, IconButtonSize } from './IconButton';
+export { IconButton, iconButtonStyles } from './IconButton';
+export type { IconButtonProps } from './IconButton';

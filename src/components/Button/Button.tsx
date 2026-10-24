@@ -4,8 +4,8 @@ import {
   composeRenderProps,
   type ButtonProps as RacButtonProps,
 } from 'react-aria-components';
-import { tv, type VariantProps } from 'tailwind-variants';
-import { Icon, type IconName } from '../../icons';
+import { Icon, type IconName, type IconSize } from '../../icons';
+import { tv, type VariantProps } from '../../styles/tv';
 
 /**
  * Text button styles. The variants come from a survey of every board
@@ -16,7 +16,7 @@ import { Icon, type IconName } from '../../icons';
  * IconButton and ToggleButton extend these styles.
  */
 export const buttonStyles = tv({
-  base: 'hit-area inline-flex shrink-0 items-center justify-center gap-2 rounded-control font-semibold whitespace-nowrap focus-ring',
+  base: 'hit-area inline-flex max-w-full shrink-0 items-center justify-center gap-2 rounded-control font-semibold whitespace-nowrap focus-ring',
   variants: {
     variant: {
       primary:
@@ -65,10 +65,18 @@ export const buttonStyles = tv({
   defaultVariants: { variant: 'secondary', tone: 'neutral', size: 'md' },
 });
 
+/** The text inside a Button: it truncates instead of wrapping when the button is narrower than its label. */
+export const buttonLabelStyles = tv({ base: 'truncate' });
+
 export type ButtonVariant = NonNullable<VariantProps<typeof buttonStyles>['variant']>;
 export type ButtonTone = NonNullable<VariantProps<typeof buttonStyles>['tone']>;
-/** Control heights: 32 / 36 / 40 / 44px, from the `component.control.*` tokens. */
+/** Control heights: 32 / 36 / 40 / 44px, from the `component.control.*` tokens. Shared by Button, IconButton and ToggleButton. */
 export type ControlSize = NonNullable<VariantProps<typeof buttonStyles>['size']>;
+
+/** The glyph for a control size: 16px in the 32px control, 20px in the others. */
+export function iconSizeFor(size: ControlSize): IconSize {
+  return size === 'sm' ? 'sm' : 'md';
+}
 
 export interface ButtonProps extends Omit<RacButtonProps, 'className' | 'children'> {
   /** @default 'secondary' */
@@ -85,7 +93,11 @@ export interface ButtonProps extends Omit<RacButtonProps, 'className' | 'childre
   className?: string;
 }
 
-/** A text button on React Aria's Button. Icon-only controls use IconButton instead. */
+/**
+ * A text button on React Aria's Button. Icon-only controls use IconButton
+ * instead. A disabled Button is natively disabled (it has text, so it needs
+ * no tooltip to be understood).
+ */
 export function Button({
   variant,
   tone,
@@ -96,7 +108,6 @@ export function Button({
   className,
   ...props
 }: ButtonProps) {
-  const iconSize = size === 'sm' ? 'sm' : 'md';
   return (
     <RacButton
       {...props}
@@ -104,9 +115,9 @@ export function Button({
         buttonStyles({ variant, tone, size, className: cls }),
       )}
     >
-      {icon && <Icon name={icon} size={iconSize} />}
-      {children}
-      {iconEnd && <Icon name={iconEnd} size={iconSize} />}
+      {icon && <Icon name={icon} size={iconSizeFor(size)} />}
+      <span className={buttonLabelStyles()}>{children}</span>
+      {iconEnd && <Icon name={iconEnd} size={iconSizeFor(size)} />}
     </RacButton>
   );
 }

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { ToggleButton } from '../ToggleButton';
 import { IconButton } from './IconButton';
 
 const meta = {
@@ -32,12 +33,12 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Panel header buttons: close, mute everyone, more. Transparent, `text-icon`. The default. */
+/** Panel header buttons: close, settings, more. Transparent, `text-icon`. The default. */
 export const Ghost: Story = {
   render: (args) => (
     <>
       <IconButton {...args} />
-      <IconButton {...args} label="Mute everyone" icon="microphoneOff" />
+      <IconButton {...args} label="Settings" icon="settings" />
       <IconButton {...args} label="More people options" icon="more" />
     </>
   ),
@@ -50,7 +51,7 @@ export const Soft: Story = {
     <>
       <IconButton {...args} label="Message Anton Georgiev privately" icon="chat" size="sm" />
       <IconButton {...args} label="More actions for Anton Georgiev" icon="more" size="sm" />
-      <IconButton {...args} label="People" icon="people" size="touch" />
+      <IconButton {...args} label="Share media" icon="shareMedia" size="touch" />
     </>
   ),
 };
@@ -80,13 +81,14 @@ export const Sizes: Story = {
   ),
 };
 
+/** Disabled icon buttons stay focusable and hoverable, so the tooltip can still say what they are. */
 export const Disabled: Story = {
   args: { isDisabled: true },
   render: (args) => (
     <>
       <IconButton {...args} variant="primary" label="Share media" icon="shareMedia" />
       <IconButton {...args} variant="secondary" label="Settings" icon="settings" />
-      <IconButton {...args} variant="soft" label="People" icon="people" />
+      <IconButton {...args} variant="soft" label="React" icon="react" />
       <IconButton {...args} variant="ghost" label="Close" icon="close" />
       <IconButton {...args} variant="soft" tone="danger" label="Leave session" icon="leave" />
     </>
@@ -94,31 +96,50 @@ export const Disabled: Story = {
 };
 
 /**
- * The tooltip repeats the name with its key chip, and the button carries
- * `aria-keyshortcuts`. Autofocused so the tooltip is open for review and axe.
+ * The tooltip shows the name with its key chip, the button carries
+ * `aria-keyshortcuts`, and assistive technology hears the shortcut as the
+ * description. Join audio sits in the mic slot before audio is joined and
+ * shares the microphone key. Autofocused so the tooltip is open for review and axe.
  */
 export const WithShortcut: Story = {
   tags: ['wait-for-tooltip'],
   args: {
     variant: 'soft',
     size: 'touch',
-    label: 'Raise hand',
-    icon: 'raiseHand',
-    shortcut: 'raiseHand',
+    label: 'Join audio',
+    icon: 'audioNotJoined',
+    shortcut: 'microphone',
     autoFocus: true,
   },
 };
 
-/** The four panel buttons and Leave, as the Focus board draws the action bar (lines 45–62). */
+/** The ghost default on the stage. */
+export const Stage: Story = {
+  globals: { surface: 'stage' },
+  render: (args) => (
+    <>
+      <IconButton {...args} />
+      <IconButton {...args} variant="soft" label="Share media" icon="shareMedia" size="touch" />
+      <IconButton {...args} variant="soft" tone="danger" label="Leave session" icon="leave" size="touch" />
+    </>
+  ),
+};
+
+/**
+ * The panel buttons and Leave, as the Focus board draws the action bar
+ * (lines 45–62, 850–858). People, Chat, Notes and Plugins are toggles
+ * (`aria-pressed`) with People selected; Leave is the soft danger IconButton.
+ * Count badges come in milestone 3.
+ */
 export const ActionBarOnStage: Story = {
   globals: { surface: 'stage' },
   args: { variant: 'soft', size: 'touch' },
   render: (args) => (
     <div className="flex items-center gap-2">
-      <IconButton {...args} label="People" icon="people" />
-      <IconButton {...args} label="Chat" icon="chat" />
-      <IconButton {...args} label="Shared notes" icon="notes" />
-      <IconButton {...args} label="Plugins" icon="plugins" />
+      <ToggleButton label="People" icon="people" defaultSelected />
+      <ToggleButton label="Chat" icon="chat" />
+      <ToggleButton label="Shared notes" icon="notes" />
+      <ToggleButton label="Plugins" icon="plugins" />
       <IconButton {...args} tone="danger" label="Leave session" icon="leave" />
     </div>
   ),

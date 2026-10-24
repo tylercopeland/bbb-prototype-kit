@@ -94,6 +94,32 @@ export const WithIcon: Story = {
   ),
 };
 
+/** A label longer than its button truncates instead of wrapping or growing. */
+export const LongLabel: Story = {
+  args: { variant: 'secondary', icon: 'shareMedia' },
+  render: (args) => (
+    <div className="flex w-48 flex-col gap-4">
+      <Button {...args}>Share media: slides, a video, your screen, audio or a link</Button>
+      <Button {...args} variant="primary" icon={undefined} iconEnd="externalLink">
+        Open the learning analytics dashboard
+      </Button>
+    </div>
+  ),
+};
+
+/**
+ * A button inside a speaking tile. The tile's green ring must not leak onto
+ * the focused button: `e2e/rings.spec.ts` tabs to it and checks its shadow.
+ */
+export const InsideSpeakingWrapper: Story = {
+  args: { variant: 'soft', children: 'Join', autoFocus: true },
+  render: (args) => (
+    <div className="flex items-center gap-4 rounded-tile bg-surface-raised p-4 ring-speaking">
+      <Button {...args} />
+    </div>
+  ),
+};
+
 export const Disabled: Story = {
   args: { isDisabled: true },
   render: (args) => (
