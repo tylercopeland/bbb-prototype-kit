@@ -1,10 +1,11 @@
-import { useEffect, useRef, type Ref } from 'react';
+import { useEffect, type Ref } from 'react';
 import {
   Text,
   UNSTABLE_Toast as RacToast,
   UNSTABLE_ToastList as RacToastList,
   UNSTABLE_ToastQueue as ToastQueue,
   UNSTABLE_ToastRegion as RacToastRegion,
+  composeRenderProps,
   type QueuedToast,
   type ToastOptions,
 } from 'react-aria-components';
@@ -118,11 +119,10 @@ export interface ToastRegionProps {
  */
 export function ToastRegion({ queue = toastQueue, className, ref }: ToastRegionProps) {
   const { announce } = useAnnouncer();
-  const announced = useRef<Set<string> | null>(null);
 
   useEffect(() => {
-    announced.current ??= new Set(queue.visibleToasts.map((t) => t.key));
-    const seen = announced.current;
+    // The toasts already visible when this queue is first seen are not re-announced.
+    const seen = new Set(queue.visibleToasts.map((t) => t.key));
     return queue.subscribe(() => {
       for (const toast of queue.visibleToasts) {
         if (seen.has(toast.key)) continue;
@@ -134,7 +134,11 @@ export function ToastRegion({ queue = toastQueue, className, ref }: ToastRegionP
   }, [queue, announce]);
 
   return (
-    <RacToastRegion ref={ref} queue={queue} className={toastRegionStyles({ className })}>
+    <RacToastRegion
+      ref={ref}
+      queue={queue}
+      className={composeRenderProps(className, (cls) => toastRegionStyles({ className: cls }))}
+    >
       <SurfaceProvider kind="panel">
         <RacToastList<ToastContent> className={toastListStyles()}>
           {({ toast }) => <ToastCard toast={toast} queue={queue} />}

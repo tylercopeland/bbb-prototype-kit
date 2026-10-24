@@ -8,12 +8,13 @@ import { Menu, MenuItem, MenuSection, MenuSeparator, Submenu } from './Menu';
 
 /**
  * The student actions menu (docs/screenshots/O2StudentActions.png):
- * two actions, the four switches as checkbox items (X9), "Move to…" as a
- * submenu (B2) and Remove in the danger tone. The switches hold their
- * state here; in the room they come from the store.
+ * two actions, the four switches as checkbox items (X9), all off as on the
+ * canvas (the student is muted), "Move to…" as a submenu (B2) and Remove in
+ * the danger tone. The switches hold their state here; in the room they
+ * come from the store.
  */
 function StudentActions(props: Partial<React.ComponentProps<typeof Menu>>) {
-  const [flags, setFlags] = useState<Selection>(new Set(['microphone']));
+  const [flags, setFlags] = useState<Selection>(new Set());
   return (
     <Menu
       trigger={<IconButton label="More actions for Anton Georgiev" icon="more" variant="soft" size="sm" />}

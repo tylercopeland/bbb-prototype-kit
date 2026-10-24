@@ -9,7 +9,8 @@ import {
   type TextFieldProps as RacTextFieldProps,
 } from 'react-aria-components';
 import { Icon } from '../../icons';
-import { tv, type VariantProps } from '../../styles/tv';
+import { tv } from '../../styles/tv';
+import type { ControlSize } from '../Button';
 
 /** Label, control, then description or error, 4px apart. Shared with TextArea. */
 export const fieldStyles = tv({
@@ -57,7 +58,8 @@ export const textInputStyles = tv({
   defaultVariants: { size: 'lg' },
 });
 
-export type TextFieldSize = NonNullable<VariantProps<typeof textInputStyles>['size']>;
+/** Field heights share the control scale minus `sm`: 36 / 40 / 44px, since a 32px input is too short for its text. */
+export type TextFieldSize = Exclude<ControlSize, 'sm'>;
 
 export interface TextFieldProps extends Omit<
   RacTextFieldProps,
@@ -69,7 +71,11 @@ export interface TextFieldProps extends Omit<
   labelHidden?: boolean;
   /** Help text under the field; it becomes the description. */
   description?: string;
-  /** Shown under the field while `isInvalid`, and announced as the field's error. */
+  /**
+   * Shown under the field while `isInvalid`, and announced as the field's
+   * error. Without one, the field shows the messages from `validate` or
+   * the browser's constraint validation instead.
+   */
   errorMessage?: string;
   placeholder?: string;
   /** 36 / 40 / 44px. @default 'lg' */
@@ -81,9 +87,10 @@ export interface TextFieldProps extends Omit<
 
 /**
  * A single-line text field on React Aria's TextField (B8: a real input).
- * The label names it, `description` describes it and `errorMessage` is
- * linked while `isInvalid`. Tab reaches the input; Enter and Escape do
- * nothing on their own, so a form or dialog around it decides.
+ * The label names it, `description` describes it and the error line is
+ * linked while invalid: `errorMessage` when given, otherwise React Aria's
+ * `validationErrors`. Tab reaches the input; Enter and Escape do nothing
+ * on their own, so a form or dialog around it decides.
  */
 export function TextField({
   label,
@@ -109,8 +116,12 @@ export function TextField({
         </Text>
       )}
       <FieldError className={fieldErrorStyles()}>
-        <Icon name="error" size="sm" />
-        {errorMessage}
+        {({ validationErrors }) => (
+          <>
+            <Icon name="error" size="sm" />
+            {errorMessage ?? validationErrors.join(' ')}
+          </>
+        )}
       </FieldError>
     </RacTextField>
   );

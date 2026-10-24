@@ -13,10 +13,13 @@ const meta = {
     description:
       'Students see a countdown so they can finish their thought. Boards, notes and room chat are saved to Shared notes automatically.',
     trigger: <Button>Close all rooms</Button>,
-    footer: (
+    // Both actions close the dialog, as the real ones will after acting.
+    footer: ({ close }) => (
       <>
-        <Button>Keep rooms open</Button>
-        <Button variant="primary">Bring everyone back now</Button>
+        <Button onPress={close}>Keep rooms open</Button>
+        <Button variant="primary" onPress={close}>
+          Bring everyone back now
+        </Button>
       </>
     ),
   },
@@ -107,7 +110,7 @@ export const WithoutTrigger: Story = {
     kicker: undefined,
     title: 'Reconnecting…',
     description: 'Your connection dropped. We are trying to reconnect you to the session.',
-    footer: <Button>Leave session</Button>,
+    footer: ({ close }) => <Button onPress={close}>Leave session</Button>,
   },
 };
 

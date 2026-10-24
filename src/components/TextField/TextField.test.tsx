@@ -38,6 +38,15 @@ describe('TextField', () => {
     expect(screen.getByText('Enter a name')).toHaveClass('text-danger-text');
   });
 
+  it('falls back to the validation errors when no errorMessage is given', () => {
+    // `aria` validation shows the error as it happens; the default `native` waits for a form submit.
+    render(<TextField label="Room name" validationBehavior="aria" validate={() => 'Pick a shorter name'} />);
+    const input = screen.getByRole('textbox', { name: 'Room name' });
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAccessibleDescription('Pick a shorter name');
+    expect(screen.getByText('Pick a shorter name')).toHaveClass('text-danger-text');
+  });
+
   it('takes typing and reports the value', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
