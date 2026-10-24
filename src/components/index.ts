@@ -9,6 +9,7 @@ export * from './IconButton';
 export * from './Menu';
 export * from './Popover';
 export * from './Sheet';
+export * from './Stepper';
 export * from './Surface';
 export * from './Tabs';
 export * from './Toast';
