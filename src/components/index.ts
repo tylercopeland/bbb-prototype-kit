@@ -5,6 +5,7 @@ export * from './Button';
 export * from './Dialog';
 export * from './IconButton';
 export * from './Popover';
+export * from './Sheet';
 export * from './Surface';
 export * from './ToggleButton';
 export * from './Tooltip';
