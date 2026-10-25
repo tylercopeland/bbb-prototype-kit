@@ -24,6 +24,7 @@ export const spacingScale = [
   'avatar-sm',
   'avatar-md',
   'avatar-lg',
+  'avatar-xl',
   'icon-xs',
   'icon-sm',
   'icon-md',

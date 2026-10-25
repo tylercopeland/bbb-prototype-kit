@@ -8,7 +8,7 @@ import {
   type RadioGroupProps as RacRadioGroupProps,
   type RadioProps as RacRadioProps,
 } from 'react-aria-components';
-import { tv } from '../../styles/tv';
+import { tv, type VariantProps } from '../../styles/tv';
 import { Badge, type BadgeProps } from '../Badge';
 import { Tooltip, useTruncationTooltip } from '../Tooltip';
 
@@ -33,14 +33,19 @@ export const chipGroupLabelStyles = tv({
 });
 
 export const chipListStyles = tv({
-  base: 'flex flex-wrap gap-2',
+  base: 'flex',
   variants: {
     orientation: {
       horizontal: 'flex-row',
       vertical: 'flex-col',
     },
+    /** `compact` keeps the chips on one row at the panel width (the People filters): tighter gap, no wrapping, labels truncate. */
+    density: {
+      default: 'flex-wrap gap-2',
+      compact: 'flex-nowrap gap-1',
+    },
   },
-  defaultVariants: { orientation: 'horizontal' },
+  defaultVariants: { orientation: 'horizontal', density: 'default' },
 });
 
 /**
@@ -52,8 +57,18 @@ export const chipListStyles = tv({
  * border (`forced-colors-selected`), as a selected toggle does.
  */
 export const chipStyles = tv({
-  base: 'hit-area inline-flex h-control-sm max-w-full cursor-default items-center justify-center gap-2 rounded-full border border-border-control bg-surface px-3 text-sm font-semibold whitespace-nowrap text-text-secondary focus-ring outline-none data-disabled:border-border data-disabled:text-text-muted data-hovered:bg-surface-sunken data-pressed:bg-surface-sunken data-selected:border-text data-selected:bg-text data-selected:text-surface data-selected:forced-colors-selected data-selected:data-hovered:bg-text data-selected:data-pressed:bg-text',
+  base: 'hit-area inline-flex h-control-sm max-w-full cursor-default items-center justify-center rounded-full border border-border-control bg-surface text-sm font-semibold whitespace-nowrap text-text-secondary focus-ring outline-none data-disabled:border-border data-disabled:text-text-muted data-hovered:bg-surface-sunken data-pressed:bg-surface-sunken data-selected:border-text data-selected:bg-text data-selected:text-surface data-selected:forced-colors-selected data-selected:data-hovered:bg-text data-selected:data-pressed:bg-text',
+  variants: {
+    /** `compact` tightens the padding and the gap before the badge, and lets the chip shrink (the label truncates). */
+    density: {
+      default: 'gap-2 px-3',
+      compact: 'min-w-0 gap-1 px-2',
+    },
+  },
+  defaultVariants: { density: 'default' },
 });
+
+export type ChipDensity = NonNullable<VariantProps<typeof chipStyles>['density']>;
 
 export const chipLabelStyles = tv({ base: 'truncate' });
 
@@ -67,6 +82,8 @@ export interface ChipGroupProps extends Omit<
   labelHidden?: boolean;
   /** @default 'horizontal' */
   orientation?: 'horizontal' | 'vertical';
+  /** `compact` keeps the row on one line with a tighter gap; give the chips the same density. @default 'default' */
+  density?: ChipDensity;
   /** The chips. */
   children: ReactNode;
   className?: string;
@@ -82,6 +99,7 @@ export function ChipGroup({
   label,
   labelHidden = false,
   orientation = 'horizontal',
+  density = 'default',
   children,
   className,
   ...props
@@ -93,7 +111,7 @@ export function ChipGroup({
       className={composeRenderProps(className, (cls) => chipGroupStyles({ className: cls }))}
     >
       <Label className={chipGroupLabelStyles({ isHidden: labelHidden })}>{label}</Label>
-      <div className={chipListStyles({ orientation })}>{children}</div>
+      <div className={chipListStyles({ orientation, density })}>{children}</div>
     </RacRadioGroup>
   );
 }
@@ -103,6 +121,8 @@ export interface ChipProps extends Omit<RacRadioProps, 'className' | 'children' 
   children: string;
   /** A count on the chip: "All 14", "Raised hands 4". */
   badge?: Pick<BadgeProps, 'count' | 'label' | 'tone'>;
+  /** Match the group's density. @default 'default' */
+  density?: ChipDensity;
   className?: string;
   ref?: Ref<HTMLLabelElement>;
 }
@@ -113,13 +133,13 @@ export interface ChipProps extends Omit<RacRadioProps, 'className' | 'children' 
  * keyboard focus show the full text in a Tooltip (`useTruncationTooltip`);
  * the accessible name is always the full text.
  */
-export function Chip({ children, badge, className, ref, ...props }: ChipProps) {
+export function Chip({ children, badge, density = 'default', className, ref, ...props }: ChipProps) {
   const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLLabelElement>(ref);
   return (
     <RacRadio
       {...mergeProps(props, triggerProps)}
       ref={triggerRef}
-      className={composeRenderProps(className, (cls) => chipStyles({ className: cls }))}
+      className={composeRenderProps(className, (cls) => chipStyles({ density, className: cls }))}
     >
       {({ isSelected }) => (
         <>

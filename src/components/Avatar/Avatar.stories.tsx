@@ -20,7 +20,7 @@ const meta = {
     isSpeaking: false,
   },
   argTypes: {
-    size: { control: 'radio', options: ['sm', 'md', 'lg'] },
+    size: { control: 'radio', options: ['sm', 'md', 'lg', 'xl'] },
     shape: { control: 'radio', options: ['circle', 'square'] },
     badge: { control: 'radio', options: [undefined, 'speaking', 'muted', 'hand'] },
     color: { control: { type: 'number', min: 1, max: 10 } },
@@ -37,11 +37,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** 24 / 32 / 40px. Initials are 12px (the B9 minimum) up to md, 14px at lg. Badges fit md and lg only. */
+/** 24 / 32 / 40 / 48px. Initials are 12px (the B9 minimum) up to md, 14px at lg, 16px at xl (the grid tile). Badges fit md and up. */
 export const Sizes: Story = {
   render: (args) => (
     <>
-      {(['sm', 'md', 'lg'] as const).map((size) => (
+      {(['sm', 'md', 'lg', 'xl'] as const).map((size) => (
         <Demo key={size} {...args} badge={undefined} size={size} />
       ))}
     </>

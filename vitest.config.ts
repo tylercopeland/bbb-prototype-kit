@@ -11,7 +11,7 @@ export default mergeConfig(
       // every test, so files do not see each other's render trees.
       isolate: false,
       setupFiles: ['src/test/setup.ts'],
-      include: ['src/**/*.test.{ts,tsx}'],
+      include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
       exclude: ['e2e/**', 'node_modules/**'],
     },
   }),

@@ -23,6 +23,7 @@ export const avatarStyles = tv({
       sm: { root: 'size-avatar-sm text-xs' },
       md: { root: 'size-avatar-md text-xs' },
       lg: { root: 'size-avatar-lg text-md' },
+      xl: { root: 'size-avatar-xl text-lg' },
     },
     shape: {
       circle: { root: 'rounded-full' },
@@ -85,16 +86,17 @@ interface AvatarBaseProps extends Omit<ComponentProps<'span'>, 'color' | 'childr
 }
 
 /**
- * 24 / 32 / 40px; xl waits for milestone 4. The 16px status badge (a 12px
- * glyph) fits `md` and `lg` only: at `sm` it would cover a third of the
- * avatar or shrink its glyph under the 12px floor, so `badge` is not
- * allowed there (the row's status columns carry the state instead).
+ * 24 / 32 / 40 / 48px (`xl` is the camera-off avatar in a grid tile,
+ * milestone 4). The 16px status badge (a 12px glyph) fits `md` and up
+ * only: at `sm` it would cover a third of the avatar or shrink its glyph
+ * under the 12px floor, so `badge` is not allowed there (the row's status
+ * columns carry the state instead).
  */
 export type AvatarProps = AvatarBaseProps &
   (
     | {
         /** @default 'md' */
-        size?: Extract<AvatarSize, 'md' | 'lg'>;
+        size?: Extract<AvatarSize, 'md' | 'lg' | 'xl'>;
         /** A 16px status disc at the bottom right, for tiles, avatar stacks and mobile. */
         badge?: AvatarBadge;
       }

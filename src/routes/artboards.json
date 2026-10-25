@@ -1,0 +1,744 @@
+[
+  {
+    "stem": "L1LowEngagement-qeqx",
+    "group": "desktop",
+    "number": 1,
+    "title": "6 · Insight → People filtered to low engagement",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "people",
+      "pfilter": "low"
+    }
+  },
+  {
+    "stem": "M1ShareScreen-k5tp",
+    "group": "desktop",
+    "number": 2,
+    "title": "Presenter · sharing screen, Screen tab",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "none",
+      "share": "screen"
+    }
+  },
+  {
+    "stem": "M2ShareDeck-581i",
+    "group": "desktop",
+    "number": 3,
+    "title": "Presenter · sharing screen, Presentation tab",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "none",
+      "share": "deck"
+    }
+  },
+  {
+    "stem": "N1Overview-xpbk",
+    "group": "desktop",
+    "number": 4,
+    "title": "Presenter · All slides overview",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "none",
+      "overview": "open"
+    }
+  },
+  {
+    "stem": "F1Bar-4roh-l8ju",
+    "group": "desktop",
+    "number": 5,
+    "title": "A · Action bar",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "none"
+    }
+  },
+  {
+    "stem": "G1People-my6z",
+    "group": "desktop",
+    "number": 6,
+    "title": "1 · People tab (clicked People)",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "people",
+      "scope": "everyone"
+    }
+  },
+  {
+    "stem": "G2ChatEveryone-gqvt",
+    "group": "desktop",
+    "number": 7,
+    "title": "2 · Chat tab · Everyone",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "chat",
+      "scope": "everyone"
+    }
+  },
+  {
+    "stem": "G3ChatDirect-56ch",
+    "group": "desktop",
+    "number": 8,
+    "title": "3 · Chat tab · Direct conversations",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "chat",
+      "scope": "direct"
+    }
+  },
+  {
+    "stem": "G4DmRafaela-gtn4",
+    "group": "desktop",
+    "number": 9,
+    "title": "4 · Direct message with Rafaela",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "chat",
+      "scope": "direct",
+      "dm": "rafaela"
+    }
+  },
+  {
+    "stem": "G5DmFromPeople-ogjp",
+    "group": "desktop",
+    "number": 10,
+    "title": "5 · New direct message started from People",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "chat",
+      "scope": "direct",
+      "dm": "frederick"
+    }
+  },
+  {
+    "stem": "H1MediaSlides-2x0x",
+    "group": "desktop",
+    "number": 11,
+    "title": "Share media · Slides (action bar)",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "none",
+      "media": "open",
+      "mtype": "slides"
+    }
+  },
+  {
+    "stem": "H2MediaScreen-ez5s",
+    "group": "desktop",
+    "number": 12,
+    "title": "Share media · Screen (action bar)",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "none",
+      "media": "open",
+      "mtype": "screen"
+    }
+  },
+  {
+    "stem": "O1Analytics",
+    "group": "desktop",
+    "number": 13,
+    "title": "Teacher · Learning Analytics Dashboard entry point",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "lxtip": "show"
+    }
+  },
+  {
+    "stem": "O2StudentActions",
+    "group": "desktop",
+    "number": 14,
+    "title": "Teacher · student actions (hover a person → ⋯)",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "people",
+      "pmenu": "anton"
+    }
+  },
+  {
+    "stem": "BO1Entry-desk",
+    "group": "desktop",
+    "number": 15,
+    "title": "Breakout · 1 · Plugins → Breakout rooms",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "none",
+      "plugins": "open"
+    }
+  },
+  {
+    "stem": "BO2SetupGroups-desk",
+    "group": "desktop",
+    "number": 16,
+    "title": "Breakout · 2 · Set up groups (4 rooms, spread evenly)",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "setup",
+      "mode": "groups",
+      "rooms": "4"
+    }
+  },
+  {
+    "stem": "BO3SetupMove-desk",
+    "group": "desktop",
+    "number": 17,
+    "title": "Breakout · 3 · Move a student between rooms",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "setup",
+      "mode": "groups",
+      "rooms": "4",
+      "moving": "ana"
+    }
+  },
+  {
+    "stem": "BO4SetupSolo-desk",
+    "group": "desktop",
+    "number": 18,
+    "title": "Breakout · 4 · One room per student",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "setup",
+      "mode": "solo"
+    }
+  },
+  {
+    "stem": "BO5LiveGroups-desk",
+    "group": "desktop",
+    "number": 19,
+    "title": "Breakout · 5 · Rooms live: watch every group",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "live",
+      "mode": "groups",
+      "rooms": "4"
+    }
+  },
+  {
+    "stem": "BO6PeekGroup-desk",
+    "group": "desktop",
+    "number": 20,
+    "title": "Breakout · 6 · Preview a group room (asked for help)",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "live",
+      "mode": "groups",
+      "rooms": "4",
+      "peek": "1"
+    }
+  },
+  {
+    "stem": "BO7LiveSolo-desk",
+    "group": "desktop",
+    "number": 21,
+    "title": "Breakout · 7 · Rooms live: 13 individual rooms",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "live",
+      "mode": "solo"
+    }
+  },
+  {
+    "stem": "BO8PeekSolo-desk",
+    "group": "desktop",
+    "number": 22,
+    "title": "Breakout · 8 · Preview an individual room",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "live",
+      "mode": "solo",
+      "peek": "2"
+    }
+  },
+  {
+    "stem": "BO9MainView-desk",
+    "group": "desktop",
+    "number": 23,
+    "title": "Breakout · 9 · Rooms live, teacher flips back to Presentation",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "live",
+      "mode": "groups",
+      "rooms": "4",
+      "view": "main"
+    }
+  },
+  {
+    "stem": "BO10Closing-desk",
+    "group": "desktop",
+    "number": 24,
+    "title": "Breakout · 10 · Close rooms: 60-second wrap-up",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "live",
+      "mode": "groups",
+      "rooms": "4",
+      "closing": "yes"
+    }
+  },
+  {
+    "stem": "BO11Back-desk",
+    "group": "desktop",
+    "number": 25,
+    "title": "Breakout · 11 · Everyone is back in the main room",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "back",
+      "mode": "groups",
+      "rooms": "4"
+    }
+  },
+  {
+    "stem": "BO12ShareBack-desk",
+    "group": "desktop",
+    "number": 26,
+    "title": "Breakout · 12 · Show a room’s work to everyone",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Breakout",
+    "props": {
+      "phase": "back",
+      "mode": "groups",
+      "rooms": "4",
+      "onstage": "1"
+    }
+  },
+  {
+    "stem": "PL1Setup",
+    "group": "desktop",
+    "number": 27,
+    "title": "Poll · 1 · Set up from Plugins → Poll",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "poll",
+      "poll": "setup"
+    }
+  },
+  {
+    "stem": "PL2Live",
+    "group": "desktop",
+    "number": 28,
+    "title": "Poll · 2 · Answers coming in (only you see them)",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "poll",
+      "poll": "live"
+    }
+  },
+  {
+    "stem": "PL3Shown",
+    "group": "desktop",
+    "number": 29,
+    "title": "Poll · 3 · Results shown to everyone",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "panel": "poll",
+      "poll": "shown"
+    }
+  },
+  {
+    "stem": "TM1Ready",
+    "group": "desktop",
+    "number": 30,
+    "title": "Timer · 1 · Added from Plugins → Timer",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "timer": "ready"
+    }
+  },
+  {
+    "stem": "TM2Running",
+    "group": "desktop",
+    "number": 31,
+    "title": "Timer · 2 · Running (interactive: start, pause, +1 min, move)",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "timer": "running"
+    }
+  },
+  {
+    "stem": "TM3Min",
+    "group": "desktop",
+    "number": 32,
+    "title": "Timer · 3 · Minimized to a pill",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "timer": "min"
+    }
+  },
+  {
+    "stem": "TM4Done",
+    "group": "desktop",
+    "number": 33,
+    "title": "Timer · 4 · Time’s up",
+    "size": {
+      "width": 1400,
+      "height": 900
+    },
+    "board": "Focus",
+    "props": {
+      "layout": "bar",
+      "timer": "done"
+    }
+  },
+  {
+    "stem": "MB1Room",
+    "group": "mobile",
+    "number": 1,
+    "title": "Phone · room (teacher presenting)",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "none"
+    }
+  },
+  {
+    "stem": "MB2Updates",
+    "group": "mobile",
+    "number": 2,
+    "title": "Phone · tap “3 updates”",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "alerts"
+    }
+  },
+  {
+    "stem": "MB3People",
+    "group": "mobile",
+    "number": 3,
+    "title": "Phone · People & chat sheet",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "people"
+    }
+  },
+  {
+    "stem": "MB4Student",
+    "group": "mobile",
+    "number": 4,
+    "title": "Phone · tap a student → actions",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "student"
+    }
+  },
+  {
+    "stem": "MB5Chat",
+    "group": "mobile",
+    "number": 5,
+    "title": "Phone · Chat tab",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "chat"
+    }
+  },
+  {
+    "stem": "MB6React",
+    "group": "mobile",
+    "number": 6,
+    "title": "Phone · React + raise hand",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "react"
+    }
+  },
+  {
+    "stem": "MB7More",
+    "group": "mobile",
+    "number": 7,
+    "title": "Phone · More sheet",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "more"
+    }
+  },
+  {
+    "stem": "MB8Landscape",
+    "group": "mobile",
+    "number": 8,
+    "title": "Phone landscape · room",
+    "size": {
+      "width": 844,
+      "height": 390
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "landscape",
+      "sheet": "none"
+    }
+  },
+  {
+    "stem": "MB9LandscapePeople",
+    "group": "mobile",
+    "number": 9,
+    "title": "Phone landscape · People sheet",
+    "size": {
+      "width": 844,
+      "height": 390
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "landscape",
+      "sheet": "people"
+    }
+  },
+  {
+    "stem": "MB10Everyone",
+    "group": "mobile",
+    "number": 10,
+    "title": "Phone · See all → everyone",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "cams"
+    }
+  },
+  {
+    "stem": "MB11Slides",
+    "group": "mobile",
+    "number": 11,
+    "title": "Phone · All slides (grid button)",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "slides"
+    }
+  },
+  {
+    "stem": "MB12Annotate",
+    "group": "mobile",
+    "number": 12,
+    "title": "Phone · Annotate (pencil)",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "none",
+      "annot": "on"
+    }
+  },
+  {
+    "stem": "MB13Minimized",
+    "group": "mobile",
+    "number": 13,
+    "title": "Phone · Presentation minimized",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "none",
+      "presmin": "min"
+    }
+  },
+  {
+    "stem": "MB14LandMin",
+    "group": "mobile",
+    "number": 14,
+    "title": "Phone landscape · Presentation minimized",
+    "size": {
+      "width": 844,
+      "height": 390
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "landscape",
+      "sheet": "none",
+      "presmin": "min"
+    }
+  }
+]

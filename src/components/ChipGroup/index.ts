@@ -7,4 +7,4 @@ export {
   chipListStyles,
   chipStyles,
 } from './ChipGroup';
-export type { ChipGroupProps, ChipProps } from './ChipGroup';
+export type { ChipDensity, ChipGroupProps, ChipProps } from './ChipGroup';

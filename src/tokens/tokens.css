@@ -126,6 +126,7 @@
   --spacing-avatar-sm: 24px;
   --spacing-avatar-md: 32px;
   --spacing-avatar-lg: 40px;
+  --spacing-avatar-xl: 48px;
   --spacing-icon-xs: 12px;
   --spacing-icon-sm: 16px;
   --spacing-icon-md: 20px;
@@ -146,6 +147,8 @@
   --color-surface-stage: var(--bbb-surface-stage);
   --color-surface-tile: var(--bbb-surface-tile);
   --color-surface-overlay: var(--bbb-surface-overlay);
+  --color-slide: var(--bbb-slide);
+  --color-on-slide: var(--bbb-on-slide);
   --color-scrim: var(--bbb-scrim);
   --color-border: var(--bbb-border);
   --color-border-strong: var(--bbb-border-strong);
@@ -196,6 +199,8 @@
   --bbb-surface-stage: var(--color-stage-900);
   --bbb-surface-tile: var(--color-stage-700);
   --bbb-surface-overlay: rgb(4 12 24 / 0.75);
+  --bbb-slide: var(--color-neutral-0);
+  --bbb-on-slide: var(--color-neutral-950);
   --bbb-scrim: rgb(2 8 18 / 0.55);
   --bbb-border: var(--color-neutral-200);
   --bbb-border-strong: var(--color-neutral-300);

@@ -98,4 +98,10 @@ describe('Avatar', () => {
     const avatar = screen.getByRole('img', { name: 'Helena Costa' });
     expect(avatar).toHaveClass('bg-avatar-4', 'rounded-md', 'size-avatar-lg', 'text-md');
   });
+
+  it('renders the 48px xl size for grid tiles, with a badge', () => {
+    render(<Avatar name="Rafaela Monaco" size="xl" badge="hand" />);
+    const avatar = screen.getByRole('img', { name: 'Rafaela Monaco, hand raised' });
+    expect(avatar).toHaveClass('size-avatar-xl', 'text-lg');
+  });
 });

@@ -42,6 +42,8 @@ export const surfaceStyles = tv({ base: '' });
 
 export interface SurfaceProps {
   kind: SurfaceKind;
+  /** The element to render: a `main` for the room's stage column, so the landmark and the surface are one node. @default 'div' */
+  as?: 'div' | 'main' | 'section';
   className?: string;
   children?: ReactNode;
 }
@@ -52,12 +54,12 @@ export interface SurfaceProps {
  * provides the kind through context so overlays that portal to <body>
  * (Tooltip) can carry `data-surface` themselves through `useSurfaceProps`.
  */
-export function Surface({ kind, className, children }: SurfaceProps) {
+export function Surface({ kind, as: Tag = 'div', className, children }: SurfaceProps) {
   return (
     <SurfaceContext.Provider value={kind}>
-      <div data-surface={kind === 'stage' ? 'stage' : undefined} className={surfaceStyles({ className })}>
+      <Tag data-surface={kind === 'stage' ? 'stage' : undefined} className={surfaceStyles({ className })}>
         {children}
-      </div>
+      </Tag>
     </SurfaceContext.Provider>
   );
 }
