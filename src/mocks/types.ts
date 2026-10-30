@@ -235,15 +235,7 @@ export interface BreakoutState {
 
 export type Orientation = 'portrait' | 'landscape';
 export type MobileSheet =
-  | 'none'
-  | 'people'
-  | 'chat'
-  | 'student'
-  | 'more'
-  | 'react'
-  | 'alerts'
-  | 'cams'
-  | 'slides';
+  'none' | 'people' | 'chat' | 'student' | 'more' | 'react' | 'alerts' | 'cams' | 'slides';
 
 export interface UiState {
   layout: Layout;

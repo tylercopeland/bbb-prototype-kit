@@ -160,7 +160,8 @@ export interface TabProps extends Omit<RacTabProps, 'className' | 'children' | '
  * full text.
  */
 export function Tab({ children, badge, variant = 'segmented', icon, className, ref, ...props }: TabProps) {
-  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLDivElement>(ref);
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } =
+    useTruncationTooltip<HTMLDivElement>(ref);
   return (
     <RacTab
       {...mergeProps(props, triggerProps)}

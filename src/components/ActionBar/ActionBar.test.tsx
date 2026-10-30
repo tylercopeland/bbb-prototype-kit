@@ -76,7 +76,9 @@ describe('ActionBar', () => {
     const user = userEvent.setup();
     const onMicrophoneChange = vi.fn();
     const onJoinAudio = vi.fn();
-    const { rerender } = render(<Subject onMicrophoneChange={onMicrophoneChange} onJoinAudio={onJoinAudio} />);
+    const { rerender } = render(
+      <Subject onMicrophoneChange={onMicrophoneChange} onJoinAudio={onJoinAudio} />,
+    );
     const mic = button('Microphone');
     expect(mic).toHaveAttribute('aria-pressed', 'true');
     expect(mic).toHaveAttribute('aria-keyshortcuts', 'Alt+M');

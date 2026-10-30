@@ -63,9 +63,12 @@ describe('people selectors', () => {
     expect(participantSubline(bruno, FIXTURE_NOW)).toBe('Raised · 3 min');
     const me = s.participants.find((p) => p.isSelf)!;
     expect(participantSubline(me, FIXTURE_NOW)).toBe('Presenting');
-    expect(participantSubline({ ...bruno, handRaisedAt: null, hasWhiteboard: true, chatLocked: true }, FIXTURE_NOW)).toBe(
-      'Whiteboard · Chat locked',
-    );
+    expect(
+      participantSubline(
+        { ...bruno, handRaisedAt: null, hasWhiteboard: true, chatLocked: true },
+        FIXTURE_NOW,
+      ),
+    ).toBe('Whiteboard · Chat locked');
   });
 
   it('orders tiles: speakers, then hands by wait, then cameras', () => {
@@ -131,7 +134,10 @@ describe('alerts', () => {
     const twice = reduce(asked, { type: 'requestHelp', roomIndex: 3 });
     expect(selectAlerts(twice)[0].text).toBe('2 rooms asked for help');
     const back = reduce(twice, { type: 'bringEveryoneBack' });
-    expect(selectAlerts(back)[0]).toMatchObject({ kind: 'back', text: 'Breakouts ended · 4 rooms’ work saved' });
+    expect(selectAlerts(back)[0]).toMatchObject({
+      kind: 'back',
+      text: 'Breakouts ended · 4 rooms’ work saved',
+    });
   });
 });
 
@@ -162,16 +168,28 @@ describe('roomStatus', () => {
     expect(roomStatus(rooms[3], 'live', FIXTURE_NOW, names)).toBe('Drawing on the board');
     expect(roomStatus({ ...rooms[1], members: [] }, 'live', FIXTURE_NOW, names)).toBe('Empty');
     const asked = reduce(s, { type: 'requestHelp', roomIndex: 1 });
-    expect(roomStatus(selectRooms(asked)[1], 'live', FIXTURE_NOW + MINUTE, names)).toBe('Asked for help · 1 min');
+    expect(roomStatus(selectRooms(asked)[1], 'live', FIXTURE_NOW + MINUTE, names)).toBe(
+      'Asked for help · 1 min',
+    );
     expect(roomStatus(rooms[1], 'back', FIXTURE_NOW, names)).toBe('Shared notes saved');
   });
 
   it('tells two Anas apart in a talking room (B9)', () => {
     let s = createRoom({ participants: 'duplicateNames' });
-    for (const id of ['ana', 'ana-ferreira']) s = reduce(s, { type: 'moveParticipant', participantId: id, roomIndex: 1 });
+    for (const id of ['ana', 'ana-ferreira'])
+      s = reduce(s, { type: 'moveParticipant', participantId: id, roomIndex: 1 });
     s = reduce(s, { type: 'openRooms' });
-    s = reduce(s, { type: 'setRoomActivity', roomIndex: 1, activity: { kind: 'talking', since: FIXTURE_NOW } });
-    const room = { ...selectRooms(s)[1], members: selectRooms(s)[1].members.filter((m) => m.name.startsWith('Ana')) };
-    expect(roomStatus(room, 'live', FIXTURE_NOW, selectDisplayNames(s))).toBe('Ana S. and Ana F. are talking');
+    s = reduce(s, {
+      type: 'setRoomActivity',
+      roomIndex: 1,
+      activity: { kind: 'talking', since: FIXTURE_NOW },
+    });
+    const room = {
+      ...selectRooms(s)[1],
+      members: selectRooms(s)[1].members.filter((m) => m.name.startsWith('Ana')),
+    };
+    expect(roomStatus(room, 'live', FIXTURE_NOW, selectDisplayNames(s))).toBe(
+      'Ana S. and Ana F. are talking',
+    );
   });
 });

@@ -84,7 +84,7 @@ function Interactive(props: React.ComponentProps<typeof ActionBar>) {
         camera={camera}
         handRaised={hand}
         onTogglePanel={(p) => setPanel((current) => (current === p ? 'none' : p))}
-        onTogglePlugins={() => setPlugins((v) => !v)}
+        onPluginsOpenChange={setPlugins}
         onJoinAudio={() => setAudio('muted')}
         onMicrophoneChange={(on) => setAudio(on ? 'live' : 'muted')}
         onCameraChange={setCamera}

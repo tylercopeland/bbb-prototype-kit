@@ -1,6 +1,10 @@
 import { useId, type Ref } from 'react';
 import { mergeProps } from 'react-aria';
-import { Button as RacButton, composeRenderProps, type ButtonProps as RacButtonProps } from 'react-aria-components';
+import {
+  Button as RacButton,
+  composeRenderProps,
+  type ButtonProps as RacButtonProps,
+} from 'react-aria-components';
 import { Icon, type IconName } from '../../icons';
 import { tv, type VariantProps } from '../../styles/tv';
 import { Tooltip, useTruncationTooltip } from '../Tooltip';
@@ -53,7 +57,10 @@ const kindIcon: Record<AlertPillKind, IconName> = {
   back: 'breakouts',
 };
 
-export interface AlertPillProps extends Omit<RacButtonProps, 'className' | 'children' | 'aria-label' | 'aria-describedby'> {
+export interface AlertPillProps extends Omit<
+  RacButtonProps,
+  'className' | 'children' | 'aria-label' | 'aria-describedby'
+> {
   /** Raised hands (amber), a question in chat (blue), the engagement insight (purple), a help request (red) or rooms closed (green). */
   kind: AlertPillKind;
   /** The visible text, which is also the whole accessible name (D4): "4 raised", "Rafaela asked", "3 low engagement". */
@@ -75,7 +82,8 @@ export interface AlertPillProps extends Omit<RacButtonProps, 'className' | 'chil
  */
 export function AlertPill({ kind, children, description, className, ref, ...props }: AlertPillProps) {
   const descriptionId = useId();
-  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLButtonElement>(ref);
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } =
+    useTruncationTooltip<HTMLButtonElement>(ref);
   return (
     <>
       <RacButton

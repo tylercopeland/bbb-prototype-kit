@@ -51,7 +51,9 @@ describe('AlertPill', () => {
     const pill = screen.getByRole('button', { name: 'Rafaela Monaco de Albuquerque Cavalcanti asked' });
     setLabelOverflow(pill, 400, 200);
     await user.tab();
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('Rafaela Monaco de Albuquerque Cavalcanti asked');
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Rafaela Monaco de Albuquerque Cavalcanti asked',
+    );
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
     expect(pill).toHaveFocus();

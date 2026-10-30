@@ -22,16 +22,26 @@ describe('ParticipantRow', () => {
     expect(screen.getByText('Anton Georgiev')).toHaveClass('truncate');
     expect(screen.getByRole('img', { name: 'Muted, camera on' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Message Anton Georgiev privately' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'More actions for Anton Georgiev' })).toHaveAttribute('aria-haspopup', 'true');
+    expect(screen.getByRole('button', { name: 'More actions for Anton Georgiev' })).toHaveAttribute(
+      'aria-haspopup',
+      'true',
+    );
     const actions = screen.getByRole('button', { name: 'Message Anton Georgiev privately' }).parentElement;
     expect(actions).toHaveClass('opacity-0', 'group-focus-within:opacity-100', 'pointer-coarse:opacity-100');
     // Inert while faded out on a pointer device, 12px apart so the 44px hit areas do not overlap.
-    expect(actions).toHaveClass('pointer-events-none', 'group-hover:pointer-events-auto', 'pointer-coarse:pointer-events-auto', 'gap-3');
+    expect(actions).toHaveClass(
+      'pointer-events-none',
+      'group-hover:pointer-events-auto',
+      'pointer-coarse:pointer-events-auto',
+      'gap-3',
+    );
   });
 
   it('draws speaking with the green disc and ring, hands and presenting on the second line', () => {
     const { rerender } = render(<Subject id="frederick" />);
-    expect(screen.getByRole('img', { name: 'Speaking, camera on' }).firstElementChild).toHaveClass('bg-status-live');
+    expect(screen.getByRole('img', { name: 'Speaking, camera on' }).firstElementChild).toHaveClass(
+      'bg-status-live',
+    );
     expect(document.querySelector('.ring-speaking')).not.toBeNull();
     expect(document.querySelector('[data-icon="speaking"]')).not.toBeNull();
     rerender(<Subject id="bruno" />);
@@ -75,7 +85,10 @@ describe('ParticipantRow', () => {
       'Remove from session',
     ]);
     // The switch keeps its label (X7, X9): unchecked for a muted person, checked only while the mic is on.
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Microphone' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Microphone' })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
     expect(screen.getByText('Muted, camera on')).toBeInTheDocument();
     expect(screen.getByText('Anton Georgiev', { selector: '.break-words' })).toBeInTheDocument();
     await user.keyboard('{Escape}');
@@ -102,7 +115,9 @@ describe('ParticipantRow', () => {
   it('keeps the Microphone switch unchecked while a request is pending, and checked for a live mic', async () => {
     const user = userEvent.setup();
     const onAction = vi.fn();
-    const { rerender } = render(<Subject participant={{ ...by('anton'), unmuteRequested: true }} onAction={onAction} />);
+    const { rerender } = render(
+      <Subject participant={{ ...by('anton'), unmuteRequested: true }} onAction={onAction} />,
+    );
     // The pending request shows in the row's second line, never in the switch's label.
     expect(screen.getByText('Asked to unmute')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'More actions for Anton Georgiev' }));
@@ -172,7 +187,9 @@ describe('ParticipantRow', () => {
     // row holds focus (next to the focused button's own tooltip).
     await user.tab();
     expect(screen.getByRole('button', { name: 'Message Michelle Winkler privately' })).toHaveFocus();
-    await waitFor(() => expect(screen.getAllByRole('tooltip').map((t) => t.textContent)).toContain('Michelle Winkler'));
+    await waitFor(() =>
+      expect(screen.getAllByRole('tooltip').map((t) => t.textContent)).toContain('Michelle Winkler'),
+    );
     await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'Message Michelle Winkler privately' })).toHaveFocus();

@@ -42,7 +42,14 @@ export function formatPeopleCount(count: number): string {
  * matter instead. The recording indicator is an image named "Recording",
  * so "REC" is never read as a word.
  */
-export function SessionHeader({ title, recording = false, peopleCount, elapsed, className, ...props }: SessionHeaderProps) {
+export function SessionHeader({
+  title,
+  recording = false,
+  peopleCount,
+  elapsed,
+  className,
+  ...props
+}: SessionHeaderProps) {
   const styles = sessionHeaderStyles();
   return (
     <header {...props} className={styles.root({ className })}>

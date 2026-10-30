@@ -1,4 +1,11 @@
-import { useMemo, type ContextType, type ReactElement, type ReactNode, type Ref, type RefObject } from 'react';
+import {
+  useMemo,
+  type ContextType,
+  type ReactElement,
+  type ReactNode,
+  type Ref,
+  type RefObject,
+} from 'react';
 import {
   DialogTrigger,
   Heading,
@@ -180,7 +187,12 @@ export function Popover({
       </SurfaceProvider>
     </RacPopover>
   );
-  if (!trigger) return <OverlayTriggerStateContext.Provider value={standaloneState}>{popover}</OverlayTriggerStateContext.Provider>;
+  if (!trigger)
+    return (
+      <OverlayTriggerStateContext.Provider value={standaloneState}>
+        {popover}
+      </OverlayTriggerStateContext.Provider>
+    );
   return (
     <DialogTrigger {...state}>
       {trigger}

@@ -32,7 +32,10 @@ export function participant(seed: Seed, now = FIXTURE_NOW): Participant {
     isSelf: false,
     audio: seed.audio ?? 'notJoined',
     camera: seed.camera ?? false,
-    handRaisedAt: seed.handMin === undefined ? null : now - seed.handMin * MINUTE - (seed.handMin === 0 ? 10 * SECOND : 0),
+    handRaisedAt:
+      seed.handMin === undefined
+        ? null
+        : now - seed.handMin * MINUTE - (seed.handMin === 0 ? 10 * SECOND : 0),
     isPresenter: false,
     isModerator: role === 'teacher',
     hasWhiteboard: false,
@@ -61,10 +64,22 @@ const classSeeds: Seed[] = [
   { id: 'anton', name: 'Anton Georgiev', audio: 'muted', camera: true },
   { id: 'michelle', name: 'Michelle Winkler', audio: 'muted', camera: true },
   { id: 'ellen', name: 'Ellen', audio: 'listening', camera: false },
-  { id: 'timo', name: 'Timo', audio: 'notJoined', camera: false, engagement: low('Camera off · quiet for 22 min') },
+  {
+    id: 'timo',
+    name: 'Timo',
+    audio: 'notJoined',
+    camera: false,
+    engagement: low('Camera off · quiet for 22 min'),
+  },
   { id: 'marta', name: 'Marta Ribeiro', audio: 'muted', camera: true },
   { id: 'lucas', name: 'Lucas Pereira', audio: 'notJoined', camera: true },
-  { id: 'ana', name: 'Ana Souza', audio: 'muted', camera: false, engagement: low('No chat or poll answers yet') },
+  {
+    id: 'ana',
+    name: 'Ana Souza',
+    audio: 'muted',
+    camera: false,
+    engagement: low('No chat or poll answers yet'),
+  },
   {
     id: 'joana',
     name: 'Joana Lima',
@@ -96,7 +111,13 @@ const extraSeeds: Seed[] = [
   { id: 'daniela', name: 'Daniela Rocha', audio: 'muted', camera: true, handMin: 5 },
   { id: 'eduardo', name: 'Eduardo Martins', audio: 'notJoined', camera: false },
   { id: 'fernanda', name: 'Fernanda Castro', audio: 'muted', camera: true },
-  { id: 'gabriel', name: 'Gabriel Santos', audio: 'muted', camera: false, engagement: low('Quiet for 25 min') },
+  {
+    id: 'gabriel',
+    name: 'Gabriel Santos',
+    audio: 'muted',
+    camera: false,
+    engagement: low('Quiet for 25 min'),
+  },
   { id: 'helga', name: 'Helga Lindqvist', audio: 'live', camera: true },
   { id: 'igor', name: 'Igor Petrov', audio: 'muted', camera: true },
   { id: 'julia', name: 'Júlia Barbosa', audio: 'listening', camera: false },
@@ -106,7 +127,13 @@ const extraSeeds: Seed[] = [
   { id: 'nadia', name: 'Nádia Ferreira', audio: 'muted', camera: false },
   { id: 'otto', name: 'Otto Brandt', audio: 'listening', camera: true },
   { id: 'priya', name: 'Priya Raman', audio: 'muted', camera: true },
-  { id: 'quentin', name: 'Quentin Dubois', audio: 'notJoined', camera: false, engagement: low('No chat yet') },
+  {
+    id: 'quentin',
+    name: 'Quentin Dubois',
+    audio: 'notJoined',
+    camera: false,
+    engagement: low('No chat yet'),
+  },
 ];
 const extraStudents: Participant[] = extraSeeds.map((s) => participant(s));
 

@@ -156,7 +156,13 @@ describe('Popover', () => {
             aria-controls={open ? 'plugins-dialog' : undefined}
             onPress={() => setOpen(!open)}
           />
-          <Popover id="plugins-dialog" title="Plugins" triggerRef={triggerRef} isOpen={open} onOpenChange={setOpen}>
+          <Popover
+            id="plugins-dialog"
+            title="Plugins"
+            triggerRef={triggerRef}
+            isOpen={open}
+            onOpenChange={setOpen}
+          >
             <Button>Poll</Button>
           </Popover>
         </>
@@ -168,7 +174,10 @@ describe('Popover', () => {
     await user.click(trigger);
     const dialog = await screen.findByRole('dialog', { name: 'Plugins' });
     expect(dialog).toHaveAttribute('id', 'plugins-dialog');
-    expect(screen.getByRole('button', { name: 'Plugins', hidden: true })).toHaveAttribute('aria-controls', 'plugins-dialog');
+    expect(screen.getByRole('button', { name: 'Plugins', hidden: true })).toHaveAttribute(
+      'aria-controls',
+      'plugins-dialog',
+    );
     await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     await waitFor(() => expect(trigger).toHaveFocus());

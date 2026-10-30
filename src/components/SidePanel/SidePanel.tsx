@@ -101,11 +101,21 @@ export function SidePanel({
       <Tabs selectedKey={panel} onSelectionChange={onChange} className={styles.tabs()}>
         <div className={styles.header()}>
           <TabList label="People and chat" className={styles.tabList()}>
-            <Tab id="people" badge={raisedHands > 0 ? { count: raisedHands, label: formatRaisedHands(raisedHands) } : undefined}>
+            <Tab
+              id="people"
+              badge={
+                raisedHands > 0 ? { count: raisedHands, label: formatRaisedHands(raisedHands) } : undefined
+              }
+            >
               People
             </Tab>
             {/* The unread count hides while Chat is open: the messages are on screen (Focus.dc.html 418). */}
-            <Tab id="chat" badge={unread > 0 && panel !== 'chat' ? { count: unread, label: formatUnread(unread) } : undefined}>
+            <Tab
+              id="chat"
+              badge={
+                unread > 0 && panel !== 'chat' ? { count: unread, label: formatUnread(unread) } : undefined
+              }
+            >
               Chat
             </Tab>
           </TabList>

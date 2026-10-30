@@ -28,7 +28,10 @@ describe('SidePanel', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'People' })).toBeInTheDocument();
     const tabs = screen.getByRole('tablist', { name: 'People and chat' });
     expect(tabs).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'People 4 raised hands' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'People 4 raised hands' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
     expect(screen.getByRole('tab', { name: 'Chat 2 unread' })).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByRole('tabpanel')).toHaveTextContent('People content');
     expect(screen.getByRole('button', { name: 'Close panel' })).toBeInTheDocument();

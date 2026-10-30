@@ -112,7 +112,13 @@ export function IconButton({
     // A native disabled button drops hover and focus, and with them the
     // tooltip (React Aria's recommendation is a Focusable wrapper).
     return (
-      <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement} defaultOpen={tooltipDefaultOpen}>
+      <Tooltip
+        label={label}
+        labelHidden
+        shortcut={shortcut}
+        placement={tooltipPlacement}
+        defaultOpen={tooltipDefaultOpen}
+      >
         <Focusable>
           <button
             {...disabledDomProps(props)}
@@ -130,7 +136,13 @@ export function IconButton({
   }
 
   return (
-    <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement} defaultOpen={tooltipDefaultOpen}>
+    <Tooltip
+      label={label}
+      labelHidden
+      shortcut={shortcut}
+      placement={tooltipPlacement}
+      defaultOpen={tooltipDefaultOpen}
+    >
       <RacButton
         {...props}
         ref={buttonRef}

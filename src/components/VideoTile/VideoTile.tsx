@@ -1,6 +1,7 @@
 import { useId, type ComponentProps } from 'react';
 import { Icon, type IconName } from '../../icons';
-import type { Participant } from '../../mocks/types';
+import { reactions } from '../../mocks/reactions';
+import type { Participant, ReactionKind } from '../../mocks/types';
 import { tv, type VariantProps } from '../../styles/tv';
 import { Avatar } from '../Avatar';
 
@@ -18,8 +19,12 @@ export const videoTileStyles = tv({
     root: 'relative flex shrink-0 items-center justify-center overflow-hidden rounded-tile border border-border bg-surface-tile text-text-on-stage',
     placeholder: 'text-icon-subtle',
     badges: 'absolute top-2 right-2 flex gap-1',
+    /** The person's latest reaction (D5), over the top-left corner for its lifetime. */
+    reaction:
+      'absolute top-2 left-2 flex size-6 items-center justify-center rounded-full bg-surface-overlay text-sm',
     plateRow: 'absolute inset-x-2 bottom-2 flex',
-    plate: 'min-w-0 truncate rounded-xs bg-surface-overlay px-2 text-xs leading-5 font-semibold text-text-on-stage',
+    plate:
+      'min-w-0 truncate rounded-xs bg-surface-overlay px-2 text-xs leading-5 font-semibold text-text-on-stage',
     /** The status after the name, for assistive technology only: the badges show it. */
     status: 'sr-only',
   },
@@ -53,7 +58,11 @@ export const videoTileBadgeStyles = tv({
 export type VideoTileSize = NonNullable<VariantProps<typeof videoTileStyles>['size']>;
 export type VideoTileBadge = NonNullable<VariantProps<typeof videoTileBadgeStyles>['kind']>;
 
-const badgeIcon: Record<VideoTileBadge, IconName> = { hand: 'raiseHand', speaking: 'speaking', muted: 'microphoneOff' };
+const badgeIcon: Record<VideoTileBadge, IconName> = {
+  hand: 'raiseHand',
+  speaking: 'speaking',
+  muted: 'microphoneOff',
+};
 
 const audioStatus: Record<Participant['audio'], string> = {
   live: 'microphone on',
@@ -77,6 +86,8 @@ export interface VideoTileProps extends Omit<ComponentProps<'figure'>, 'children
   shortName?: string;
   /** `strip` is the 168×96 tile of the webcam strip; `grid` fills its grid cell at 16:9. @default 'strip' */
   size?: VideoTileSize;
+  /** The person's current reaction (`selectReactions`), shown as a named emoji over the tile. */
+  reaction?: ReactionKind;
   className?: string;
 }
 
@@ -88,7 +99,14 @@ export interface VideoTileProps extends Omit<ComponentProps<'figure'>, 'children
  * what the badges show. Not interactive (P7: desktop tiles are not
  * tappable; the People panel has the actions).
  */
-export function VideoTile({ participant, shortName, size = 'strip', className, ...props }: VideoTileProps) {
+export function VideoTile({
+  participant,
+  shortName,
+  size = 'strip',
+  reaction,
+  className,
+  ...props
+}: VideoTileProps) {
   const captionId = useId();
   const isSpeaking = participant.audio === 'speaking';
   const styles = videoTileStyles({ size, hasVideo: participant.camera, isSpeaking });
@@ -108,6 +126,11 @@ export function VideoTile({ participant, shortName, size = 'strip', className, .
           size={size === 'grid' ? 'xl' : 'lg'}
           shape={participant.role === 'teacher' ? 'square' : 'circle'}
         />
+      )}
+      {reaction && (
+        <span role="img" aria-label={`Reacted: ${reactions[reaction].label}`} className={styles.reaction()}>
+          {reactions[reaction].emoji}
+        </span>
       )}
       {badges.length > 0 && (
         <span aria-hidden="true" className={styles.badges()}>

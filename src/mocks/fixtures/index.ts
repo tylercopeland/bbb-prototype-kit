@@ -16,7 +16,12 @@ import type {
   UiState,
 } from '../types';
 import { chatFor, emptyChat, questionAlerts } from './chat';
-import { FIXTURE_NOW, FIXTURE_STARTED_AT, participantFixtures, type ParticipantFixture } from './participants';
+import {
+  FIXTURE_NOW,
+  FIXTURE_STARTED_AT,
+  participantFixtures,
+  type ParticipantFixture,
+} from './participants';
 
 export { chatFor, emptyChat, questionAlerts } from './chat';
 export * from './participants';
@@ -120,7 +125,10 @@ export interface BreakoutFixtureOptions {
  * its members; a help request is data in `helpQueue` (B3), added by the
  * route props or an action.
  */
-export function breakoutsFor(state: Pick<RoomState, 'participants'>, options: BreakoutFixtureOptions = {}): BreakoutState {
+export function breakoutsFor(
+  state: Pick<RoomState, 'participants'>,
+  options: BreakoutFixtureOptions = {},
+): BreakoutState {
   const students = breakoutStudents(state.participants).map((s) => s.id);
   const roomCount = options.roomCount ?? 4;
   return {
@@ -168,7 +176,12 @@ export function createRoom(options: CreateRoomOptions = {}): RoomState {
   const present = new Set(participants.map((p) => p.id));
   const messageIds = new Set(chat.everyone.map((m) => m.id));
   return {
-    session: { title: 'Hack Week: Brazil 2026', recording: true, startedAt: FIXTURE_STARTED_AT, privateChat: true },
+    session: {
+      title: 'Hack Week: Brazil 2026',
+      recording: true,
+      startedAt: FIXTURE_STARTED_AT,
+      privateChat: true,
+    },
     clock: { now: FIXTURE_NOW },
     participants,
     chat,

@@ -196,7 +196,7 @@ export function RoomScreen() {
             isSharing={presentation.share !== 'none'}
             panelRefs={{ people: peopleButton, chat: chatButton, notes: notesButton, plugins: pluginsButton }}
             onTogglePanel={(p: ActionBarPanel) => dispatch({ type: 'togglePanel', panel: p })}
-            onTogglePlugins={() => dispatch({ type: 'setPlugins', open: !pluginsOpen })}
+            onPluginsOpenChange={(open) => dispatch({ type: 'setPlugins', open })}
             onJoinAudio={() => me && dispatch({ type: 'joinAudio', participantId: me.id })}
             onMicrophoneChange={(on) => me && dispatch({ type: 'setAudio', participantId: me.id, audio: on ? 'live' : 'muted' })}
             onCameraChange={(on) => me && dispatch({ type: 'setCamera', participantId: me.id, on })}

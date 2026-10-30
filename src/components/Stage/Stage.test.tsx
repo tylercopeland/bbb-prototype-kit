@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createRoom, selectDeck, selectDisplayNames, selectTileOrder, type ParticipantFixture } from '../../mocks';
+import {
+  createRoom,
+  selectDeck,
+  selectDisplayNames,
+  selectTileOrder,
+  type ParticipantFixture,
+} from '../../mocks';
 import { gridColumns, Stage, type StagePresentation } from './Stage';
 
 const forFixture = (people: ParticipantFixture) => {
@@ -29,7 +35,9 @@ describe('Stage', () => {
   });
 
   it('puts the strip above the slide with webcams="top", centred as one block; beside it, the column starts lower', () => {
-    const { container, rerender } = render(<Stage layout="presentation" webcams="top" {...forFixture('class')} />);
+    const { container, rerender } = render(
+      <Stage layout="presentation" webcams="top" {...forFixture('class')} />,
+    );
     const root = container.querySelector('[data-surface="stage"]')!;
     expect(root).toHaveClass('flex-col', 'justify-center', 'items-center', '@container');
     expect(root.firstElementChild).toHaveAttribute('aria-label', 'Webcams');
@@ -85,12 +93,16 @@ describe('Stage', () => {
     const tabs = screen.getByRole('tablist', { name: 'What everyone sees' });
     expect(tabs).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Entire screen' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByText('Everyone sees your entire screen')).toBeInTheDocument();
+    expect(screen.getByText('Your entire screen')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Presentation 3 / 12' }));
     expect(onShowingChange).toHaveBeenCalledWith('slides');
     rerender(
-      <Stage layout="presenter" {...forFixture('class')} share={{ kind: 'Entire screen', showing: 'slides' }} />,
+      <Stage
+        layout="presenter"
+        {...forFixture('class')}
+        share={{ kind: 'Entire screen', showing: 'slides' }}
+      />,
     );
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('BigBlueButton 4.0, refined');
   });
@@ -99,7 +111,9 @@ describe('Stage', () => {
     const user = userEvent.setup();
     const onMinimize = vi.fn();
     const onShowAll = vi.fn();
-    render(<Stage layout="presentation" {...forFixture('thirty')} onMinimize={onMinimize} onShowAll={onShowAll} />);
+    render(
+      <Stage layout="presentation" {...forFixture('thirty')} onMinimize={onMinimize} onShowAll={onShowAll} />,
+    );
     await user.click(screen.getByRole('button', { name: 'Minimize presentation' }));
     await user.click(screen.getByRole('button', { name: '+25 more, show all 30 people' }));
     expect(onMinimize).toHaveBeenCalledTimes(1);
@@ -108,7 +122,9 @@ describe('Stage', () => {
 
   it('falls back to the grid when there is no presentation, and merges a className', () => {
     const { participants, names } = forFixture('four');
-    const { container } = render(<Stage layout="presentation" participants={participants} names={names} className="p-6" />);
+    const { container } = render(
+      <Stage layout="presentation" participants={participants} names={names} className="p-6" />,
+    );
     expect(screen.getByRole('list', { name: 'Webcams' })).toBeInTheDocument();
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
     const root = container.querySelector('[data-surface="stage"]');

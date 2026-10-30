@@ -117,7 +117,11 @@ export function Tooltip({
     </RacTooltip>
   );
   if (!children) {
-    return <TooltipTriggerStateContext.Provider value={standaloneState}>{tooltip}</TooltipTriggerStateContext.Provider>;
+    return (
+      <TooltipTriggerStateContext.Provider value={standaloneState}>
+        {tooltip}
+      </TooltipTriggerStateContext.Provider>
+    );
   }
   return (
     <TooltipTrigger

@@ -6,6 +6,8 @@
  */
 import {
   AppWindow,
+  ArrowLeft,
+  ArrowRight,
   AudioLines,
   Blocks,
   Captions,
@@ -16,6 +18,8 @@ import {
   CircleAlert,
   CirclePlay,
   CircleX,
+  Cloud,
+  Dices,
   Disc,
   DoorOpen,
   Ellipsis,
@@ -34,12 +38,14 @@ import {
   LifeBuoy,
   Lightbulb,
   Link,
+  ListChecks,
   Lock,
   LockKeyhole,
   LogOut,
   Maximize2,
   MessageCircleQuestionMark,
   MessageSquare,
+  MessagesSquare,
   Mic,
   MicOff,
   Minimize2,
@@ -146,6 +152,14 @@ export const icons = {
   check: Check,
   /** A blank whiteboard (the picker's More tab). `whiteboardAccess` is the permission. */
   whiteboard: Frame,
+  /** The presentation controls' pager (Focus.dc.html 112–114). `back` is the chevron that leaves a thread. */
+  previousSlide: ArrowLeft,
+  nextSlide: ArrowRight,
+  /** The "More plugins" rows (Focus.dc.html 793–798). */
+  qaBoard: MessagesSquare,
+  quiz: ListChecks,
+  wordCloud: Cloud,
+  randomPicker: Dices,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

@@ -39,8 +39,20 @@ function Thread({ to }: { to?: ParticipantId }) {
   );
 }
 
-function Demo({ people = 'class', to, chat }: { people?: ParticipantFixture; to?: ParticipantId; chat?: 'default' | 'empty' }) {
-  const state = createRoom({ participants: people, chat, ui: to ? { panel: 'chat', scope: 'direct', dm: to } : {} });
+function Demo({
+  people = 'class',
+  to,
+  chat,
+}: {
+  people?: ParticipantFixture;
+  to?: ParticipantId;
+  chat?: 'default' | 'empty';
+}) {
+  const state = createRoom({
+    participants: people,
+    chat,
+    ui: to ? { panel: 'chat', scope: 'direct', dm: to } : {},
+  });
   return (
     <RoomProvider initialState={state}>
       <div className="flex w-90 flex-col gap-3 rounded-panel bg-surface py-3">

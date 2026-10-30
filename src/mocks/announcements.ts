@@ -38,14 +38,16 @@ export function announcementsFor(previous: RoomState, next: RoomState): Announce
   const stillHere = new Set(next.participants.map((p) => p.id));
   const previousNames = selectDisplayNames(previous);
   for (const p of previous.participants) {
-    if (!stillHere.has(p.id)) out.push({ message: `${previousNames[p.id] ?? p.name} removed`, politeness: 'polite' });
+    if (!stillHere.has(p.id))
+      out.push({ message: `${previousNames[p.id] ?? p.name} removed`, politeness: 'polite' });
   }
 
   // New chat messages from other people.
   const seen = new Set(previous.chat.everyone.map((m) => m.id));
   for (const t of previous.chat.direct) for (const m of t.messages) seen.add(m.id);
   for (const m of next.chat.everyone) {
-    if (!seen.has(m.id) && m.from !== me) out.push({ message: `${nameOf(m.from)}: ${m.text}`, politeness: 'polite' });
+    if (!seen.has(m.id) && m.from !== me)
+      out.push({ message: `${nameOf(m.from)}: ${m.text}`, politeness: 'polite' });
   }
   for (const t of next.chat.direct) {
     for (const m of t.messages) {
@@ -92,7 +94,10 @@ export function announcementsFor(previous: RoomState, next: RoomState): Announce
     out.push({ message: 'Rooms stay open', politeness: 'polite' });
   }
   if (b0.phase === 'live' && b1.phase === 'back') {
-    out.push({ message: 'Breakout rooms closed. Everyone is back in the main room', politeness: 'assertive' });
+    out.push({
+      message: 'Breakout rooms closed. Everyone is back in the main room',
+      politeness: 'assertive',
+    });
   }
 
   // The class timer finishing.

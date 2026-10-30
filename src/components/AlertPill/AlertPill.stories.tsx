@@ -70,7 +70,10 @@ export const ThirtyParticipants: Story = { render: () => <FromState people="thir
 /** Rooms closed: the "Breakouts ended" pill, from state. */
 export const RoomsClosed: Story = {
   render: () => {
-    const state = [{ type: 'openRooms' } as const, { type: 'bringEveryoneBack' } as const].reduce(roomReducer, createRoom());
+    const state = [{ type: 'openRooms' } as const, { type: 'bringEveryoneBack' } as const].reduce(
+      roomReducer,
+      createRoom(),
+    );
     return (
       <>
         {selectAlerts(state).map((a) => (

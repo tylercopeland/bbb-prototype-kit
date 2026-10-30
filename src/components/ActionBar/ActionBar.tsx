@@ -1,9 +1,12 @@
-import type { ComponentProps, Ref } from 'react';
+import { useId, useMemo, useRef, useState, type ComponentProps, type ReactNode, type Ref } from 'react';
+import { mergeRefs } from 'react-aria';
 import { formatRaisedHands, formatUnread } from '../../mocks/format';
-import type { AudioState, Panel } from '../../mocks/types';
+import type { AudioState, Panel, ReactionKind } from '../../mocks/types';
 import { tv } from '../../styles/tv';
 import { ConfirmDialog } from '../Dialog';
 import { IconButton } from '../IconButton';
+import { Popover } from '../Popover';
+import { ReactionTray } from '../ReactionTray';
 import { ToggleButton } from '../ToggleButton';
 
 /**
@@ -19,6 +22,10 @@ export const actionBarStyles = tv({
     panels: 'flex min-w-0 flex-1 items-center gap-2',
     media: 'flex items-center gap-2',
     personal: 'flex min-w-0 flex-1 items-center justify-end gap-2',
+    /** The Share media picker is wider than the Plugins one (Focus.dc.html 322: 452px). */
+    mediaPicker: 'w-112',
+    /** "Opens in a new tab", for assistive technology. */
+    hint: 'sr-only',
   },
 });
 
@@ -28,8 +35,10 @@ export type ActionBarPanel = Extract<Panel, 'people' | 'chat' | 'notes'>;
 export interface ActionBarProps extends Omit<ComponentProps<'nav'>, 'children'> {
   /** The open panel; its button is pressed. */
   panel: Panel;
-  /** The Plugins picker is open; its button is pressed. */
+  /** The Plugins picker is open; its button is pressed and expanded. */
   pluginsOpen?: boolean;
+  /** The Share media picker is open; its button is pressed and expanded. */
+  mediaOpen?: boolean;
   /** The count on People, hidden while People is open. */
   raisedHands: number;
   /** The count on Chat, hidden while Chat is open. */
@@ -38,20 +47,28 @@ export interface ActionBarProps extends Omit<ComponentProps<'nav'>, 'children'> 
   audio: AudioState;
   camera: boolean;
   handRaised: boolean;
-  /** Share media is pressed while the picker is open or something is shared. */
+  /** Share media is pressed while something is shared, as well as while its picker is open. */
   isSharing?: boolean;
+  /** The Learning Analytics tooltip is pinned open on mount (O1). */
+  analyticsTipOpen?: boolean;
   onTogglePanel: (panel: ActionBarPanel) => void;
-  onTogglePlugins?: () => void;
+  onPluginsOpenChange?: (open: boolean) => void;
+  onMediaOpenChange?: (open: boolean) => void;
   onJoinAudio?: () => void;
   onMicrophoneChange?: (on: boolean) => void;
   onCameraChange?: (on: boolean) => void;
   onRaiseHandChange?: (raised: boolean) => void;
-  onShareMedia?: () => void;
-  onReact?: () => void;
+  /** A reaction chosen in the React tray (D5); the tray closes after it. */
+  onReaction?: (kind: ReactionKind) => void;
   onAnalytics?: () => void;
-  onSettings?: () => void;
   /** Called after the person confirms in the Leave dialog. */
   onLeave?: () => void;
+  /** The Plugins picker's content (`PluginsMenu`). Without it the button is a plain toggle. */
+  pluginsPicker?: ReactNode;
+  /** The Share media picker's content (`MediaPicker`). Without it the button is a plain toggle. */
+  mediaPicker?: ReactNode;
+  /** The Room settings popover's content (`RoomSettings`). Without it the button only calls nothing. */
+  settings?: ReactNode;
   /**
    * Refs to the panel toggles (and Plugins, which opens the Poll panel), so
    * the room can return focus to the right one when a panel's close button
@@ -67,30 +84,39 @@ export interface ActionBarProps extends Omit<ComponentProps<'nav'>, 'children'> 
  * and expose their state as `aria-pressed` (X7), with the counts as badges
  * that describe the button. Before audio is joined the mic slot is a "Join
  * audio" button, never a third toggle state (see the ToggleButton
- * docblock). Leave opens a `ConfirmDialog` (D5) and calls `onLeave` only
- * after the confirmation. Nothing here reads the store: the room passes
- * the state and handles each change.
+ * docblock). Plugins and Share media keep their open state in the store,
+ * so their pickers are standalone `Popover`s anchored to the toggles,
+ * which carry `aria-expanded` and `aria-controls` (X1: each has a close
+ * button, Escape closes, focus returns). React opens the reaction tray and
+ * Room settings its switches from their own triggers. Leave opens a
+ * `ConfirmDialog` (D5) and calls `onLeave` only after the confirmation.
+ * Nothing here reads the store: the room passes the state and handles
+ * each change.
  */
 export function ActionBar({
   panel,
   pluginsOpen = false,
+  mediaOpen = false,
   raisedHands,
   unread,
   audio,
   camera,
   handRaised,
   isSharing = false,
+  analyticsTipOpen = false,
   onTogglePanel,
-  onTogglePlugins,
+  onPluginsOpenChange,
+  onMediaOpenChange,
   onJoinAudio,
   onMicrophoneChange,
   onCameraChange,
   onRaiseHandChange,
-  onShareMedia,
-  onReact,
+  onReaction,
   onAnalytics,
-  onSettings,
   onLeave,
+  pluginsPicker,
+  mediaPicker,
+  settings,
   panelRefs,
   className,
   ...props
@@ -99,6 +125,17 @@ export function ActionBar({
   const audioJoined = audio === 'live' || audio === 'speaking' || audio === 'muted';
   const peopleOpen = panel === 'people';
   const chatOpen = panel === 'chat';
+
+  // The two store-driven pickers anchor to their toggles; the Plugins toggle's ref is also the room's.
+  const pluginsRef = useRef<HTMLButtonElement>(null);
+  const forwardedPlugins = panelRefs?.plugins;
+  const pluginsMergedRef = useMemo(() => mergeRefs(pluginsRef, forwardedPlugins), [forwardedPlugins]);
+  const mediaRef = useRef<HTMLButtonElement>(null);
+  const pluginsId = useId();
+  const mediaId = useId();
+  const analyticsHintId = useId();
+  const [reactOpen, setReactOpen] = useState(false);
+
   return (
     <nav aria-label="Actions" {...props} className={styles.root({ className })}>
       <div className={styles.panels()}>
@@ -108,7 +145,11 @@ export function ActionBar({
           icon="people"
           isSelected={peopleOpen}
           onChange={() => onTogglePanel('people')}
-          badge={raisedHands > 0 && !peopleOpen ? { count: raisedHands, label: formatRaisedHands(raisedHands) } : undefined}
+          badge={
+            raisedHands > 0 && !peopleOpen
+              ? { count: raisedHands, label: formatRaisedHands(raisedHands) }
+              : undefined
+          }
         />
         <ToggleButton
           ref={panelRefs?.chat}
@@ -126,12 +167,26 @@ export function ActionBar({
           onChange={() => onTogglePanel('notes')}
         />
         <ToggleButton
-          ref={panelRefs?.plugins}
+          ref={pluginsMergedRef}
           label="Plugins"
           icon="plugins"
           isSelected={pluginsOpen}
-          onChange={() => onTogglePlugins?.()}
+          onChange={(on) => onPluginsOpenChange?.(on)}
+          aria-haspopup={pluginsPicker ? 'dialog' : undefined}
+          aria-expanded={pluginsPicker ? pluginsOpen : undefined}
+          aria-controls={pluginsPicker && pluginsOpen ? pluginsId : undefined}
         />
+        {pluginsPicker && (
+          <Popover
+            id={pluginsId}
+            title="Plugins"
+            triggerRef={pluginsRef}
+            isOpen={pluginsOpen}
+            onOpenChange={onPluginsOpenChange}
+          >
+            {pluginsPicker}
+          </Popover>
+        )}
       </div>
       <div className={styles.media()}>
         {audioJoined ? (
@@ -162,8 +217,43 @@ export function ActionBar({
           isSelected={camera}
           onChange={(on) => onCameraChange?.(on)}
         />
-        <ToggleButton label="Share media" icon="shareMedia" isSelected={isSharing} onChange={() => onShareMedia?.()} />
-        <IconButton label="React" icon="react" variant="soft" size="touch" onPress={() => onReact?.()} />
+        <ToggleButton
+          ref={mediaRef}
+          label="Share media"
+          icon="shareMedia"
+          isSelected={mediaOpen || isSharing}
+          onChange={() => onMediaOpenChange?.(!mediaOpen)}
+          aria-haspopup={mediaPicker ? 'dialog' : undefined}
+          aria-expanded={mediaPicker ? mediaOpen : undefined}
+          aria-controls={mediaPicker && mediaOpen ? mediaId : undefined}
+        />
+        {mediaPicker && (
+          <Popover
+            id={mediaId}
+            title="Share media"
+            titleHidden
+            triggerRef={mediaRef}
+            isOpen={mediaOpen}
+            onOpenChange={onMediaOpenChange}
+            className={styles.mediaPicker()}
+          >
+            {mediaPicker}
+          </Popover>
+        )}
+        <Popover
+          title="React"
+          titleHidden
+          isOpen={reactOpen}
+          onOpenChange={setReactOpen}
+          trigger={<IconButton label="React" icon="react" variant="soft" size="touch" />}
+        >
+          <ReactionTray
+            onReact={(kind) => {
+              onReaction?.(kind);
+              setReactOpen(false);
+            }}
+          />
+        </Popover>
         <ToggleButton
           label="Raise hand"
           icon="raiseHand"
@@ -179,11 +269,27 @@ export function ActionBar({
           icon="analytics"
           variant="soft"
           size="touch"
+          aria-describedby={analyticsHintId}
+          tooltipDefaultOpen={analyticsTipOpen}
           onPress={() => onAnalytics?.()}
         />
-        <IconButton label="Room settings" icon="settings" variant="soft" size="touch" onPress={() => onSettings?.()} />
+        <span id={analyticsHintId} className={styles.hint()}>
+          Opens in a new tab
+        </span>
+        {settings ? (
+          <Popover
+            title="Room settings"
+            trigger={<IconButton label="Room settings" icon="settings" variant="soft" size="touch" />}
+          >
+            {settings}
+          </Popover>
+        ) : (
+          <IconButton label="Room settings" icon="settings" variant="soft" size="touch" />
+        )}
         <ConfirmDialog
-          trigger={<IconButton label="Leave session" icon="leave" variant="soft" tone="danger" size="touch" />}
+          trigger={
+            <IconButton label="Leave session" icon="leave" variant="soft" tone="danger" size="touch" />
+          }
           title="Leave the session?"
           description="You can come back with the same link. The class carries on without you."
           confirmLabel="Leave session"

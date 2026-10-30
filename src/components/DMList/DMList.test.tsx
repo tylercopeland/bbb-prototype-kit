@@ -18,7 +18,9 @@ describe('DMList', () => {
     render(<DMList threads={threadsFor('class')} />);
     const rows = screen.getAllByRole('button').filter((b) => b.closest('li'));
     expect(rows).toHaveLength(2);
-    expect(rows[0]).toHaveAccessibleName(/^Rafaela Monaco Can I share my screen right after Frederick\? 9:06 1 unread$/);
+    expect(rows[0]).toHaveAccessibleName(
+      /^Rafaela Monaco Can I share my screen right after Frederick\? 9:06 1 unread$/,
+    );
     expect(rows[0]).toHaveClass('bg-surface-sunken');
     expect(rows[1]).toHaveAccessibleName(/^Bruno You: It’s in the Notes panel, right next to Chat 8:52\s*$/);
     expect(rows[1]).not.toHaveClass('bg-surface-sunken');
@@ -72,7 +74,9 @@ describe('DMList', () => {
 
   it('reports each row’s button through rowRef, so the owner can return focus to a thread', () => {
     const rows = new Map<string, HTMLButtonElement | null>();
-    const { unmount } = render(<DMList threads={threadsFor('class')} rowRef={(id, el) => rows.set(id, el)} />);
+    const { unmount } = render(
+      <DMList threads={threadsFor('class')} rowRef={(id, el) => rows.set(id, el)} />,
+    );
     expect(rows.get('rafaela')).toBe(screen.getByRole('button', { name: /^Rafaela Monaco/ }));
     expect(rows.get('bruno')).toBe(screen.getByRole('button', { name: /^Bruno/ }));
     rows.get('bruno')?.focus();

@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import type { Participant, ParticipantId } from '../../mocks/types';
+import type { Participant, ParticipantId, ReactionKind } from '../../mocks/types';
 import { tv, type VariantProps } from '../../styles/tv';
 import { Button } from '../Button';
 import { VideoTile } from '../VideoTile';
@@ -49,6 +49,8 @@ export interface WebcamStripProps extends Omit<ComponentProps<'ul'>, 'children'>
   max?: number;
   /** @default 'column' */
   direction?: WebcamStripDirection;
+  /** Current reactions by person (`selectReactions`), shown on their tiles. */
+  reactions?: Record<ParticipantId, ReactionKind>;
   /** "+N more" opens the People panel. */
   onShowAll?: () => void;
   className?: string;
@@ -67,6 +69,7 @@ export function WebcamStrip({
   names,
   max = DEFAULT_MAX_TILES,
   direction = 'column',
+  reactions,
   onShowAll,
   className,
   ...props
@@ -77,7 +80,11 @@ export function WebcamStrip({
     <ul aria-label="Webcams" {...props} className={webcamStripStyles({ direction, className })}>
       {shown.map((p) => (
         <li key={p.id} className={webcamStripCellStyles()}>
-          <VideoTile participant={p} shortName={p.isSelf ? 'You' : (names[p.id] ?? p.name)} />
+          <VideoTile
+            participant={p}
+            shortName={p.isSelf ? 'You' : (names[p.id] ?? p.name)}
+            reaction={reactions?.[p.id]}
+          />
         </li>
       ))}
       {rest > 0 && (

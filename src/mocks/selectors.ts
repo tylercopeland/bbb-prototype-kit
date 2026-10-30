@@ -172,7 +172,9 @@ export const selectDirectList = memo((s): DirectSummary[] => {
         preview: last ? `${last.from === me ? 'You: ' : ''}${last.text}` : '',
       };
     })
-    .sort((a, b) => (b.last?.sentAt ?? Number.POSITIVE_INFINITY) - (a.last?.sentAt ?? Number.POSITIVE_INFINITY));
+    .sort(
+      (a, b) => (b.last?.sentAt ?? Number.POSITIVE_INFINITY) - (a.last?.sentAt ?? Number.POSITIVE_INFINITY),
+    );
 });
 
 export const selectOpenThread = memo((s): DirectThread | null =>
@@ -228,7 +230,10 @@ export const selectAlerts = memo((s): Alert[] => {
         kind: 'help',
         count: open.length,
         request: open[0],
-        text: open.length === 1 ? `Room ${open[0].roomIndex + 1} asked for help` : `${open.length} rooms asked for help`,
+        text:
+          open.length === 1
+            ? `Room ${open[0].roomIndex + 1} asked for help`
+            : `${open.length} rooms asked for help`,
       });
     }
   }
@@ -243,17 +248,30 @@ export const selectAlerts = memo((s): Alert[] => {
   }
   const hands = selectRaisedHands(s).filter((p) => !p.isSelf);
   if (hands.length > 0) {
-    alerts.push({ id: 'hands', kind: 'hands', count: hands.length, text: `${hands.length} raised`, longest: hands[0] });
+    alerts.push({
+      id: 'hands',
+      kind: 'hands',
+      count: hands.length,
+      text: `${hands.length} raised`,
+      longest: hands[0],
+    });
   }
   const names = selectDisplayNames(s);
   for (const a of s.alerts) {
     const from = s.participants.find((p) => p.id === a.from) ?? null;
     const message = s.chat.everyone.find((m) => m.id === a.messageId);
     if (message && message.read) continue;
-    alerts.push({ id: a.id, kind: 'question', from, messageId: a.messageId, text: `${from ? names[from.id] : 'Someone'} asked` });
+    alerts.push({
+      id: a.id,
+      kind: 'question',
+      from,
+      messageId: a.messageId,
+      text: `${from ? names[from.id] : 'Someone'} asked`,
+    });
   }
   const low = selectLowEngagement(s);
-  if (low.length > 0) alerts.push({ id: 'insight', kind: 'insight', count: low.length, text: `${low.length} low engagement` });
+  if (low.length > 0)
+    alerts.push({ id: 'insight', kind: 'insight', count: low.length, text: `${low.length} low engagement` });
   return alerts;
 });
 
@@ -276,7 +294,8 @@ export const selectPollEligible = (s: RoomState) => s.participants.filter((p) =>
 /** Seconds left on the class timer at the current room time. */
 export const selectTimerLeft = (s: RoomState): number => {
   const { timer, clock } = s;
-  if (timer.phase === 'running' && timer.endsAt !== null) return Math.max(0, (timer.endsAt - clock.now) / SECOND);
+  if (timer.phase === 'running' && timer.endsAt !== null)
+    return Math.max(0, (timer.endsAt - clock.now) / SECOND);
   return timer.leftSec;
 };
 
@@ -319,7 +338,12 @@ export function roomStatus(
   names: Record<ParticipantId, string>,
 ): string {
   if (phase === 'back') {
-    const label = { board: 'Shared whiteboard', doc: 'Shared notes', quiz: 'Practice quiz', slide: 'Your slides' }[room.work];
+    const label = {
+      board: 'Shared whiteboard',
+      doc: 'Shared notes',
+      quiz: 'Practice quiz',
+      slide: 'Your slides',
+    }[room.work];
     return `${label} saved`;
   }
   if (room.members.length === 0) return 'Empty';
@@ -355,7 +379,12 @@ export const selectPluginSubtitles = memo((s): Record<string, string> => {
         : s.breakouts.phase === 'back'
           ? `${rooms} rooms closed`
           : `${rooms} rooms set up`,
-    poll: s.poll.phase === 'live' ? `${answered} answered` : s.poll.phase === 'off' ? 'Not started' : '1 draft ready',
+    poll:
+      s.poll.phase === 'live'
+        ? `${answered} answered`
+        : s.poll.phase === 'off'
+          ? 'Not started'
+          : '1 draft ready',
     timer: s.timer.phase === 'running' ? 'Running' : 'Not running',
   };
 });

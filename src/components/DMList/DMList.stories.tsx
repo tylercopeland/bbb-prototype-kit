@@ -1,5 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { createRoom, roomReducer, selectDirectList, type ParticipantFixture, type RoomAction } from '../../mocks';
+import {
+  createRoom,
+  roomReducer,
+  selectDirectList,
+  type ParticipantFixture,
+  type RoomAction,
+} from '../../mocks';
 import { DMList } from './DMList';
 
 const threadsFor = (people: ParticipantFixture, ...actions: RoomAction[]) =>
@@ -39,9 +45,23 @@ export const ThirtyParticipants: Story = {
   args: {
     threads: threadsFor(
       'thirty',
-      ...['beatriz', 'carlos', 'daniela', 'eduardo', 'fernanda', 'gabriel', 'helga', 'igor', 'julia', 'kenji'].map(
-        (id, i): RoomAction => ({ type: 'sendMessage', from: id, text: `Question ${i + 1} about the slides`, to: 'helena' }),
-      ),
+      ...[
+        'beatriz',
+        'carlos',
+        'daniela',
+        'eduardo',
+        'fernanda',
+        'gabriel',
+        'helga',
+        'igor',
+        'julia',
+        'kenji',
+      ].map((id, i): RoomAction => ({
+        type: 'sendMessage',
+        from: id,
+        text: `Question ${i + 1} about the slides`,
+        to: 'helena',
+      })),
     ),
   },
 };

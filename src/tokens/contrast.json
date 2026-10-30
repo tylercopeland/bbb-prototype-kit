@@ -721,6 +721,41 @@
       "bg": "primitive.color.avatar.10",
       "min": 4.5,
       "note": "5.45"
+    },
+    {
+      "fg": "semantic.color.accent",
+      "bg": "semantic.color.surface-raised",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "Whiteboard ink swatch (WhiteboardToolbar) on the toolbar's raised fill; a fill, so 3:1"
+    },
+    {
+      "fg": "semantic.color.danger-text",
+      "bg": "semantic.color.surface-raised",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "Whiteboard ink swatch (WhiteboardToolbar) on the toolbar's raised fill; a fill, so 3:1"
+    },
+    {
+      "fg": "semantic.color.status-live-text",
+      "bg": "semantic.color.surface-raised",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "Whiteboard ink swatch (WhiteboardToolbar) on the toolbar's raised fill; a fill, so 3:1"
+    },
+    {
+      "fg": "semantic.color.status-hand-text",
+      "bg": "semantic.color.surface-raised",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "Whiteboard ink swatch (WhiteboardToolbar) on the toolbar's raised fill; a fill, so 3:1"
+    },
+    {
+      "fg": "semantic.color.insight-text",
+      "bg": "semantic.color.surface-raised",
+      "min": 3,
+      "modes": ["light", "dark", "stage"],
+      "note": "Whiteboard ink swatch (WhiteboardToolbar) on the toolbar's raised fill; a fill, so 3:1"
     }
   ]
 }

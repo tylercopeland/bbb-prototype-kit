@@ -86,10 +86,10 @@ export const menuSwitchStyles = tv({
   variants: {
     isSelected: {
       true: {
-        track: 'bg-accent forced-colors-track-on',
-        thumb: 'translate-x-4 bg-on-accent forced-colors-thumb-on',
+        track: 'forced-colors-track-on bg-accent',
+        thumb: 'translate-x-4 forced-colors-thumb-on bg-on-accent',
       },
-      false: { track: 'bg-border-control forced-colors-track', thumb: 'bg-surface forced-colors-thumb' },
+      false: { track: 'forced-colors-track bg-border-control', thumb: 'forced-colors-thumb bg-surface' },
     },
   },
   defaultVariants: { isSelected: false },

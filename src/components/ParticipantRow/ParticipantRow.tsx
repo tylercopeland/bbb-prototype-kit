@@ -21,7 +21,7 @@ import { Tooltip, useTruncationTooltip } from '../Tooltip';
  */
 export const participantRowStyles = tv({
   slots: {
-    root: 'group flex min-h-row items-center gap-2 rounded-control px-2 py-1 hover:bg-surface-sunken focus-within:bg-surface-sunken',
+    root: 'group flex min-h-row items-center gap-2 rounded-control px-2 py-1 focus-within:bg-surface-sunken hover:bg-surface-sunken',
     body: 'flex min-w-0 flex-1 flex-col',
     name: 'flex min-w-0 items-baseline gap-1 text-md font-semibold text-text',
     nameText: 'min-w-0 truncate',
@@ -33,7 +33,7 @@ export const participantRowStyles = tv({
      * inert too, so an invisible button is never pressed by accident.
      */
     actions:
-      'pointer-events-none flex shrink-0 gap-3 opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100',
+      'pointer-events-none flex shrink-0 gap-3 opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100',
     status: 'flex shrink-0 items-center gap-2',
     mic: 'flex size-6 items-center justify-center rounded-full',
     camera: 'flex w-5 items-center justify-center',
@@ -155,14 +155,22 @@ export function ParticipantRow({
   };
   const subline = showEngagement ? (p.engagement.note ?? '') : participantSubline(p, now);
   const sublineTone: ParticipantRowSublineTone =
-    !showEngagement && p.handRaisedAt !== null ? 'hand' : !showEngagement && p.isPresenter ? 'presenting' : 'muted';
-  const sublineIcon: IconName | null = sublineTone === 'hand' ? 'raiseHand' : sublineTone === 'presenting' ? 'presenter' : null;
+    !showEngagement && p.handRaisedAt !== null
+      ? 'hand'
+      : !showEngagement && p.isPresenter
+        ? 'presenting'
+        : 'muted';
+  const sublineIcon: IconName | null =
+    sublineTone === 'hand' ? 'raiseHand' : sublineTone === 'presenting' ? 'presenter' : null;
   const styles = participantRowStyles({ isMenuOpen, sublineTone, audio: p.audio });
   const [confirmRemove, setConfirmRemove] = useState(false);
 
   // The row is the tooltip's trigger (hover anywhere on it, or focus inside it); the name is what is measured.
   const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLLIElement>();
-  const { hoverProps } = useHover({ onHoverStart: triggerProps.onHoverStart, onHoverEnd: triggerProps.onHoverEnd });
+  const { hoverProps } = useHover({
+    onHoverStart: triggerProps.onHoverStart,
+    onHoverEnd: triggerProps.onHoverEnd,
+  });
 
   const audioJoined = p.audio === 'live' || p.audio === 'speaking' || p.audio === 'muted';
   const micOn = p.audio === 'live' || p.audio === 'speaking';
@@ -176,8 +184,10 @@ export function ParticipantRow({
     if (keys === 'all') return;
     const has = (k: Key) => keys.has(k);
     if (has('microphone') !== micOn) onAction?.({ type: 'microphone', on: has('microphone') });
-    if (has('whiteboard') !== p.hasWhiteboard) onAction?.({ type: 'flag', flag: 'hasWhiteboard', value: has('whiteboard') });
-    if (has('moderator') !== p.isModerator) onAction?.({ type: 'flag', flag: 'isModerator', value: has('moderator') });
+    if (has('whiteboard') !== p.hasWhiteboard)
+      onAction?.({ type: 'flag', flag: 'hasWhiteboard', value: has('whiteboard') });
+    if (has('moderator') !== p.isModerator)
+      onAction?.({ type: 'flag', flag: 'isModerator', value: has('moderator') });
     if (has('lock') !== p.chatLocked) onAction?.({ type: 'flag', flag: 'chatLocked', value: has('lock') });
   };
   const onMenuAction = (key: Key) => {
@@ -216,12 +226,26 @@ export function ParticipantRow({
       </div>
       {!p.isSelf && (
         <span className={styles.actions()}>
-          <IconButton label={`Message ${p.name} privately`} icon="chat" variant="soft" size="sm" onPress={onMessage} />
+          <IconButton
+            label={`Message ${p.name} privately`}
+            icon="chat"
+            variant="soft"
+            size="sm"
+            onPress={onMessage}
+          />
           <Menu
             isOpen={isMenuOpen}
             onOpenChange={setMenuOpen}
             onAction={onMenuAction}
-            trigger={<IconButton ref={moreRef} label={`More actions for ${p.name}`} icon="more" variant="soft" size="sm" />}
+            trigger={
+              <IconButton
+                ref={moreRef}
+                label={`More actions for ${p.name}`}
+                icon="more"
+                variant="soft"
+                size="sm"
+              />
+            }
             header={
               <>
                 <Avatar aria-hidden="true" name={p.name} participantId={p.id} size="lg" />
@@ -239,7 +263,12 @@ export function ParticipantRow({
               {p.camera ? 'Turn off camera' : 'Turn on camera'}
             </MenuItem>
             <MenuSeparator />
-            <MenuSection aria-label="Permissions" selectionMode="multiple" selectedKeys={flags} onSelectionChange={onFlags}>
+            <MenuSection
+              aria-label="Permissions"
+              selectionMode="multiple"
+              selectedKeys={flags}
+              onSelectionChange={onFlags}
+            >
               <MenuItem
                 id="microphone"
                 icon={micOn ? 'microphone' : 'microphoneOff'}
@@ -278,7 +307,9 @@ export function ParticipantRow({
         <span className={styles.mic()}>
           <Icon name={micIcon[p.audio]} size={p.audio === 'speaking' ? 'xs' : 'sm'} />
         </span>
-        <span className={styles.camera()}>{p.camera && <Icon name="camera" size="sm" className={styles.cameraIcon()} />}</span>
+        <span className={styles.camera()}>
+          {p.camera && <Icon name="camera" size="sm" className={styles.cameraIcon()} />}
+        </span>
       </span>
     </li>
   );
