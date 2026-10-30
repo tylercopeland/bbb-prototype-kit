@@ -286,7 +286,13 @@ export function RoomScreen() {
                 Breakout rooms
               </h2>
               <p className={styles.breakoutsNote()}>Not built yet (milestone 5, batch C).</p>
-              <Button onPress={() => dispatch({ type: 'setBreakoutsOpen', open: false })}>
+              <Button
+                onPress={() => {
+                  dispatch({ type: 'setBreakoutsOpen', open: false });
+                  // This button unmounts with the surface: Plugins, which opened it, takes focus (WCAG 2.4.3).
+                  pluginsButton.current?.focus();
+                }}
+              >
                 Back to the room
               </Button>
             </section>

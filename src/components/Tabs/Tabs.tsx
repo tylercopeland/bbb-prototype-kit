@@ -67,7 +67,7 @@ export const tabStyles = tv({
       segmented:
         'hit-area h-control-sm gap-2 rounded-xs px-3 text-sm font-semibold whitespace-nowrap text-text-secondary data-hovered:bg-surface-raised data-pressed:bg-surface-raised data-selected:bg-surface data-selected:text-text data-selected:selected-ring data-selected:data-hovered:bg-surface data-selected:data-pressed:bg-surface',
       stacked:
-        'flex-col gap-1 rounded-control p-1 text-xs font-semibold text-text-secondary data-selected:text-selected-text',
+        'flex-col gap-1 rounded-control p-1 text-xs font-semibold text-text-secondary data-selected:font-bold data-selected:text-text',
     },
   },
   defaultVariants: { variant: 'segmented' },

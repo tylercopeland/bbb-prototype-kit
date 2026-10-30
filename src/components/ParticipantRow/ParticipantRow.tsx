@@ -1,5 +1,5 @@
-import { useState, type ComponentProps, type Ref } from 'react';
-import { mergeProps, useHover } from 'react-aria';
+import { useMemo, useRef, useState, type ComponentProps, type Ref } from 'react';
+import { mergeProps, mergeRefs, useHover } from 'react-aria';
 import type { Key, Selection } from 'react-aria-components';
 import { Icon, type IconName } from '../../icons';
 import { participantSubline } from '../../mocks/selectors';
@@ -171,6 +171,9 @@ export function ParticipantRow({
     sublineTone === 'hand' ? 'raiseHand' : sublineTone === 'presenting' ? 'presenter' : null;
   const styles = participantRowStyles({ isMenuOpen, sublineTone, audio: p.audio });
   const [confirmRemove, setConfirmRemove] = useState(false);
+  // The ⋯ button, for the menu's focus fallback (O2 opens the menu on load) as well as the list's ref.
+  const moreButton = useRef<HTMLButtonElement>(null);
+  const moreButtonRef = useMemo(() => mergeRefs(moreButton, moreRef), [moreRef]);
 
   // The row is the tooltip's trigger (hover anywhere on it, or focus inside it); the name is what is measured.
   const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLLIElement>();
@@ -246,9 +249,10 @@ export function ParticipantRow({
             isOpen={isMenuOpen}
             onOpenChange={setMenuOpen}
             onAction={onMenuAction}
+            restoreFocusTo={moreButton}
             trigger={
               <IconButton
-                ref={moreRef}
+                ref={moreButtonRef}
                 label={`More actions for ${p.name}`}
                 icon="more"
                 variant="soft"

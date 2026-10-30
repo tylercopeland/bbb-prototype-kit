@@ -65,7 +65,7 @@ export const mediaCardHintStyles = tv({ base: 'text-xs font-regular text-text-mu
  * check mark, and reports `aria-checked` as a radio in its group.
  */
 export const deckCardStyles = tv({
-  base: 'relative flex min-w-0 flex-col gap-1 rounded-lg border border-border bg-surface-sunken p-2 text-left focus-ring outline-none data-hovered:bg-surface-raised data-pressed:bg-surface-raised data-selected:border-selected-border data-selected:bg-selected data-selected:selected-ring data-selected:data-hovered:bg-selected data-selected:data-pressed:bg-selected',
+  base: 'relative flex min-w-0 flex-col gap-1 rounded-lg border border-border bg-surface-sunken p-2 text-left text-text focus-ring outline-none data-hovered:bg-surface-raised data-pressed:bg-surface-raised data-selected:border-selected-border data-selected:bg-selected data-selected:text-selected-text data-selected:selected-ring data-selected:data-hovered:bg-selected data-selected:data-pressed:bg-selected',
 });
 
 export const deckCardPartsStyles = tv({
@@ -73,7 +73,8 @@ export const deckCardPartsStyles = tv({
     paper:
       'flex aspect-video w-full items-start overflow-hidden rounded-control border border-border bg-slide p-2 text-xs leading-4 font-bold text-on-slide',
     paperTitle: 'line-clamp-2 break-words',
-    file: 'truncate text-center text-xs font-bold text-text',
+    /** Inherits the card's text: the selected pair on the selected fill. */
+    file: 'truncate text-center text-xs font-bold',
     check:
       'absolute top-1 left-1 flex size-6 items-center justify-center rounded-full bg-accent text-on-accent',
   },

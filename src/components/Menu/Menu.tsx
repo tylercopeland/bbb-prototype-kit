@@ -1,4 +1,4 @@
-import { useState, type ReactElement, type ReactNode, type Ref } from 'react';
+import { useState, type ReactElement, type ReactNode, type Ref, type RefObject } from 'react';
 import {
   Header,
   MenuTrigger,
@@ -18,6 +18,7 @@ import {
 } from 'react-aria-components';
 import { Icon, type IconName } from '../../icons';
 import { tv, type VariantProps } from '../../styles/tv';
+import { FocusFallback } from '../Popover';
 import { SurfaceProvider } from '../Surface';
 
 /**
@@ -251,6 +252,12 @@ export interface MenuProps extends Pick<MenuTriggerProps, 'isOpen' | 'defaultOpe
   className?: string;
   /** The menu element. */
   ref?: Ref<HTMLDivElement>;
+  /**
+   * Where focus goes when the menu closes and nothing else holds it: a menu
+   * that was open on load (O2) had no trigger press to return to. Pass the
+   * trigger's ref.
+   */
+  restoreFocusTo?: RefObject<Element | null>;
 }
 
 /**
@@ -280,6 +287,7 @@ export function Menu({
   placement = 'bottom end',
   className,
   ref,
+  restoreFocusTo,
   ...state
 }: MenuProps) {
   // A menu that is open on load (O2, the `pmenu` prop) had no trigger press to set
@@ -294,6 +302,7 @@ export function Menu({
         className={composeRenderProps(className, (cls) => menuPopoverStyles({ className: cls }))}
       >
         <SurfaceProvider kind="panel">
+          <FocusFallback target={restoreFocusTo} />
           {header && <div className={menuHeaderStyles()}>{header}</div>}
           <RacMenu
             ref={ref}

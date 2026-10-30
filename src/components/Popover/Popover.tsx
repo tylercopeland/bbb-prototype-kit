@@ -99,7 +99,7 @@ const POPOVER_OFFSET = 8;
  * It runs at the real unmount, after any exit animation, a tick later so
  * React Aria's own restore goes first when it has somewhere to go.
  */
-function FocusFallback({ target }: { target?: RefObject<Element | null> }) {
+export function FocusFallback({ target }: { target?: RefObject<Element | null> }) {
   useEffect(() => {
     // The trigger is mounted before its popover opens, so it is known here and kept for the cleanup.
     const element = target?.current;

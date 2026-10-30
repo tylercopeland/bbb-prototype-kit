@@ -106,7 +106,8 @@ export const InPopover: Story = {
   tags: ['wait-for-overlay'],
   decorators: [
     (Story) => (
-      <div className="flex min-h-128 items-end justify-center p-8">
+      // Tall enough for the whole picker above its trigger: a scrolling card's clipped rows would be measured against the page behind it.
+      <div className="flex min-h-176 items-end justify-center p-8">
         <Story />
       </div>
     ),
