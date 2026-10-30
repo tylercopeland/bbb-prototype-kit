@@ -1,4 +1,4 @@
-import { createRef } from 'react';
+import { createRef, useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -138,5 +138,44 @@ describe('Popover', () => {
     const ref = createRef<HTMLElement>();
     render(<Subject defaultOpen ref={ref} />);
     expect(ref.current).toBe(screen.getByRole('dialog'));
+  });
+
+  it('standalone: anchors to a triggerRef, is controlled, and closes on Escape and its close button', async () => {
+    const user = userEvent.setup();
+    function Standalone() {
+      const [open, setOpen] = useState(false);
+      const triggerRef = useRef<HTMLButtonElement>(null);
+      return (
+        <>
+          <IconButton
+            ref={triggerRef}
+            label="Plugins"
+            icon="plugins"
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-controls={open ? 'plugins-dialog' : undefined}
+            onPress={() => setOpen(!open)}
+          />
+          <Popover id="plugins-dialog" title="Plugins" triggerRef={triggerRef} isOpen={open} onOpenChange={setOpen}>
+            <Button>Poll</Button>
+          </Popover>
+        </>
+      );
+    }
+    render(<Standalone />);
+    const trigger = screen.getByRole('button', { name: 'Plugins' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await user.click(trigger);
+    const dialog = await screen.findByRole('dialog', { name: 'Plugins' });
+    expect(dialog).toHaveAttribute('id', 'plugins-dialog');
+    expect(screen.getByRole('button', { name: 'Plugins', hidden: true })).toHaveAttribute('aria-controls', 'plugins-dialog');
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await user.keyboard('{Enter}');
+    await screen.findByRole('dialog');
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

@@ -1,7 +1,8 @@
-import type { ReactElement, ReactNode, Ref } from 'react';
+import { useMemo, type ContextType, type ReactElement, type ReactNode, type Ref, type RefObject } from 'react';
 import {
   DialogTrigger,
   Heading,
+  OverlayTriggerStateContext,
   Dialog as RacDialog,
   Popover as RacPopover,
   composeRenderProps,
@@ -86,8 +87,20 @@ export interface PopoverProps extends Pick<
   RacPopoverProps,
   'placement' | 'offset' | 'shouldFlip' | 'isOpen' | 'defaultOpen' | 'onOpenChange'
 > {
-  /** A React Aria pressable: IconButton, ToggleButton or Button. It gets `aria-expanded` and `aria-controls`. */
-  trigger: ReactElement;
+  /**
+   * A React Aria pressable: IconButton or Button. It gets `aria-expanded`
+   * and `aria-controls`, and opens and closes the popover itself. Leave it
+   * out and pass `triggerRef` for a control that keeps its own open state
+   * in the store (the action bar's Plugins and Share media toggles): the
+   * popover is then controlled through `isOpen` / `onOpenChange`, is
+   * anchored to that element, and the control sets `aria-expanded`,
+   * `aria-haspopup="dialog"` and `aria-controls={id}` itself.
+   */
+  trigger?: ReactElement;
+  /** Without `trigger`: the element the card is positioned against. */
+  triggerRef?: RefObject<Element | null>;
+  /** The dialog element's id, for a standalone trigger's `aria-controls`. */
+  id?: string;
   /** The dialog's accessible name and, unless `titleHidden`, its visible heading. */
   title: string;
   /** Share media has no visible title; the close button still shows. */
@@ -114,6 +127,8 @@ export interface PopoverProps extends Pick<
  */
 export function Popover({
   trigger,
+  triggerRef,
+  id,
   title,
   titleHidden = false,
   children,
@@ -124,26 +139,52 @@ export function Popover({
   ref,
   ...state
 }: PopoverProps) {
+  // With a trigger, DialogTrigger owns the open state and the trigger's aria
+  // attributes. Standalone, the popover takes the state props and the anchor
+  // itself, and the dialog's `close` (the close button) reads the same state
+  // from this context, which React Aria's Popover provides only through
+  // DialogTrigger.
+  const isOpen = state.isOpen ?? false;
+  const onOpenChange = state.onOpenChange;
+  const standaloneState = useMemo<NonNullable<ContextType<typeof OverlayTriggerStateContext>>>(
+    () => ({
+      isOpen,
+      setOpen: (open) => onOpenChange?.(open),
+      open: () => onOpenChange?.(true),
+      close: () => onOpenChange?.(false),
+      toggle: () => onOpenChange?.(!isOpen),
+      // The anchor point of a context-menu overlay; not used by an anchored popover.
+      point: null,
+      setPoint: () => undefined,
+    }),
+    [isOpen, onOpenChange],
+  );
+  const popover = (
+    <RacPopover
+      {...(trigger ? undefined : state)}
+      triggerRef={trigger ? undefined : triggerRef}
+      placement={placement}
+      offset={offset}
+      shouldFlip={shouldFlip}
+      className={composeRenderProps(className, (cls) => popoverStyles({ className: cls }))}
+    >
+      <SurfaceProvider kind="panel">
+        <RacDialog id={id} ref={ref} className={popoverDialogStyles()}>
+          {({ close }) => (
+            <>
+              <OverlayHeader title={title} titleHidden={titleHidden} onClose={close} />
+              {children}
+            </>
+          )}
+        </RacDialog>
+      </SurfaceProvider>
+    </RacPopover>
+  );
+  if (!trigger) return <OverlayTriggerStateContext.Provider value={standaloneState}>{popover}</OverlayTriggerStateContext.Provider>;
   return (
     <DialogTrigger {...state}>
       {trigger}
-      <RacPopover
-        placement={placement}
-        offset={offset}
-        shouldFlip={shouldFlip}
-        className={composeRenderProps(className, (cls) => popoverStyles({ className: cls }))}
-      >
-        <SurfaceProvider kind="panel">
-          <RacDialog ref={ref} className={popoverDialogStyles()}>
-            {({ close }) => (
-              <>
-                <OverlayHeader title={title} titleHidden={titleHidden} onClose={close} />
-                {children}
-              </>
-            )}
-          </RacDialog>
-        </SurfaceProvider>
-      </RacPopover>
+      {popover}
     </DialogTrigger>
   );
 }

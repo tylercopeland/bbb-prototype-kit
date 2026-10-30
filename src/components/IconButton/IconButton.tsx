@@ -59,6 +59,11 @@ export interface IconButtonProps extends Omit<
   /** @default 'top' */
   tooltipPlacement?: TooltipPlacement;
   /**
+   * Opens the tooltip on mount (the Learning Analytics entry point, O1,
+   * shows its tooltip pinned open). It closes as any tooltip does.
+   */
+  tooltipDefaultOpen?: boolean;
+  /**
    * Disabled icon controls stay focusable and hoverable (`aria-disabled`,
    * no press handler) so their tooltip can still say what they are.
    */
@@ -94,6 +99,7 @@ export function IconButton({
   size = 'md',
   shortcut,
   tooltipPlacement,
+  tooltipDefaultOpen,
   isDisabled = false,
   className,
   ref,
@@ -106,7 +112,7 @@ export function IconButton({
     // A native disabled button drops hover and focus, and with them the
     // tooltip (React Aria's recommendation is a Focusable wrapper).
     return (
-      <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement}>
+      <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement} defaultOpen={tooltipDefaultOpen}>
         <Focusable>
           <button
             {...disabledDomProps(props)}
@@ -124,7 +130,7 @@ export function IconButton({
   }
 
   return (
-    <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement}>
+    <Tooltip label={label} labelHidden shortcut={shortcut} placement={tooltipPlacement} defaultOpen={tooltipDefaultOpen}>
       <RacButton
         {...props}
         ref={buttonRef}

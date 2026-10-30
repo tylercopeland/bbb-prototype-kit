@@ -5,13 +5,16 @@
  * one is used.
  */
 import {
+  AppWindow,
   AudioLines,
   Blocks,
   Captions,
   ChartColumn,
+  Check,
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  CirclePlay,
   CircleX,
   Disc,
   DoorOpen,
@@ -19,15 +22,18 @@ import {
   Eraser,
   ExternalLink,
   FileText,
+  Frame,
   Grid3x3,
   Hand,
   HeadphoneOff,
   Headphones,
+  Highlighter,
   Info,
   Keyboard,
   LayoutGrid,
   LifeBuoy,
   Lightbulb,
+  Link,
   Lock,
   LockKeyhole,
   LogOut,
@@ -38,10 +44,13 @@ import {
   MicOff,
   Minimize2,
   Minus,
+  Monitor,
   MousePointer2,
+  PanelTop,
   Pencil,
   Plus,
   Presentation,
+  Projector,
   SendHorizontal,
   Settings,
   ShieldCheck,
@@ -51,10 +60,12 @@ import {
   SquarePlus,
   Timer,
   Type,
+  Upload,
   User,
   Users,
   Video,
   VideoOff,
+  Volume2,
   Vote,
   X,
   type LucideIcon,
@@ -118,6 +129,23 @@ export const icons = {
   help: LifeBuoy,
   minimize: Minimize2,
   restore: Maximize2,
+  /** The highlighter tool; the pen tool is `annotate` (the same meaning: draw on the slide). */
+  highlighter: Highlighter,
+  /** The Share media picker's types (Focus.dc.html 400–407). */
+  mediaSlides: Projector,
+  mediaVideo: CirclePlay,
+  mediaAudio: Volume2,
+  mediaUrl: Link,
+  /** The three screen-share kinds (Focus.dc.html 357–361). */
+  screenEntire: Monitor,
+  screenWindow: AppWindow,
+  screenTab: PanelTop,
+  /** "Add slides": a PDF, PowerPoint or images from the computer. */
+  upload: Upload,
+  /** The selected deck's corner mark in the Share media picker. */
+  check: Check,
+  /** A blank whiteboard (the picker's More tab). `whiteboardAccess` is the permission. */
+  whiteboard: Frame,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

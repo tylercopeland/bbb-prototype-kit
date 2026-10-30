@@ -102,6 +102,25 @@ const entries: Record<IconName, Entry> = {
   help: { meaning: 'Help requested by a breakout room', used: 'AlertPill (session header), room cards (milestone 5)' },
   minimize: { meaning: 'Minimize presentation', used: 'Stage (presentation controls)' },
   restore: { meaning: 'Restore presentation', used: 'Stage (minimized presentation tile)' },
+  highlighter: {
+    meaning: 'Highlighter tool',
+    used: 'Whiteboard tools (ToggleGroup)',
+    note: 'The pen tool is `annotate`: drawing on the slide is one meaning, so one pencil',
+  },
+  mediaSlides: { meaning: 'Slides (media type)', used: 'Share media picker tabs', note: 'A projector, not the presenter glyph' },
+  mediaVideo: { meaning: 'Video (media type)', used: 'Share media picker tabs' },
+  mediaAudio: { meaning: 'Computer audio (media type)', used: 'Share media picker tabs' },
+  mediaUrl: { meaning: 'Web page link (media type)', used: 'Share media picker tabs' },
+  screenEntire: { meaning: 'Entire screen', used: 'Share media picker, Screen tab' },
+  screenWindow: { meaning: 'A window', used: 'Share media picker, Screen tab' },
+  screenTab: { meaning: 'A browser tab', used: 'Share media picker, Screen tab' },
+  upload: { meaning: 'Add from the computer', used: 'Share media picker ("Add slides", "Upload a file")' },
+  check: { meaning: 'Selected', used: 'Share media picker (the presented deck)' },
+  whiteboard: {
+    meaning: 'Blank whiteboard',
+    used: 'Share media picker, More tab',
+    note: 'Different from whiteboardAccess (the permission) and from the pen tools',
+  },
 };
 
 const names = Object.keys(icons) as IconName[];
