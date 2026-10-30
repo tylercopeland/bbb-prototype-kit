@@ -251,8 +251,9 @@ function MediaCard({ children, icon, hint, layout = 'stacked', onPress, classNam
     >
       <Icon name={icon} size="md" />
       {children}
+      {/* Hidden from the name and read back as the description, so the button is "A browser tab". */}
       {hint && (
-        <span id={hintId} className={mediaCardHintStyles()}>
+        <span id={hintId} aria-hidden="true" className={mediaCardHintStyles()}>
           {hint}
         </span>
       )}
@@ -280,7 +281,7 @@ function SlidesPanel({ decks, deckIndex, onPick }: Pick<MediaPickerProps, 'decks
         <RacButton aria-describedby={hintId} className={mediaCardStyles({ layout: 'add' })}>
           <Icon name="upload" size="md" />
           Add slides
-          <span id={hintId} className={mediaCardHintStyles()}>
+          <span id={hintId} aria-hidden="true" className={mediaCardHintStyles()}>
             PDF, PowerPoint or images
           </span>
         </RacButton>

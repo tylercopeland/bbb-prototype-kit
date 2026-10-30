@@ -143,8 +143,9 @@ function PluginCard({ plugin, subtitle, onPress, className }: PluginItemProps) {
         <Icon name={pluginIcons[plugin.id] ?? 'plugins'} size="md" />
       </span>
       <span className={parts.label()}>{plugin.label}</span>
+      {/* Hidden from the name and read back as the description: "Breakout rooms, 4 rooms set up". */}
       {description && (
-        <span id={descriptionId} className={parts.description()}>
+        <span id={descriptionId} aria-hidden="true" className={parts.description()}>
           {description}
         </span>
       )}
@@ -167,7 +168,7 @@ function PluginRow({ plugin, onPress, className }: PluginItemProps) {
       <span className={parts.body()}>
         <span className={parts.label()}>{plugin.label}</span>
         {plugin.description && (
-          <span id={descriptionId} className={parts.description()}>
+          <span id={descriptionId} aria-hidden="true" className={parts.description()}>
             {plugin.description}
           </span>
         )}
