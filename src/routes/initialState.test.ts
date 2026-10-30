@@ -38,8 +38,15 @@ describe('stateForArtboard', () => {
   });
 
   it('G2–G5: chat scopes and direct threads', () => {
-    expect(stateForArtboard(board('desktop', 'G2ChatEveryone-gqvt')).ui).toMatchObject({ panel: 'chat', scope: 'everyone' });
-    expect(stateForArtboard(board('desktop', 'G3ChatDirect-56ch')).ui).toMatchObject({ panel: 'chat', scope: 'direct', dm: null });
+    expect(stateForArtboard(board('desktop', 'G2ChatEveryone-gqvt')).ui).toMatchObject({
+      panel: 'chat',
+      scope: 'everyone',
+    });
+    expect(stateForArtboard(board('desktop', 'G3ChatDirect-56ch')).ui).toMatchObject({
+      panel: 'chat',
+      scope: 'direct',
+      dm: null,
+    });
     const g4 = stateForArtboard(board('desktop', 'G4DmRafaela-gtn4'));
     expect(g4.ui).toMatchObject({ panel: 'chat', scope: 'direct', dm: 'rafaela' });
     expect(g4.chat.direct.find((t) => t.with === 'rafaela')?.messages.every((m) => m.read)).toBe(true);
@@ -55,27 +62,51 @@ describe('stateForArtboard', () => {
   });
 
   it('O2, H1, H2, N1, M1, M2, O1, BO1: pickers, menus and sharing', () => {
-    expect(stateForArtboard(board('desktop', 'O2StudentActions')).ui).toMatchObject({ panel: 'people', peopleMenu: 'anton' });
-    expect(stateForArtboard(board('desktop', 'H1MediaSlides-2x0x')).ui).toMatchObject({ mediaOpen: true, mediaType: 'slides' });
-    expect(stateForArtboard(board('desktop', 'H2MediaScreen-ez5s')).ui).toMatchObject({ mediaOpen: true, mediaType: 'screen' });
+    expect(stateForArtboard(board('desktop', 'O2StudentActions')).ui).toMatchObject({
+      panel: 'people',
+      peopleMenu: 'anton',
+    });
+    expect(stateForArtboard(board('desktop', 'H1MediaSlides-2x0x')).ui).toMatchObject({
+      mediaOpen: true,
+      mediaType: 'slides',
+    });
+    expect(stateForArtboard(board('desktop', 'H2MediaScreen-ez5s')).ui).toMatchObject({
+      mediaOpen: true,
+      mediaType: 'screen',
+    });
     expect(stateForArtboard(board('desktop', 'N1Overview-xpbk')).presentation.overviewOpen).toBe(true);
-    expect(stateForArtboard(board('desktop', 'M1ShareScreen-k5tp')).presentation).toMatchObject({ share: 'screen', screenShared: true });
-    expect(stateForArtboard(board('desktop', 'M2ShareDeck-581i')).presentation).toMatchObject({ share: 'deck', screenShared: true });
+    expect(stateForArtboard(board('desktop', 'M1ShareScreen-k5tp')).presentation).toMatchObject({
+      share: 'screen',
+      screenShared: true,
+    });
+    expect(stateForArtboard(board('desktop', 'M2ShareDeck-581i')).presentation).toMatchObject({
+      share: 'deck',
+      screenShared: true,
+    });
     expect(stateForArtboard(board('desktop', 'O1Analytics')).ui.analyticsTipShown).toBe(true);
     expect(stateForArtboard(board('desktop', 'BO1Entry-desk')).plugins.open).toBe(true);
   });
 
   it('PL1–PL3 and TM1–TM4: poll and timer phases', () => {
-    expect(stateForArtboard(board('desktop', 'PL1Setup')).poll).toMatchObject({ phase: 'setup', shown: false });
+    expect(stateForArtboard(board('desktop', 'PL1Setup')).poll).toMatchObject({
+      phase: 'setup',
+      shown: false,
+    });
     const live = stateForArtboard(board('desktop', 'PL2Live'));
     expect(live.poll).toMatchObject({ phase: 'live', shown: false, votes: [6, 1, 0, 2] });
     expect(live.ui.panel).toBe('poll');
     expect(stateForArtboard(board('desktop', 'PL3Shown')).poll.shown).toBe(true);
-    expect(stateForArtboard(board('desktop', 'TM1Ready')).timer).toMatchObject({ phase: 'ready', leftSec: 300 });
+    expect(stateForArtboard(board('desktop', 'TM1Ready')).timer).toMatchObject({
+      phase: 'ready',
+      leftSec: 300,
+    });
     const running = stateForArtboard(board('desktop', 'TM2Running'));
     expect(running.timer.phase).toBe('running');
     expect(selectTimerLeft(running)).toBe(222);
-    expect(stateForArtboard(board('desktop', 'TM3Min')).timer).toMatchObject({ phase: 'running', minimized: true });
+    expect(stateForArtboard(board('desktop', 'TM3Min')).timer).toMatchObject({
+      phase: 'running',
+      minimized: true,
+    });
     expect(stateForArtboard(board('desktop', 'TM4Done')).timer).toMatchObject({ phase: 'done', leftSec: 0 });
   });
 
@@ -113,17 +144,32 @@ describe('stateForArtboard', () => {
   });
 
   it('MB1–MB14: orientation, sheets, annotation and the minimized presentation', () => {
-    expect(stateForArtboard(board('mobile', 'MB1Room')).ui).toMatchObject({ orientation: 'portrait', sheet: 'none' });
-    expect(stateForArtboard(board('mobile', 'MB4Student')).ui).toMatchObject({ sheet: 'student', sheetStudent: 'anton' });
-    expect(stateForArtboard(board('mobile', 'MB6React')).ui).toMatchObject({ sheet: 'react', reacting: true });
+    expect(stateForArtboard(board('mobile', 'MB1Room')).ui).toMatchObject({
+      orientation: 'portrait',
+      sheet: 'none',
+    });
+    expect(stateForArtboard(board('mobile', 'MB4Student')).ui).toMatchObject({
+      sheet: 'student',
+      sheetStudent: 'anton',
+    });
+    expect(stateForArtboard(board('mobile', 'MB6React')).ui).toMatchObject({
+      sheet: 'react',
+      reacting: true,
+    });
     expect(stateForArtboard(board('mobile', 'MB8Landscape')).ui.orientation).toBe('landscape');
     expect(stateForArtboard(board('mobile', 'MB12Annotate')).ui.annotating).toBe(true);
     expect(stateForArtboard(board('mobile', 'MB13Minimized')).presentation.minimized).toBe(true);
-    expect(stateForArtboard(board('mobile', 'MB3People')).ui).toMatchObject({ sheet: 'people', panel: 'people' });
+    expect(stateForArtboard(board('mobile', 'MB3People')).ui).toMatchObject({
+      sheet: 'people',
+      panel: 'people',
+    });
   });
 
   it('lets the query override props and pick the fixture', () => {
-    const s = stateForArtboard(board('desktop', 'F1Bar-4roh-l8ju'), new URLSearchParams('panel=chat&people=one&chat=empty'));
+    const s = stateForArtboard(
+      board('desktop', 'F1Bar-4roh-l8ju'),
+      new URLSearchParams('panel=chat&people=one&chat=empty'),
+    );
     expect(s.ui.panel).toBe('chat');
     expect(s.participants).toHaveLength(1);
     expect(s.chat.everyone).toEqual([]);

@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useMemo,
   type ContextType,
   type ReactElement,
@@ -90,6 +91,28 @@ export function OverlayHeader({
 /** Two steps of the spacing scale between the trigger and the card (the canvas draws 10px). */
 const POPOVER_OFFSET = 8;
 
+/**
+ * Focus is never lost to <body> (WCAG 2.4.3). React Aria returns focus to
+ * the element that was focused when the popover opened; a popover that
+ * was open on load (a deep link to H1, N1 or BO1) had none, so when this
+ * unmounts with the popover and nothing holds focus, `target` takes it.
+ * It runs at the real unmount, after any exit animation, a tick later so
+ * React Aria's own restore goes first when it has somewhere to go.
+ */
+function FocusFallback({ target }: { target?: RefObject<Element | null> }) {
+  useEffect(() => {
+    // The trigger is mounted before its popover opens, so it is known here and kept for the cleanup.
+    const element = target?.current;
+    return () => {
+      if (!(element instanceof HTMLElement)) return;
+      setTimeout(() => {
+        if (document.activeElement === null || document.activeElement === document.body) element.focus();
+      }, 0);
+    };
+  }, [target]);
+  return null;
+}
+
 export interface PopoverProps extends Pick<
   RacPopoverProps,
   'placement' | 'offset' | 'shouldFlip' | 'isOpen' | 'defaultOpen' | 'onOpenChange'
@@ -108,6 +131,12 @@ export interface PopoverProps extends Pick<
   triggerRef?: RefObject<Element | null>;
   /** The dialog element's id, for a standalone trigger's `aria-controls`. */
   id?: string;
+  /**
+   * Where focus goes when the popover closes and nothing else holds it (it
+   * was open on load, so there was no trigger press to return to). Defaults
+   * to `triggerRef`; with a `trigger` element, pass its ref.
+   */
+  restoreFocusTo?: RefObject<Element | null>;
   /** The dialog's accessible name and, unless `titleHidden`, its visible heading. */
   title: string;
   /** Share media has no visible title; the close button still shows. */
@@ -136,6 +165,7 @@ export function Popover({
   trigger,
   triggerRef,
   id,
+  restoreFocusTo,
   title,
   titleHidden = false,
   children,
@@ -179,6 +209,7 @@ export function Popover({
         <RacDialog id={id} ref={ref} className={popoverDialogStyles()}>
           {({ close }) => (
             <>
+              <FocusFallback target={restoreFocusTo ?? (trigger ? undefined : triggerRef)} />
               <OverlayHeader title={title} titleHidden={titleHidden} onClose={close} />
               {children}
             </>

@@ -33,7 +33,12 @@ export interface RoomProviderProps {
   children?: ReactNode;
 }
 
-export function RoomProvider({ initialState, store: givenStore, liveClock = false, children }: RoomProviderProps) {
+export function RoomProvider({
+  initialState,
+  store: givenStore,
+  liveClock = false,
+  children,
+}: RoomProviderProps) {
   const [ownStore] = useState(() => {
     if (givenStore) return givenStore;
     if (!initialState) throw new Error('RoomProvider needs initialState or store');

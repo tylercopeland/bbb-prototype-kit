@@ -10,7 +10,9 @@
  */
 function isEditable(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
-  return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.isContentEditable;
+  return (
+    target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.isContentEditable
+  );
 }
 import { useEffect } from 'react';
 import { useRoomStore } from '../../mocks/context';

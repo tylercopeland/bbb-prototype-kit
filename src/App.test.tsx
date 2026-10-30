@@ -22,10 +22,20 @@ describe('routes', () => {
     renderAt('/');
     const desktop = screen.getByRole('region', { name: /Desktop/ });
     const mobile = screen.getByRole('region', { name: /Mobile/ });
-    expect(within(desktop).getAllByRole('listitem')).toHaveLength(artboards.filter((a) => a.group === 'desktop').length);
-    expect(within(mobile).getAllByRole('listitem')).toHaveLength(artboards.filter((a) => a.group === 'mobile').length);
-    expect(screen.getByRole('link', { name: 'A · Action bar' })).toHaveAttribute('href', '/desktop/F1Bar-4roh-l8ju');
-    expect(screen.getByRole('link', { name: 'Phone · room (teacher presenting)' })).toHaveAttribute('href', '/mobile/MB1Room');
+    expect(within(desktop).getAllByRole('listitem')).toHaveLength(
+      artboards.filter((a) => a.group === 'desktop').length,
+    );
+    expect(within(mobile).getAllByRole('listitem')).toHaveLength(
+      artboards.filter((a) => a.group === 'mobile').length,
+    );
+    expect(screen.getByRole('link', { name: 'A · Action bar' })).toHaveAttribute(
+      'href',
+      '/desktop/F1Bar-4roh-l8ju',
+    );
+    expect(screen.getByRole('link', { name: 'Phone · room (teacher presenting)' })).toHaveAttribute(
+      'href',
+      '/mobile/MB1Room',
+    );
     expect(screen.getByRole('link', { name: 'Design tokens' })).toHaveAttribute('href', '/tokens');
   });
 
@@ -42,17 +52,19 @@ describe('routes', () => {
   });
 
   it('renders an accessible placeholder for an unbuilt artboard, with its state', () => {
-    renderAt('/desktop/H1MediaSlides-2x0x');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Share media · Slides (action bar)');
+    renderAt('/desktop/PL1Setup');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Poll · 1 · Set up from Plugins → Poll',
+    );
     expect(screen.getByText('Not built yet (milestone 5)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to the artboards' })).toHaveAttribute('href', '/');
     expect(screen.getByText('People')).toBeInTheDocument();
     expect(screen.getByText('14 · 4 hands raised')).toBeInTheDocument();
-    expect(screen.getByText('none · filter all')).toBeInTheDocument();
+    expect(screen.getByText('poll · filter all')).toBeInTheDocument();
   });
 
   it('lets query parameters override the artboard props', () => {
-    renderAt('/desktop/H1MediaSlides-2x0x?panel=people&pfilter=low&people=thirty');
+    renderAt('/desktop/TM1Ready?panel=people&pfilter=low&people=thirty');
     expect(screen.getByText('30 · 5 hands raised')).toBeInTheDocument();
     expect(screen.getByText('people · filter low')).toBeInTheDocument();
   });
@@ -82,9 +94,13 @@ describe('routes', () => {
   it('navigates from the index to an artboard and back by link', async () => {
     const user = userEvent.setup();
     renderAt('/');
-    await user.click(screen.getByRole('link', { name: 'Share media · Slides (action bar)' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Share media · Slides (action bar)' })).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Poll · 1 · Set up from Plugins → Poll' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Poll · 1 · Set up from Plugins → Poll' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Back to the artboards' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'BigBlueButton 4.0 prototype' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'BigBlueButton 4.0 prototype' }),
+    ).toBeInTheDocument();
   });
 });

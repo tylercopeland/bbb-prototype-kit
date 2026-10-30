@@ -78,6 +78,7 @@ export function PresentationControls({
 }: PresentationControlsProps) {
   const styles = presentationControlsStyles({ isRevealed: isRevealed || overviewOpen });
   const count = slides.length;
+
   return (
     <div role="group" aria-label="Presentation controls" {...props} className={styles.root({ className })}>
       <div role="group" aria-label="Slides" className={styles.slides()}>

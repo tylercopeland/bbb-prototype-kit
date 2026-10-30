@@ -1,4 +1,5 @@
-import type { Ref } from 'react';
+import { useMemo, useRef, type Ref } from 'react';
+import { mergeRefs } from 'react-aria';
 import { Button as RacButton, composeRenderProps } from 'react-aria-components';
 import { tv } from '../../styles/tv';
 import { IconButton } from '../IconButton';
@@ -85,17 +86,21 @@ export function SlideOverview({
   ref,
 }: SlideOverviewProps) {
   const styles = slideOverviewStyles();
+  // The trigger, for the popover's focus fallback (a deep link to N1 opens it with no trigger press to return to).
+  const trigger = useRef<HTMLButtonElement>(null);
+  const triggerRef = useMemo(() => mergeRefs(trigger, ref), [ref]);
   return (
     <Popover
       title="All slides"
       trigger={
         <IconButton
-          ref={ref}
+          ref={triggerRef}
           label="All slides"
           icon="slidesOverview"
           className={slideOverviewTriggerStyles({ className })}
         />
       }
+      restoreFocusTo={trigger}
       isOpen={isOpen}
       defaultOpen={defaultOpen}
       onOpenChange={onOpenChange}

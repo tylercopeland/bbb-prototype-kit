@@ -22,13 +22,13 @@ describe('tv merge config', () => {
   });
 
   it('merges the font-weight, tracking and container token scales', () => {
-    const text = tv({ base: 'font-semibold tracking-label max-w-64' });
+    const text = tv({ base: 'max-w-64 font-semibold tracking-label' });
     expect(text({ className: 'font-regular max-w-page' })).toBe('tracking-label font-regular max-w-page');
     expect(text({ className: 'tracking-label' })).toBe('font-semibold max-w-64 tracking-label');
   });
 
   it('merges the shadow token scale', () => {
-    const card = tv({ base: 'shadow-overlay bg-surface' });
+    const card = tv({ base: 'bg-surface shadow-overlay' });
     expect(card({ className: 'shadow-none' })).toBe('bg-surface shadow-none');
     expect(tv({ base: 'shadow-none' })({ className: 'shadow-overlay' })).toBe('shadow-overlay');
   });

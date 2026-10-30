@@ -1,6 +1,6 @@
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ActionBar } from './ActionBar';
 
@@ -148,6 +148,99 @@ describe('ActionBar', () => {
     expect(plugins.current).toBe(button('Plugins'));
     chat.current?.focus();
     expect(button('Chat')).toHaveFocus();
+  });
+
+  it('anchors the Plugins and Share media pickers to their toggles, with aria-expanded and aria-controls', async () => {
+    const user = userEvent.setup();
+    const onPluginsOpenChange = vi.fn();
+    const onMediaOpenChange = vi.fn();
+    const { rerender } = render(
+      <Subject
+        pluginsPicker={<p>Plugins content</p>}
+        mediaPicker={<p>Media content</p>}
+        onPluginsOpenChange={onPluginsOpenChange}
+        onMediaOpenChange={onMediaOpenChange}
+      />,
+    );
+    const plugins = button('Plugins');
+    expect(plugins).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(plugins).toHaveAttribute('aria-expanded', 'false');
+    expect(plugins).not.toHaveAttribute('aria-controls');
+    await user.click(plugins);
+    expect(onPluginsOpenChange).toHaveBeenLastCalledWith(true);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    rerender(
+      <Subject
+        pluginsOpen
+        pluginsPicker={<p>Plugins content</p>}
+        onPluginsOpenChange={onPluginsOpenChange}
+      />,
+    );
+    const dialog = await screen.findByRole('dialog', { name: 'Plugins' });
+    expect(dialog).toHaveTextContent('Plugins content');
+    const pressed = screen.getByRole('button', { name: 'Plugins', hidden: true });
+    expect(pressed).toHaveAttribute('aria-pressed', 'true');
+    expect(pressed).toHaveAttribute('aria-expanded', 'true');
+    expect(pressed).toHaveAttribute('aria-controls', dialog.id);
+    await user.keyboard('{Escape}');
+    expect(onPluginsOpenChange).toHaveBeenLastCalledWith(false);
+
+    rerender(<Subject mediaOpen mediaPicker={<p>Media content</p>} onMediaOpenChange={onMediaOpenChange} />);
+    const media = await screen.findByRole('dialog', { name: 'Share media' });
+    expect(media).toHaveTextContent('Media content');
+    expect(screen.getByRole('button', { name: 'Share media', hidden: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onMediaOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('Share media is pressed while sharing, and asks to open the picker rather than to stop', async () => {
+    const user = userEvent.setup();
+    const onMediaOpenChange = vi.fn();
+    render(<Subject isSharing mediaPicker={<p>Media content</p>} onMediaOpenChange={onMediaOpenChange} />);
+    const share = button('Share media');
+    expect(share).toHaveAttribute('aria-pressed', 'true');
+    await user.click(share);
+    expect(onMediaOpenChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('React opens the tray, a reaction is reported and the tray closes with focus back on React', async () => {
+    const user = userEvent.setup();
+    const onReaction = vi.fn();
+    render(<Subject onReaction={onReaction} />);
+    const react = button('React');
+    react.focus();
+    await user.keyboard('{Enter}');
+    const tray = await screen.findByRole('dialog', { name: 'React' });
+    expect(react).toHaveAttribute('aria-expanded', 'true');
+    await user.click(within(tray).getByRole('button', { name: 'Celebrate' }));
+    expect(onReaction).toHaveBeenCalledWith('celebrate');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(react).toHaveFocus());
+  });
+
+  it('Room settings opens its popover when content is given, and Learning Analytics says it opens in a new tab', async () => {
+    const user = userEvent.setup();
+    const onAnalytics = vi.fn();
+    const { unmount } = render(<Subject onAnalytics={onAnalytics} />);
+    const analytics = button('Learning Analytics Dashboard');
+    expect(analytics).toHaveAccessibleDescription('Opens in a new tab');
+    await user.click(analytics);
+    expect(onAnalytics).toHaveBeenCalledTimes(1);
+    await user.click(button('Room settings'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    unmount();
+
+    // The pinned tooltip (O1) opens on mount.
+    render(<Subject settings={<p>Private chat switch</p>} analyticsTipOpen />);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Learning Analytics Dashboard');
+    await user.click(button('Room settings'));
+    expect(await screen.findByRole('dialog', { name: 'Room settings' })).toHaveTextContent(
+      'Private chat switch',
+    );
   });
 
   it('reaches every control with Tab', async () => {

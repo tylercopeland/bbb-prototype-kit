@@ -27,6 +27,18 @@ const MILESTONE_4 = new Set([
   'L1LowEngagement-qeqx',
 ]);
 
+/** Milestone 5 batch A: sharing, media, the slides overview, plugins, analytics and student actions, all states of the room. */
+const MILESTONE_5A = new Set([
+  'M1ShareScreen-k5tp',
+  'M2ShareDeck-581i',
+  'N1Overview-xpbk',
+  'H1MediaSlides-2x0x',
+  'H2MediaScreen-ez5s',
+  'O1Analytics',
+  'O2StudentActions',
+  'BO1Entry-desk',
+]);
+
 /** Screens registered as they are built, by `<group>/<stem>`. */
 const screens: Record<string, ComponentType> = {};
 
@@ -36,6 +48,8 @@ export function registerScreen(group: Artboard['group'], stem: string, Screen: C
 
 // Milestone 4: the room shell renders every Focus artboard of the set from the store.
 for (const stem of MILESTONE_4) registerScreen('desktop', stem, RoomScreen);
+// Milestone 5 batch A: the same screen, with the pickers, overview, sharing and menus from the store.
+for (const stem of MILESTONE_5A) registerScreen('desktop', stem, RoomScreen);
 
 export function screenFor(artboard: Pick<Artboard, 'group' | 'stem'>): ScreenEntry {
   const milestone = artboard.group === 'mobile' ? 6 : MILESTONE_4.has(artboard.stem) ? 4 : 5;

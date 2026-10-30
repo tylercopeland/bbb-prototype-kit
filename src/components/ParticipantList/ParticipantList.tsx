@@ -53,6 +53,8 @@ export interface ParticipantListProps extends Omit<ComponentProps<'div'>, 'child
   openMenu?: ParticipantId | null;
   onMenuOpenChange?: (participantId: ParticipantId, isOpen: boolean) => void;
   onMessage?: (participantId: ParticipantId) => void;
+  /** Whether a row may offer "Message privately" (`selectCanMessage`); students see none while private chat is off. @default always */
+  canMessage?: (participantId: ParticipantId) => boolean;
   onAction?: (participantId: ParticipantId, action: ParticipantAction) => void;
   /** "See full activity in Learning Analytics" in the insight note. */
   onAnalytics?: () => void;
@@ -88,6 +90,7 @@ export function ParticipantList({
   openMenu = null,
   onMenuOpenChange,
   onMessage,
+  canMessage,
   onAction,
   onAnalytics,
   className,
@@ -133,6 +136,7 @@ export function ParticipantList({
       isMenuOpen={openMenu === p.id}
       onMenuOpenChange={(open) => onMenuOpenChange?.(p.id, open)}
       onMessage={() => onMessage?.(p.id)}
+      canMessage={canMessage ? canMessage(p.id) : true}
       onAction={(action) => act(p, action)}
       moreRef={(el) => {
         if (el) moreButtons.current.set(p.id, el);

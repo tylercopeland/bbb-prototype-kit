@@ -110,6 +110,12 @@ export interface ParticipantRowProps extends Omit<ComponentProps<'li'>, 'childre
   onMenuOpenChange?: (isOpen: boolean) => void;
   /** "Message privately": opens the direct thread. */
   onMessage?: () => void;
+  /**
+   * Whether "Message privately" is offered (`selectCanMessage`): false for a
+   * student while private chat is off (owner decision 2026-10-30). The ⋯
+   * menu stays. @default true
+   */
+  canMessage?: boolean;
   onAction?: (action: ParticipantAction) => void;
   /** The ⋯ button, so the list can move focus to a neighbouring row when this one is removed (WCAG 2.4.3). */
   moreRef?: Ref<HTMLButtonElement>;
@@ -142,6 +148,7 @@ export function ParticipantRow({
   isMenuOpen: controlledMenuOpen,
   onMenuOpenChange,
   onMessage,
+  canMessage = true,
   onAction,
   moreRef,
   className,
@@ -226,13 +233,15 @@ export function ParticipantRow({
       </div>
       {!p.isSelf && (
         <span className={styles.actions()}>
-          <IconButton
-            label={`Message ${p.name} privately`}
-            icon="chat"
-            variant="soft"
-            size="sm"
-            onPress={onMessage}
-          />
+          {canMessage && (
+            <IconButton
+              label={`Message ${p.name} privately`}
+              icon="chat"
+              variant="soft"
+              size="sm"
+              onPress={onMessage}
+            />
+          )}
           <Menu
             isOpen={isMenuOpen}
             onOpenChange={setMenuOpen}

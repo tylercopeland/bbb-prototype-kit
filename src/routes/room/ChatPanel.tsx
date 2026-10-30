@@ -13,7 +13,17 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { Key } from 'react-aria-components';
 import { Icon } from '../../icons';
-import { Avatar, ChatMessage, Composer, DMList, IconButton, Tab, TabList, TabPanel, Tabs } from '../../components';
+import {
+  Avatar,
+  ChatMessage,
+  Composer,
+  DMList,
+  IconButton,
+  Tab,
+  TabList,
+  TabPanel,
+  Tabs,
+} from '../../components';
 import { useRoom, useRoomDispatch } from '../../mocks/context';
 import { firstName } from '../../mocks/names';
 import {
@@ -69,7 +79,8 @@ function ChatScopes() {
   const scope = useRoom((s) => s.ui.scope);
   const unreadDirect = useRoom(selectUnreadDirect);
   const threads = useRoom(selectDirectList);
-  const onChange = (key: Key) => dispatch({ type: 'setScope', scope: key === 'direct' ? 'direct' : 'everyone' });
+  const onChange = (key: Key) =>
+    dispatch({ type: 'setScope', scope: key === 'direct' ? 'direct' : 'everyone' });
 
   // After "Back": the row of the thread just left takes focus; when that
   // thread is gone (the person left), the Direct tab does.
@@ -150,6 +161,7 @@ function Thread() {
   const thread = useRoom(selectOpenThread);
   const me = useRoom(selectSelf)?.id;
   const names = useRoom(selectDisplayNames);
+  const privateChat = useRoom((s) => s.session.privateChat);
   const messages = thread?.messages ?? [];
   const ref = useStickToBottom(messages.length);
 
@@ -181,8 +193,11 @@ function Thread() {
         </div>
       </div>
       <ol ref={ref} aria-label={`Messages with ${other.name}`} className={styles.bubbles()}>
+        {/* The note follows the Private chat setting (owner decision 2026-10-30). */}
         <li className={styles.note()}>
-          Only you and {first} can see this conversation. Moderators can’t read it.
+          {privateChat
+            ? `Only you and ${first} can see this conversation. Moderators can’t read it.`
+            : `Private chat is off for students. Only you and ${first} can see this conversation, and ${first} can reply here.`}
         </li>
         {messages.map((m: Message) => (
           <ChatMessage

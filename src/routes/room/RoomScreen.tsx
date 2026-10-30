@@ -4,23 +4,34 @@
  * alerts on top, the stage in the middle and the action bar at the bottom.
  * Every value comes from the store through `useRoom`; every change is a
  * store action, so a deep link and a click produce the same state. The F1,
- * G1–G5 and L1 artboards all render this screen in different states.
+ * G1–G5 and L1 artboards (milestone 4) and M1, M2, H1, H2, N1, O1, O2 and
+ * BO1 (milestone 5 batch A) all render this screen in different states.
  *
  * Focus (WCAG 2.4.3): the screen holds one pending `FocusRequest` for the
  * chat flows whose pressed control unmounts, taken in `ChatPanel`. Closing
  * the panel returns focus to that panel's action-bar toggle here, and Leave
- * lands on the index page's heading.
+ * lands on the index page's heading. The pickers are popovers anchored to
+ * their action-bar toggles, so closing one returns focus to its toggle.
  */
 import { useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ActionBar,
   AlertPill,
+  Button,
+  MediaPicker,
+  PluginsMenu,
+  PresentationControls,
+  RoomSettings,
   SessionHeader,
+  SharePill,
   SidePanel,
   Stage,
   Surface,
+  ToastRegion,
+  showToast,
   type ActionBarPanel,
+  type MediaAction,
   type StageLayout,
   type StagePresentation,
   type StageShare,
@@ -32,7 +43,9 @@ import {
   selectDisplayNames,
   selectElapsed,
   selectPeopleCount,
+  selectPluginSubtitles,
   selectRaisedHands,
+  selectReactions,
   selectSelf,
   selectSlideCount,
   selectTileOrder,
@@ -53,20 +66,33 @@ const roomStyles = tv({
     alerts: 'flex min-w-0 shrink-0 items-center gap-2',
     stage: 'p-0',
     placeholder: 'p-4 text-sm text-text-muted',
+    /** The breakout surface's stand-in until batch C: a card on the stage with a way back. */
+    breakouts:
+      'flex min-h-0 flex-1 flex-col items-start gap-3 rounded-tile border border-border bg-surface p-6 text-text',
+    breakoutsTitle: 'text-xl font-bold',
+    breakoutsNote: 'text-md text-text-muted',
   },
 });
 
 /**
  * What pressing an alert opens, as its description (D4: the name stays the
  * visible text). The help and "Breakouts ended" pills have no description
- * until milestone 5 wires them to the breakout surface: until then they
- * are status, not a promise.
+ * until batch C wires them to the breakout surface: until then they are
+ * status, not a promise.
  */
 const alertDescriptions: Partial<Record<Alert['kind'], string>> = {
   hands: 'Opens People',
   question: 'Opens Chat',
   insight: 'Opens People filtered to low engagement',
 };
+
+/** What the prototype cannot do yet, said in a toast instead of a dead button. */
+function notInPrototype(what: string) {
+  showToast(
+    { title: `${what} isn’t part of this prototype yet`, description: 'In BigBlueButton it opens here.' },
+    { timeout: 6000 },
+  );
+}
 
 export function RoomScreen() {
   const styles = roomStyles();
@@ -80,11 +106,18 @@ export function RoomScreen() {
   const alerts = useRoom(selectAlerts);
   const panel = useRoom((s) => s.ui.panel);
   const pluginsOpen = useRoom((s) => s.plugins.open);
+  const plugins = useRoom((s) => s.plugins);
+  const pluginSubtitles = useRoom(selectPluginSubtitles);
+  const mediaOpen = useRoom((s) => s.ui.mediaOpen);
+  const mediaType = useRoom((s) => s.ui.mediaType);
+  const analyticsTip = useRoom((s) => s.ui.analyticsTipShown);
+  const breakoutsOpen = useRoom((s) => s.ui.breakoutsOpen);
   const raisedHands = useRoom(selectRaisedHands).length;
   const unread = useRoom(selectUnreadTotal);
   const me = useRoom(selectSelf);
   const tiles = useRoom(selectTileOrder);
   const names = useRoom(selectDisplayNames);
+  const reactions = useRoom(selectReactions);
   const deck = useRoom(selectDeck);
   const slideCount = useRoom(selectSlideCount);
   const presentation = useRoom((s) => s.presentation);
@@ -132,16 +165,80 @@ export function RoomScreen() {
     if (alert.kind === 'hands') dispatch({ type: 'setPanel', panel: 'people' });
     else if (alert.kind === 'question') dispatch({ type: 'setPanel', panel: 'chat' });
     else if (alert.kind === 'insight') dispatch({ type: 'setPeopleFilter', filter: 'low' });
-    // help and back open the breakout surface in milestone 5.
+    // help and back open the breakout surface in batch C.
   };
 
   const closePanel = () => {
     dispatch({ type: 'setPanel', panel: 'none' });
     // The close button unmounts with the panel: focus its toggle now, before the commit.
     // Poll has no bar button of its own; it opens from Plugins.
-    const toggle = { people: peopleButton, chat: chatButton, notes: notesButton, poll: pluginsButton, none: null }[panel];
+    const toggle = {
+      people: peopleButton,
+      chat: chatButton,
+      notes: notesButton,
+      poll: pluginsButton,
+      none: null,
+    }[panel];
     toggle?.current?.focus();
   };
+
+  /** Every choice in the Share media picker (canvas notes › Share media). */
+  const onMediaPick = (action: MediaAction) => {
+    switch (action.type) {
+      case 'deck':
+        return dispatch({ type: 'selectDeck', index: action.index });
+      case 'addDeck':
+        return dispatch({ type: 'addDeck', file: action.file });
+      case 'screen':
+        return dispatch({ type: 'startScreenShare', screenKind: action.kind });
+      case 'poll':
+        dispatch({ type: 'setMediaPicker', open: false });
+        return dispatch({ type: 'setupPoll' });
+      case 'plugins':
+        return dispatch({ type: 'setPlugins', open: true });
+      case 'video':
+      case 'audio':
+      case 'url':
+      case 'whiteboard':
+        dispatch({ type: 'setMediaPicker', open: false });
+        return notInPrototype(
+          {
+            video: 'Sharing a video',
+            audio: 'Sharing computer audio',
+            url: 'Opening a web page',
+            whiteboard: 'A blank whiteboard',
+          }[action.type],
+        );
+    }
+  };
+
+  /** A plugin from the Plugins picker: the three featured ones do something, the rest say so. */
+  const onPluginPick = (id: string) => {
+    if (id === 'breakouts') return dispatch({ type: 'setBreakoutsOpen', open: true });
+    if (id === 'timer') return dispatch({ type: 'addTimer' });
+    dispatch({ type: 'setPlugins', open: false });
+    if (id === 'poll') return dispatch({ type: 'setupPoll' });
+    const label = plugins.more.find((p) => p.id === id)?.label ?? 'That plugin';
+    notInPrototype(label);
+  };
+
+  const controls =
+    stagePresentation && deck && layout !== 'minimized' && share?.showing !== 'screen' ? (
+      <PresentationControls
+        deckName={deck.file}
+        slides={deck.slides}
+        slideIndex={presentation.slideIndex}
+        overviewOpen={presentation.overviewOpen}
+        onOverviewChange={(open) => dispatch({ type: 'setOverview', open })}
+        onGoToSlide={(index) => dispatch({ type: 'goToSlide', index })}
+        onPrevious={() => dispatch({ type: 'prevSlide' })}
+        onNext={() => dispatch({ type: 'nextSlide' })}
+        tool={presentation.tool}
+        color={presentation.color}
+        onToolChange={(tool) => dispatch({ type: 'setTool', tool })}
+        onColorChange={(color) => dispatch({ type: 'setInkColor', color })}
+      />
+    ) : undefined;
 
   return (
     <RoomFocusContext.Provider value={focus}>
@@ -161,49 +258,117 @@ export function RoomScreen() {
         )}
         <Surface as="main" kind="stage" className={styles.main()}>
           <div className={styles.top()}>
-            <SessionHeader title={session.title} recording={session.recording} peopleCount={peopleCount} elapsed={elapsed} />
+            <SessionHeader
+              title={session.title}
+              recording={session.recording}
+              peopleCount={peopleCount}
+              elapsed={elapsed}
+            />
             {alerts.length > 0 && (
               <div aria-label="Alerts" role="group" className={styles.alerts()}>
                 {alerts.map((a) => (
-                  <AlertPill key={a.id} kind={a.kind} description={alertDescriptions[a.kind]} onPress={() => onAlert(a)}>
+                  <AlertPill
+                    key={a.id}
+                    kind={a.kind}
+                    description={alertDescriptions[a.kind]}
+                    onPress={() => onAlert(a)}
+                  >
                     {a.text}
                   </AlertPill>
                 ))}
               </div>
             )}
           </div>
-          <Stage
-            layout={layout}
-            participants={tiles}
-            names={names}
-            webcams={panel === 'none' ? 'side' : 'top'}
-            presentation={stagePresentation}
-            share={share}
-            onShowAll={() => dispatch({ type: 'setPanel', panel: 'people' })}
-            onMinimize={() => dispatch({ type: 'setPresentationMinimized', minimized: true })}
-            onRestore={() => dispatch({ type: 'setPresentationMinimized', minimized: false })}
-            onShowingChange={(showing) => dispatch({ type: 'setShare', share: showing === 'screen' ? 'screen' : 'deck' })}
-            className={styles.stage()}
-          />
+          {breakoutsOpen ? (
+            <section aria-labelledby="breakouts-title" className={styles.breakouts()}>
+              <h2 id="breakouts-title" className={styles.breakoutsTitle()}>
+                Breakout rooms
+              </h2>
+              <p className={styles.breakoutsNote()}>Not built yet (milestone 5, batch C).</p>
+              <Button onPress={() => dispatch({ type: 'setBreakoutsOpen', open: false })}>
+                Back to the room
+              </Button>
+            </section>
+          ) : (
+            <Stage
+              layout={layout}
+              participants={tiles}
+              names={names}
+              reactions={reactions}
+              webcams={panel === 'none' ? 'side' : 'top'}
+              presentation={stagePresentation}
+              share={share}
+              controls={controls}
+              sharePill={
+                share ? (
+                  <SharePill
+                    showing={share.showing}
+                    kind={share.kind}
+                    onStop={() => dispatch({ type: 'stopShare' })}
+                  />
+                ) : undefined
+              }
+              onShowAll={() => dispatch({ type: 'setPanel', panel: 'people' })}
+              onMinimize={() => dispatch({ type: 'setPresentationMinimized', minimized: true })}
+              onRestore={() => dispatch({ type: 'setPresentationMinimized', minimized: false })}
+              onShowingChange={(showing) =>
+                dispatch({ type: 'setShare', share: showing === 'screen' ? 'screen' : 'deck' })
+              }
+              className={styles.stage()}
+            />
+          )}
           <ActionBar
             panel={panel}
             pluginsOpen={pluginsOpen}
+            mediaOpen={mediaOpen}
             raisedHands={raisedHands}
             unread={unread}
             audio={me?.audio ?? 'notJoined'}
             camera={me?.camera ?? false}
             handRaised={me?.handRaisedAt != null}
             isSharing={presentation.share !== 'none'}
+            analyticsTipOpen={analyticsTip}
             panelRefs={{ people: peopleButton, chat: chatButton, notes: notesButton, plugins: pluginsButton }}
             onTogglePanel={(p: ActionBarPanel) => dispatch({ type: 'togglePanel', panel: p })}
             onPluginsOpenChange={(open) => dispatch({ type: 'setPlugins', open })}
+            onMediaOpenChange={(open) => dispatch({ type: 'setMediaPicker', open })}
             onJoinAudio={() => me && dispatch({ type: 'joinAudio', participantId: me.id })}
-            onMicrophoneChange={(on) => me && dispatch({ type: 'setAudio', participantId: me.id, audio: on ? 'live' : 'muted' })}
+            onMicrophoneChange={(on) =>
+              me && dispatch({ type: 'setAudio', participantId: me.id, audio: on ? 'live' : 'muted' })
+            }
             onCameraChange={(on) => me && dispatch({ type: 'setCamera', participantId: me.id, on })}
-            onRaiseHandChange={(raised) => me && dispatch({ type: raised ? 'raiseHand' : 'lowerHand', participantId: me.id })}
+            onRaiseHandChange={(raised) =>
+              me && dispatch({ type: raised ? 'raiseHand' : 'lowerHand', participantId: me.id })
+            }
+            onReaction={(kind) => me && dispatch({ type: 'sendReaction', from: me.id, kind })}
+            onAnalytics={() => notInPrototype('The Learning Analytics Dashboard')}
             onLeave={() => void navigate('/')}
+            pluginsPicker={
+              <PluginsMenu
+                featured={plugins.featured}
+                more={plugins.more}
+                subtitles={pluginSubtitles}
+                onPick={onPluginPick}
+              />
+            }
+            mediaPicker={
+              <MediaPicker
+                decks={presentation.decks}
+                deckIndex={presentation.deckIndex}
+                mediaType={mediaType}
+                onMediaTypeChange={(type) => dispatch({ type: 'setMediaType', mediaType: type })}
+                onPick={onMediaPick}
+              />
+            }
+            settings={
+              <RoomSettings
+                privateChat={session.privateChat}
+                onPrivateChatChange={(on) => dispatch({ type: 'setPrivateChat', on })}
+              />
+            }
           />
         </Surface>
+        <ToastRegion />
       </div>
     </RoomFocusContext.Provider>
   );

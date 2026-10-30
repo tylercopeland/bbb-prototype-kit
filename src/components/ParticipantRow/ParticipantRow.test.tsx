@@ -68,6 +68,16 @@ describe('ParticipantRow', () => {
     expect(onMessage).toHaveBeenCalledTimes(1);
   });
 
+  it('hides "Message privately" when the row may not message, keeping the ⋯ menu (private chat off for a student)', async () => {
+    const user = userEvent.setup();
+    render(<Subject canMessage={false} />);
+    expect(
+      screen.queryByRole('button', { name: 'Message Anton Georgiev privately' }),
+    ).not.toBeInTheDocument();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'More actions for Anton Georgiev' })).toHaveFocus();
+  });
+
   it('opens the ⋯ menu with Enter, reports the open state, and Escape returns focus', async () => {
     const user = userEvent.setup();
     const onMenuOpenChange = vi.fn();
