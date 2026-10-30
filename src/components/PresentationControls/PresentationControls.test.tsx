@@ -76,7 +76,9 @@ describe('PresentationControls', () => {
     const user = userEvent.setup();
     const onOverviewChange = vi.fn();
     const onGoToSlide = vi.fn();
-    const { rerender } = render(<Subject onOverviewChange={onOverviewChange} onGoToSlide={onGoToSlide} />);
+    const { rerender } = render(
+      <Subject overviewOpen={false} onOverviewChange={onOverviewChange} onGoToSlide={onGoToSlide} />,
+    );
     await user.tab();
     expect(screen.getByRole('button', { name: 'All slides' })).toHaveFocus();
     await user.keyboard('{Enter}');

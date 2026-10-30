@@ -57,17 +57,7 @@ const mediaTypes = oneOf<MediaType>('slides', 'video', 'screen', 'audio', 'url',
 const modes = oneOf<BreakoutMode>('groups', 'solo');
 const views = oneOf<BreakoutView>('rooms', 'main');
 const orientations = oneOf<Orientation>('portrait', 'landscape');
-const sheets = oneOf<MobileSheet>(
-  'none',
-  'people',
-  'chat',
-  'student',
-  'more',
-  'react',
-  'alerts',
-  'cams',
-  'slides',
-);
+const sheets = oneOf<MobileSheet>('none', 'people', 'chat', 'student', 'more', 'react', 'alerts', 'cams', 'slides');
 
 /** The canvas's live breakout timings: rooms opened 1:18 ago, help asked 1 min ago. */
 const ROOMS_OPEN_FOR = MINUTE + 18 * SECOND;
@@ -77,24 +67,7 @@ const TIMER_LEFT_SEC = 222;
 
 /** Every prop the mapping understands, by board, so a test can prove the artboard list uses nothing else. */
 export const KNOWN_PROPS: Record<string, readonly string[]> = {
-  Focus: [
-    'layout',
-    'panel',
-    'scope',
-    'dm',
-    'pfilter',
-    'pmenu',
-    'share',
-    'overview',
-    'media',
-    'mtype',
-    'plugins',
-    'lxtip',
-    'poll',
-    'timer',
-    'presmin',
-    'presctl',
-  ],
+  Focus: ['layout', 'panel', 'scope', 'dm', 'pfilter', 'pmenu', 'share', 'overview', 'media', 'mtype', 'plugins', 'lxtip', 'poll', 'timer', 'presmin', 'presctl'],
   Breakout: ['phase', 'mode', 'rooms', 'moving', 'peek', 'view', 'closing', 'onstage'],
   Mobile: ['orient', 'presmin', 'annot', 'sheet', 'pfilter'],
 };
@@ -116,11 +89,7 @@ export function parseQuery(query: URLSearchParams | Props): { options: RouteOpti
 /** The state for an artboard, with `query` overriding its props. */
 export function stateForArtboard(artboard: Artboard, query: URLSearchParams | Props = {}): RoomState {
   const { options, props } = parseQuery(query);
-  return applyProps(
-    createRoom({ participants: options.people, chat: options.chat }),
-    { ...artboard.props, ...props },
-    artboard.board,
-  );
+  return applyProps(createRoom({ participants: options.people, chat: options.chat }), { ...artboard.props, ...props }, artboard.board);
 }
 
 /** Applies props to a state, through the reducer where an action exists. Unknown props are ignored. */
@@ -137,14 +106,12 @@ export function applyProps(initial: RoomState, props: Props, board: string): Roo
   const scope = get('scope');
   if (scope !== undefined && scopes(scope)) run({ type: 'setScope', scope });
   const panel = get('panel');
-  if (panel !== undefined && panels(panel))
-    run({ type: 'setPanel', panel: panel === 'hub' ? 'none' : panel });
+  if (panel !== undefined && panels(panel)) run({ type: 'setPanel', panel: panel === 'hub' ? 'none' : panel });
   const pfilter = get('pfilter');
   if (pfilter !== undefined && filters(pfilter)) {
     run({ type: 'setPeopleFilter', filter: pfilter });
     // The filter alone does not open the panel on a route; the panel prop does.
-    if (panel === undefined && board !== 'Focus')
-      state = { ...state, ui: { ...state.ui, panel: initial.ui.panel, sheet: initial.ui.sheet } };
+    if (panel === undefined && board !== 'Focus') state = { ...state, ui: { ...state.ui, panel: initial.ui.panel, sheet: initial.ui.sheet } };
   }
   const dm = get('dm');
   if (dm) run({ type: 'openDm', participantId: dm });
@@ -152,8 +119,7 @@ export function applyProps(initial: RoomState, props: Props, board: string): Roo
   if (pmenu) run({ type: 'openPeopleMenu', participantId: pmenu });
   if (get('plugins') === 'open') run({ type: 'setPlugins', open: true });
   const mtype = get('mtype');
-  if (get('media') === 'open')
-    run({ type: 'setMediaPicker', open: true, mediaType: mtype && mediaTypes(mtype) ? mtype : undefined });
+  if (get('media') === 'open') run({ type: 'setMediaPicker', open: true, mediaType: mtype && mediaTypes(mtype) ? mtype : undefined });
   else if (mtype && mediaTypes(mtype)) run({ type: 'setMediaType', mediaType: mtype });
   if (get('overview') === 'open') run({ type: 'setOverview', open: true });
   const share = get('share');
@@ -185,8 +151,7 @@ export function applyProps(initial: RoomState, props: Props, board: string): Roo
       run({ type: 'startTimer' });
       if (timer === 'min') run({ type: 'setTimerMinimized', minimized: true });
     }
-    if (timer === 'done')
-      state = { ...state, timer: { ...state.timer, phase: 'done', leftSec: 0, endsAt: null } };
+    if (timer === 'done') state = { ...state, timer: { ...state.timer, phase: 'done', leftSec: 0, endsAt: null } };
   }
 
   // ---------- breakouts ----------
@@ -211,10 +176,7 @@ export function applyProps(initial: RoomState, props: Props, board: string): Roo
           ...state,
           breakouts: {
             ...state.breakouts,
-            helpQueue: state.breakouts.helpQueue.map((h) => ({
-              ...h,
-              askedAt: state.clock.now - HELP_ASKED_AGO,
-            })),
+            helpQueue: state.breakouts.helpQueue.map((h) => ({ ...h, askedAt: state.clock.now - HELP_ASKED_AGO })),
           },
         };
       }
@@ -224,8 +186,7 @@ export function applyProps(initial: RoomState, props: Props, board: string): Roo
       if (phase === 'back') {
         run({ type: 'bringEveryoneBack' });
         const onstage = get('onstage');
-        if (onstage !== undefined && onstage !== '')
-          run({ type: 'showRoomOnStage', roomIndex: Number(onstage) });
+        if (onstage !== undefined && onstage !== '') run({ type: 'showRoomOnStage', roomIndex: Number(onstage) });
       }
     }
     const view = get('view');

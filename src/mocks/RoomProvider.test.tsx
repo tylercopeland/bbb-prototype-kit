@@ -158,9 +158,7 @@ describe('announcementsFor', () => {
       { message: '4 breakout rooms opened', politeness: 'polite' },
     ]);
     const closing = reduce(reduce(createRoom(), { type: 'openRooms' }), { type: 'closeRooms' });
-    expect(after(closing, { type: 'keepRoomsOpen' })).toEqual([
-      { message: 'Rooms stay open', politeness: 'polite' },
-    ]);
+    expect(after(closing, { type: 'keepRoomsOpen' })).toEqual([{ message: 'Rooms stay open', politeness: 'polite' }]);
     const running = reduce(reduce(createRoom(), { type: 'addTimer' }), { type: 'startTimer' });
     expect(after(running, { type: 'tick', now: FIXTURE_NOW + 10 * MINUTE })).toEqual([
       { message: 'Time’s up', politeness: 'assertive' },

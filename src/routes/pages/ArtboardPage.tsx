@@ -39,11 +39,7 @@ export function ArtboardPage() {
   const { milestone, Screen } = screenFor(artboard);
   return (
     // The key remounts the provider when the route changes, so a new artboard gets a fresh store.
-    <RoomProvider
-      key={`${artboard.group}/${artboard.stem}?${query}`}
-      initialState={initialState}
-      liveClock={liveClock}
-    >
+    <RoomProvider key={`${artboard.group}/${artboard.stem}?${query}`} initialState={initialState} liveClock={liveClock}>
       {Screen ? <Screen /> : <Placeholder artboard={artboard} milestone={milestone} />}
     </RoomProvider>
   );
