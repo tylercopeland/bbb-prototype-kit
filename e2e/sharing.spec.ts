@@ -31,7 +31,9 @@ async function tabTo(page: Page, name: string | RegExp, max = 60) {
 }
 
 test.describe('sharing and media, keyboard only', () => {
-  test('F1 → Share media → switch the type with the arrow keys → Escape returns focus to the toggle', async ({ page }) => {
+  test('F1 → Share media → switch the type with the arrow keys → Escape returns focus to the toggle', async ({
+    page,
+  }) => {
     await page.setViewportSize(SIZE);
     await page.goto('/desktop/F1Bar-4roh-l8ju');
     await tabTo(page, 'Share media');
@@ -40,7 +42,10 @@ test.describe('sharing and media, keyboard only', () => {
     await page.keyboard.press('Enter');
     const picker = page.getByRole('dialog', { name: 'Share media' });
     await expect(picker).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Share media', includeHidden: true })).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByRole('button', { name: 'Share media', includeHidden: true })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
     await expect(picker.getByRole('tab', { name: 'Slides' })).toHaveAttribute('aria-selected', 'true');
     await expect(picker.getByRole('radio', { name: 'Present bbb-4-refined.pdf' })).toBeChecked();
 
@@ -58,7 +63,9 @@ test.describe('sharing and media, keyboard only', () => {
     await expect(toggle).toHaveAttribute('aria-pressed', 'false');
   });
 
-  test('H2 → a screen kind starts the share: the tabs and the pill appear, Stop sharing ends it', async ({ page }) => {
+  test('H2 → a screen kind starts the share: the tabs and the pill appear, Stop sharing ends it', async ({
+    page,
+  }) => {
     await page.setViewportSize(SIZE);
     await page.goto('/desktop/H2MediaScreen-ez5s');
     const picker = page.getByRole('dialog', { name: 'Share media' });
@@ -77,17 +84,23 @@ test.describe('sharing and media, keyboard only', () => {
     await page.keyboard.press('Shift+Tab');
     await tabTo(page, 'A window', 30);
     await page.keyboard.press('ArrowLeft');
-    await expect(tabs.getByRole('tab', { name: 'Presentation 3 / 12' })).toHaveAttribute('aria-selected', 'true');
+    await expect(tabs.getByRole('tab', { name: 'Presentation 3 / 12' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
     await expect(pill).toContainText('your screen is still shared');
     await tabTo(page, 'Stop sharing', 10);
     await page.keyboard.press('Enter');
     await expect(pill).toHaveCount(0);
     await expect(tabs).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Share media' })).toHaveAttribute('aria-pressed', 'false');
-    await expect(page.locator(':focus')).toHaveCount(1);
+    // The pill's button unmounted; Share media, which shows the share's state, takes focus.
+    await expect(page.getByRole('button', { name: 'Share media' })).toBeFocused();
   });
 
-  test('F1 → All slides → pick a slide → the deck moves and focus returns to All slides', async ({ page }) => {
+  test('F1 → All slides → pick a slide → the deck moves and focus returns to All slides', async ({
+    page,
+  }) => {
     await page.setViewportSize(SIZE);
     await page.goto('/desktop/F1Bar-4roh-l8ju');
     // The controls are hidden until focus reaches them (X13), then they show.
@@ -100,7 +113,9 @@ test.describe('sharing and media, keyboard only', () => {
     await page.keyboard.press('Enter');
     const dialog = page.getByRole('dialog', { name: 'All slides' });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole('button', { name: 'Go to slide 3: BigBlueButton 4.0, refined' })).toHaveAttribute('aria-current', 'true');
+    await expect(
+      dialog.getByRole('button', { name: 'Go to slide 3: BigBlueButton 4.0, refined' }),
+    ).toHaveAttribute('aria-current', 'true');
     await tabTo(page, 'Go to slide 7: Fix the dead ends', 20);
     await page.keyboard.press('Enter');
     await expect(dialog).toHaveCount(0);
@@ -119,16 +134,24 @@ test.describe('sharing and media, keyboard only', () => {
     await expect(page.getByRole('button', { name: 'All slides' })).toBeFocused();
   });
 
-  test('F1 → Plugins → Breakout rooms opens the breakout surface; Back to the room returns', async ({ page }) => {
+  test('F1 → Plugins → Breakout rooms opens the breakout surface; Back to the room returns', async ({
+    page,
+  }) => {
     await page.setViewportSize(SIZE);
     await page.goto('/desktop/F1Bar-4roh-l8ju');
     await tabTo(page, 'Plugins');
     await page.keyboard.press('Enter');
     const dialog = page.getByRole('dialog', { name: 'Plugins' });
     await expect(dialog).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Plugins', includeHidden: true })).toHaveAttribute('aria-expanded', 'true');
-    await tabTo(page, 'Breakout rooms', 10);
-    await expect(page.getByRole('button', { name: 'Breakout rooms' })).toHaveAccessibleDescription('4 rooms set up');
+    await expect(page.getByRole('button', { name: 'Plugins', includeHidden: true })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    // The card's text is its label and its state line.
+    await tabTo(page, /^Breakout rooms/, 10);
+    await expect(page.getByRole('button', { name: 'Breakout rooms' })).toHaveAccessibleDescription(
+      '4 rooms set up',
+    );
     await page.keyboard.press('Enter');
     await expect(dialog).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 2, name: 'Breakout rooms' })).toBeVisible();
@@ -140,7 +163,9 @@ test.describe('sharing and media, keyboard only', () => {
     await expect(page.locator(':focus')).toHaveCount(1);
   });
 
-  test('BO1 → the Plugins picker is open on load; Close returns focus to the Plugins toggle', async ({ page }) => {
+  test('BO1 → the Plugins picker is open on load; Close returns focus to the Plugins toggle', async ({
+    page,
+  }) => {
     await page.setViewportSize(SIZE);
     await page.goto('/desktop/BO1Entry-desk');
     const dialog = page.getByRole('dialog', { name: 'Plugins' });
@@ -151,7 +176,9 @@ test.describe('sharing and media, keyboard only', () => {
     await expect(page.getByRole('button', { name: 'Plugins' })).toBeFocused();
   });
 
-  test('O2 → the student menu is open on load; a switch toggles without closing it, Escape returns focus', async ({ page }) => {
+  test('O2 → the student menu is open on load; a switch toggles without closing it, Escape returns focus', async ({
+    page,
+  }) => {
     await page.setViewportSize(SIZE);
     await page.goto('/desktop/O2StudentActions');
     const menu = page.getByRole('menu', { name: 'More actions for Anton Georgiev' });
@@ -172,7 +199,9 @@ test.describe('sharing and media, keyboard only', () => {
     await expect(page.getByText('Whiteboard', { exact: true })).toBeVisible();
   });
 
-  test('F1 → React → a reaction goes to the store, the tray closes and focus returns to React', async ({ page }) => {
+  test('F1 → React → a reaction goes to the store, the tray closes and focus returns to React', async ({
+    page,
+  }) => {
     await page.setViewportSize(SIZE);
     await page.goto('/desktop/F1Bar-4roh-l8ju');
     await tabTo(page, 'React');
@@ -184,7 +213,9 @@ test.describe('sharing and media, keyboard only', () => {
     await expect(tray).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'React' })).toBeFocused();
     const reactions = await page.evaluate(() => {
-      const w = window as unknown as { bbbRoom?: { getState: () => { reactions: { items: Array<{ from: string; kind: string }> } } } };
+      const w = window as unknown as {
+        bbbRoom?: { getState: () => { reactions: { items: Array<{ from: string; kind: string }> } } };
+      };
       return w.bbbRoom?.getState().reactions.items ?? [];
     });
     expect(reactions).toMatchObject([{ from: 'helena', kind: 'clap' }]);
@@ -192,15 +223,20 @@ test.describe('sharing and media, keyboard only', () => {
     await expect(page.getByRole('status')).toBeEmpty();
   });
 
-  test('G1 → Room settings → Private chat off: the teacher keeps Message privately and the thread note says so', async ({ page }) => {
+  test('G1 → Room settings → Private chat off: the teacher keeps Message privately and the thread note says so', async ({
+    page,
+  }) => {
     await page.setViewportSize(SIZE);
     await page.goto('/desktop/G1People-my6z');
     await tabTo(page, 'Room settings', 80);
     await page.keyboard.press('Enter');
     const dialog = page.getByRole('dialog', { name: 'Room settings' });
     await expect(dialog).toBeVisible();
-    await tabTo(page, 'Private chat', 5);
+    // The dialog takes focus, then Close, then the switch (named by its label, not an aria-label).
     const sw = page.getByRole('switch', { name: 'Private chat' });
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab');
+    await expect(sw).toBeFocused();
     await expect(sw).toBeChecked();
     await page.keyboard.press('Space');
     await expect(sw).not.toBeChecked();

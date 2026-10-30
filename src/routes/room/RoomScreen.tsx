@@ -140,6 +140,7 @@ export function RoomScreen() {
   const chatButton = useRef<HTMLButtonElement>(null);
   const notesButton = useRef<HTMLButtonElement>(null);
   const pluginsButton = useRef<HTMLButtonElement>(null);
+  const mediaButton = useRef<HTMLButtonElement>(null);
 
   const stagePresentation: StagePresentation | undefined = deck
     ? {
@@ -304,7 +305,11 @@ export function RoomScreen() {
                   <SharePill
                     showing={share.showing}
                     kind={share.kind}
-                    onStop={() => dispatch({ type: 'stopShare' })}
+                    onStop={() => {
+                      dispatch({ type: 'stopShare' });
+                      // The pill unmounts with its button: Share media, which shows the share's state, takes focus (WCAG 2.4.3).
+                      mediaButton.current?.focus();
+                    }}
                   />
                 ) : undefined
               }
@@ -328,7 +333,13 @@ export function RoomScreen() {
             handRaised={me?.handRaisedAt != null}
             isSharing={presentation.share !== 'none'}
             analyticsTipOpen={analyticsTip}
-            panelRefs={{ people: peopleButton, chat: chatButton, notes: notesButton, plugins: pluginsButton }}
+            panelRefs={{
+              people: peopleButton,
+              chat: chatButton,
+              notes: notesButton,
+              plugins: pluginsButton,
+              media: mediaButton,
+            }}
             onTogglePanel={(p: ActionBarPanel) => dispatch({ type: 'togglePanel', panel: p })}
             onPluginsOpenChange={(open) => dispatch({ type: 'setPlugins', open })}
             onMediaOpenChange={(open) => dispatch({ type: 'setMediaPicker', open })}

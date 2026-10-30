@@ -23,7 +23,7 @@ import { ToggleGroup } from '../ToggleGroup';
 export const mediaPickerStyles = tv({
   slots: {
     root: '',
-    tabs: 'gap-3',
+    tabs: 'flex-col-reverse gap-3',
     panel: 'flex flex-col gap-2',
     decks: 'grid grid-cols-2 gap-2',
     screens: 'grid grid-cols-3 gap-2',
@@ -154,6 +154,15 @@ export function MediaPicker({
   return (
     <div {...props} className={styles.root({ className })}>
       <Tabs selectedKey={mediaType} onSelectionChange={onTab} className={styles.tabs()}>
+        {/* The list comes first in the DOM (React Aria links the panels to it), and the column is reversed so it is drawn along the bottom. */}
+        <TabList label="Media type" variant="stacked">
+          {mediaTypes.map((t) => (
+            <Tab key={t.id} id={t.id} variant="stacked" icon={t.icon}>
+              {t.label}
+            </Tab>
+          ))}
+        </TabList>
+        <hr className={styles.divider()} />
         <TabPanel id="slides" className={styles.panel()}>
           <SlidesPanel decks={decks} deckIndex={deckIndex} onPick={onPick} />
         </TabPanel>
@@ -219,14 +228,6 @@ export function MediaPicker({
             </MediaCard>
           </div>
         </TabPanel>
-        <hr className={styles.divider()} />
-        <TabList label="Media type" variant="stacked">
-          {mediaTypes.map((t) => (
-            <Tab key={t.id} id={t.id} variant="stacked" icon={t.icon}>
-              {t.label}
-            </Tab>
-          ))}
-        </TabList>
       </Tabs>
     </div>
   );

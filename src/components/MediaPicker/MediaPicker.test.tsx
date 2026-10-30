@@ -18,8 +18,11 @@ describe('MediaPicker', () => {
         .map((t) => t.textContent),
     ).toEqual(['Slides', 'Video', 'Screen', 'Audio', 'URL', 'More']);
     expect(within(tabs).getByRole('tab', { name: 'Slides' })).toHaveAttribute('aria-selected', 'true');
+    // The list precedes its panel in the DOM, as React Aria needs, and the column is reversed to draw it along the bottom.
     const panel = screen.getByRole('tabpanel');
-    expect(panel.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(tabs.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(tabs.parentElement).toHaveClass('flex-col-reverse');
+    expect(panel).toHaveAttribute('aria-labelledby', within(tabs).getByRole('tab', { name: 'Slides' }).id);
   });
 
   it('Slides: Add slides opens the file picker, and the decks are a radio group with the presented one checked', async () => {
@@ -131,15 +134,15 @@ describe('MediaPicker', () => {
     expect(radios[29]).toBeChecked();
   });
 
-  it('reaches the decks and the type tabs with Tab, in that order', async () => {
+  it('reaches the type tabs first, then the panel, with Tab', async () => {
     const user = userEvent.setup();
     render(<Subject />);
+    await user.tab();
+    expect(screen.getByRole('tab', { name: 'Slides' })).toHaveFocus();
     await user.tab();
     expect(screen.getByRole('button', { name: 'Add slides' })).toHaveFocus();
     await user.tab();
     expect(screen.getByRole('radio', { name: 'Present bbb-4-refined.pdf' })).toHaveFocus();
-    await user.tab();
-    expect(screen.getByRole('tab', { name: 'Slides' })).toHaveFocus();
   });
 
   it('merges a className onto the root', () => {

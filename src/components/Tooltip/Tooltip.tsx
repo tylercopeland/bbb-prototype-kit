@@ -25,6 +25,11 @@ export const tooltipKeyStyles = tv({
   base: 'rounded-xs border border-current px-1 font-sans text-xs font-medium',
 });
 
+/** The hint after the label: regular weight, with its glyph inline (the canvas's external-link mark, Focus.dc.html 60). */
+export const tooltipHintStyles = tv({
+  base: 'inline-flex items-center gap-1 font-regular',
+});
+
 /** Two steps of the 4px spacing scale: the canvas draws the tip 10px above the control. */
 const TOOLTIP_OFFSET = 8;
 
@@ -54,6 +59,12 @@ export interface TooltipProps extends Pick<
   labelHidden?: boolean;
   /** A key from `src/shortcuts.ts`, rendered as a key chip. */
   shortcut?: ShortcutId;
+  /**
+   * A short note after the label ("Opens in a new tab"), read as the
+   * trigger's description while the tooltip is open; with `labelHidden` it
+   * is what names the tooltip, so it is never hidden.
+   */
+  hint?: ReactNode;
   /** @default 'top' */
   placement?: TooltipPlacement;
   className?: string;
@@ -77,6 +88,7 @@ export function Tooltip({
   label,
   labelHidden = false,
   shortcut,
+  hint,
   placement = 'top',
   delay = 600,
   closeDelay = 100,
@@ -112,6 +124,12 @@ export function Tooltip({
         <>
           {' '}
           <Keyboard className={tooltipKeyStyles()}>{formatShortcut(shortcut)}</Keyboard>
+        </>
+      )}
+      {hint && (
+        <>
+          {' '}
+          <span className={tooltipHintStyles()}>{hint}</span>
         </>
       )}
     </RacTooltip>

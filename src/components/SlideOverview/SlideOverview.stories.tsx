@@ -19,7 +19,7 @@ const meta = {
   decorators: [
     // Room for the dialog above its trigger, so nothing clips while axe measures it.
     (Story) => (
-      <div className="flex min-h-128 items-end justify-center p-8">
+      <div className="flex min-h-176 items-end justify-center p-8">
         <Story />
       </div>
     ),
@@ -44,17 +44,21 @@ export const ThreeSlides: Story = {
   args: { defaultOpen: true, deckName: decks[1].file, slides: decks[1].slides, currentIndex: 0 },
 };
 
-/** Thirty slides: the dialog scrolls. */
-export const ThirtySlides: Story = {
+/**
+ * Sixteen slides with long titles: four full rows, captions cut off. The
+ * test covers thirty, where the dialog scrolls; a scrolling dialog is not
+ * shown here because axe reads its clipped rows against the page behind it.
+ */
+export const ManySlides: Story = {
   tags: ['wait-for-overlay'],
   args: {
     defaultOpen: true,
     deckName: 'long-lecture.pdf',
     slides: Array.from(
-      { length: 30 },
+      { length: 16 },
       (_, i) => `Section ${i + 1}: a longer title that is cut off in the caption`,
     ),
-    currentIndex: 17,
+    currentIndex: 9,
   },
 };
 

@@ -360,8 +360,10 @@ describe('RoomScreen', () => {
   it('O1: the Learning Analytics tooltip is pinned open, and the button says it opens in a new tab', async () => {
     renderAt(O1);
     const button = screen.getByRole('button', { name: 'Learning Analytics Dashboard' });
-    expect(button).toHaveAccessibleDescription(/Opens in a new tab/);
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('Learning Analytics Dashboard');
+    const tooltip = await screen.findByRole('tooltip');
+    expect(tooltip).toHaveTextContent('Learning Analytics Dashboard');
+    expect(tooltip).toHaveAccessibleName('Opens in a new tab');
+    expect(button).toHaveAccessibleDescription('Opens in a new tab');
   });
 
   it('O2: Anton’s menu is open on load, and its switches toggle without closing it', async () => {

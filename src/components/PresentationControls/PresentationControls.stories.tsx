@@ -22,7 +22,7 @@ const meta = {
   decorators: [
     // A stand-in for the slide: the white paper, the hover group the controls live in.
     (Story) => (
-      <div className="flex min-h-128 items-end p-8">
+      <div className="flex min-h-176 items-end p-8">
         <div className="group relative h-80 w-full rounded-tile bg-slide p-6 text-on-slide">
           <p className="text-xl font-bold">BigBlueButton 4.0, refined</p>
           <Story />

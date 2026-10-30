@@ -1,4 +1,4 @@
-import type { Ref } from 'react';
+import type { ReactNode, Ref } from 'react';
 import {
   Focusable,
   Button as RacButton,
@@ -63,6 +63,8 @@ export interface IconButtonProps extends Omit<
    * shows its tooltip pinned open). It closes as any tooltip does.
    */
   tooltipDefaultOpen?: boolean;
+  /** A note after the name in the tooltip, read as the description while it is open ("Opens in a new tab"). */
+  tooltipHint?: ReactNode;
   /**
    * Disabled icon controls stay focusable and hoverable (`aria-disabled`,
    * no press handler) so their tooltip can still say what they are.
@@ -100,6 +102,7 @@ export function IconButton({
   shortcut,
   tooltipPlacement,
   tooltipDefaultOpen,
+  tooltipHint,
   isDisabled = false,
   className,
   ref,
@@ -118,6 +121,7 @@ export function IconButton({
         shortcut={shortcut}
         placement={tooltipPlacement}
         defaultOpen={tooltipDefaultOpen}
+        hint={tooltipHint}
       >
         <Focusable>
           <button
@@ -142,6 +146,7 @@ export function IconButton({
       shortcut={shortcut}
       placement={tooltipPlacement}
       defaultOpen={tooltipDefaultOpen}
+      hint={tooltipHint}
     >
       <RacButton
         {...props}

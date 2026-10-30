@@ -227,7 +227,6 @@ describe('ActionBar', () => {
     const onAnalytics = vi.fn();
     const { unmount } = render(<Subject onAnalytics={onAnalytics} />);
     const analytics = button('Learning Analytics Dashboard');
-    expect(analytics).toHaveAccessibleDescription('Opens in a new tab');
     await user.click(analytics);
     expect(onAnalytics).toHaveBeenCalledTimes(1);
     await user.click(button('Room settings'));
@@ -236,7 +235,11 @@ describe('ActionBar', () => {
 
     // The pinned tooltip (O1) opens on mount.
     render(<Subject settings={<p>Private chat switch</p>} analyticsTipOpen />);
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('Learning Analytics Dashboard');
+    const tooltip = await screen.findByRole('tooltip');
+    expect(tooltip).toHaveTextContent('Learning Analytics Dashboard');
+    // The tooltip's hint names the tooltip and describes the button while it is open.
+    expect(tooltip).toHaveAccessibleName('Opens in a new tab');
+    expect(button('Learning Analytics Dashboard')).toHaveAccessibleDescription('Opens in a new tab');
     await user.click(button('Room settings'));
     expect(await screen.findByRole('dialog', { name: 'Room settings' })).toHaveTextContent(
       'Private chat switch',

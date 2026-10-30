@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode, Ref } from 'react';
+import { useState, type ReactElement, type ReactNode, type Ref } from 'react';
 import {
   Header,
   MenuTrigger,
@@ -282,6 +282,9 @@ export function Menu({
   ref,
   ...state
 }: MenuProps) {
+  // A menu that is open on load (O2, the `pmenu` prop) had no trigger press to set
+  // the focus strategy, so its first item takes focus; otherwise the trigger decides.
+  const [openedOnMount] = useState(() => state.isOpen ?? state.defaultOpen ?? false);
   return (
     <MenuTrigger {...state}>
       {trigger}
@@ -292,7 +295,12 @@ export function Menu({
       >
         <SurfaceProvider kind="panel">
           {header && <div className={menuHeaderStyles()}>{header}</div>}
-          <RacMenu ref={ref} onAction={onAction} className={menuStyles()}>
+          <RacMenu
+            ref={ref}
+            onAction={onAction}
+            autoFocus={openedOnMount ? 'first' : undefined}
+            className={menuStyles()}
+          >
             {children}
           </RacMenu>
         </SurfaceProvider>

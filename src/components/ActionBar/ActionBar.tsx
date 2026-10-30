@@ -1,5 +1,6 @@
 import { useId, useMemo, useRef, useState, type ComponentProps, type ReactNode, type Ref } from 'react';
 import { mergeRefs } from 'react-aria';
+import { Icon } from '../../icons';
 import { formatRaisedHands, formatUnread } from '../../mocks/format';
 import type { AudioState, Panel, ReactionKind } from '../../mocks/types';
 import { tv } from '../../styles/tv';
@@ -24,8 +25,6 @@ export const actionBarStyles = tv({
     personal: 'flex min-w-0 flex-1 items-center justify-end gap-2',
     /** The Share media picker is wider than the Plugins one (Focus.dc.html 322: 452px). */
     mediaPicker: 'w-112',
-    /** "Opens in a new tab", for assistive technology. */
-    hint: 'sr-only',
   },
 });
 
@@ -74,7 +73,7 @@ export interface ActionBarProps extends Omit<ComponentProps<'nav'>, 'children'> 
    * the room can return focus to the right one when a panel's close button
    * unmounts under the keyboard (WCAG 2.4.3).
    */
-  panelRefs?: Partial<Record<ActionBarPanel | 'plugins', Ref<HTMLButtonElement>>>;
+  panelRefs?: Partial<Record<ActionBarPanel | 'plugins' | 'media', Ref<HTMLButtonElement>>>;
   className?: string;
 }
 
@@ -131,9 +130,10 @@ export function ActionBar({
   const forwardedPlugins = panelRefs?.plugins;
   const pluginsMergedRef = useMemo(() => mergeRefs(pluginsRef, forwardedPlugins), [forwardedPlugins]);
   const mediaRef = useRef<HTMLButtonElement>(null);
+  const forwardedMedia = panelRefs?.media;
+  const mediaMergedRef = useMemo(() => mergeRefs(mediaRef, forwardedMedia), [forwardedMedia]);
   const pluginsId = useId();
   const mediaId = useId();
-  const analyticsHintId = useId();
   const [reactOpen, setReactOpen] = useState(false);
 
   return (
@@ -218,7 +218,7 @@ export function ActionBar({
           onChange={(on) => onCameraChange?.(on)}
         />
         <ToggleButton
-          ref={mediaRef}
+          ref={mediaMergedRef}
           label="Share media"
           icon="shareMedia"
           isSelected={mediaOpen || isSharing}
@@ -264,18 +264,21 @@ export function ActionBar({
         />
       </div>
       <div className={styles.personal()}>
+        {/* The tooltip's hint (Focus.dc.html 60: the external-link mark) describes the button while it is open. */}
         <IconButton
           label="Learning Analytics Dashboard"
           icon="analytics"
           variant="soft"
           size="touch"
-          aria-describedby={analyticsHintId}
           tooltipDefaultOpen={analyticsTipOpen}
+          tooltipHint={
+            <>
+              Opens in a new tab
+              <Icon name="externalLink" size="xs" />
+            </>
+          }
           onPress={() => onAnalytics?.()}
         />
-        <span id={analyticsHintId} className={styles.hint()}>
-          Opens in a new tab
-        </span>
         {settings ? (
           <Popover
             title="Room settings"
