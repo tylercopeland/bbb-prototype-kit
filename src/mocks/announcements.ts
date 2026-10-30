@@ -3,7 +3,8 @@
  * two states (CLAUDE.md › Accessibility):
  *
  * - polite: a new chat message from someone else, a raised hand, a help
- *   request from a room, a student moved to a room (B2), rooms opening
+ *   request from a room, a student moved to a room (B2), rooms opening, a
+ *   poll answer arriving (as the running count), the timer moved to a corner
  * - assertive: the closing countdown starting (B5), the rooms closing and
  *   the class timer finishing
  * - nothing for `tick`: a ticking clock is never in a live region (X10)
@@ -11,7 +12,14 @@
 import type { Politeness } from '../components/Announcer';
 import { roomName } from './breakouts';
 import { reactions } from './reactions';
-import { selectDisplayNames, selectRooms, selectSelf } from './selectors';
+import {
+  selectDisplayNames,
+  selectPollAnswered,
+  selectPollEligible,
+  selectRooms,
+  selectSelf,
+} from './selectors';
+import { cornerLabels } from './timer';
 import type { RoomState } from './types';
 
 export interface Announcement {
@@ -100,9 +108,29 @@ export function announcementsFor(previous: RoomState, next: RoomState): Announce
     });
   }
 
-  // The class timer finishing.
+  // A poll answer arriving, as the running count (answers are anonymous): never the bars themselves.
+  if (next.poll.phase === 'live') {
+    const before = selectPollAnswered(previous);
+    const answered = selectPollAnswered(next);
+    if (answered > before) {
+      out.push({
+        message: `Poll: ${answered} of ${selectPollEligible(next)} answered`,
+        politeness: 'polite',
+      });
+    }
+  }
+
+  // The class timer finishing. Its ticking time is plain text, never announced (X10).
   if (previous.timer.phase !== 'done' && next.timer.phase === 'done') {
     out.push({ message: 'Time’s up', politeness: 'assertive' });
+  }
+
+  // The timer moved to another corner by keyboard (D1): say where it went.
+  if (next.timer.phase !== 'off' && previous.timer.corner !== next.timer.corner) {
+    out.push({
+      message: `Timer moved to ${cornerLabels[next.timer.corner].toLowerCase()}`,
+      politeness: 'polite',
+    });
   }
 
   return out;

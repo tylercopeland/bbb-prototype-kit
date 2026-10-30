@@ -5,6 +5,8 @@ export * from './names';
 export * from './format';
 export * from './breakouts';
 export * from './reactions';
+export * from './poll';
+export * from './timer';
 export { canMessagePrivately, roomReducer, selfId } from './reducer';
 export type { RoomAction, RoomActionType } from './reducer';
 export { createRoomStore } from './store';

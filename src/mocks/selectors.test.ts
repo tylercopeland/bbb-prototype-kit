@@ -12,6 +12,7 @@ import {
   selectPeople,
   selectPeopleFilterCounts,
   selectPluginSubtitles,
+  selectPollResults,
   selectRaisedHands,
   selectRooms,
   selectSlideLabel,
@@ -154,6 +155,22 @@ describe('presentation and plugins', () => {
     });
     const live = reduce(createRoom(), { type: 'openRooms' });
     expect(selectPluginSubtitles(live).breakouts).toBe('4 rooms live');
+  });
+
+  it('turns the poll votes into keyed rows with shares, marking the most chosen; nothing is top before any answer', () => {
+    const s = createRoom();
+    const rows = selectPollResults(s);
+    expect(rows).toBe(selectPollResults(s));
+    expect(rows.map((r) => [r.key, r.votes, r.percent, r.isTop])).toEqual([
+      ['A', 6, 67, true],
+      ['B', 1, 11, false],
+      ['C', 0, 0, false],
+      ['D', 2, 22, false],
+    ]);
+    const fresh = reduce(s, { type: 'setupPoll' });
+    expect(selectPollResults(fresh).every((r) => r.percent === 0 && !r.isTop)).toBe(true);
+    const rate = reduce(fresh, { type: 'setPollType', pollType: 'rate' });
+    expect(selectPollResults(rate).map((r) => r.key)).toEqual(['★', '★', '★', '★', '★']);
   });
 });
 

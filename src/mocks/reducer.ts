@@ -14,6 +14,7 @@ import {
   roundRobin,
   seededOrder,
 } from './breakouts';
+import { canStartPoll, MAX_POLL_OPTIONS, MIN_POLL_OPTIONS, POLL_TYPES } from './poll';
 import { MINUTE, SECOND } from './time';
 import type {
   AudioState,
@@ -31,12 +32,15 @@ import type {
   Participant,
   ParticipantId,
   PeopleFilter,
+  PollSetting,
+  PollType,
   PresentationState,
   ReactionKind,
   RoomActivity,
   RoomState,
   ScreenKind,
   ShareKind,
+  StageCorner,
 } from './types';
 
 export type RoomAction =
@@ -95,6 +99,12 @@ export type RoomAction =
   | { type: 'addDeck'; file: string; slideCount?: number }
   // poll
   | { type: 'setupPoll' }
+  | { type: 'setPollQuestion'; question: string }
+  | { type: 'setPollType'; pollType: PollType }
+  | { type: 'setPollOption'; index: number; label: string }
+  | { type: 'addPollOption' }
+  | { type: 'removePollOption'; index: number }
+  | { type: 'setPollSetting'; setting: PollSetting; value: boolean }
   | { type: 'startPoll' }
   | { type: 'answerPoll'; option: number }
   | { type: 'showPollResults'; shown: boolean }
@@ -108,6 +118,7 @@ export type RoomAction =
   | { type: 'resetTimer' }
   | { type: 'addTimerMinute' }
   | { type: 'setTimerMinimized'; minimized: boolean }
+  | { type: 'setTimerCorner'; corner: StageCorner }
   | { type: 'removeTimer' }
   // breakouts
   | { type: 'setBreakoutsOpen'; open: boolean }
@@ -536,8 +547,72 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
         },
         { panel: 'poll' },
       );
+    // The builder's edits apply while the poll is being set up, never to a live one.
+    case 'setPollQuestion':
+      return state.poll.phase !== 'setup' || state.poll.question === action.question
+        ? state
+        : { ...state, poll: { ...state.poll, question: action.question } };
+    case 'setPollType': {
+      if (state.poll.phase !== 'setup' || state.poll.type === action.pollType) return state;
+      // Multiple choice keeps the teacher's own answers; the fixed types reset to theirs.
+      const options =
+        action.pollType === 'choice' && state.poll.type !== 'choice' ? POLL_TYPES.choice.options : POLL_TYPES[action.pollType].options;
+      return {
+        ...state,
+        poll: { ...state.poll, type: action.pollType, options, votes: options.map(() => 0) },
+      };
+    }
+    case 'setPollOption': {
+      const { options } = state.poll;
+      if (
+        state.poll.phase !== 'setup' ||
+        !POLL_TYPES[state.poll.type].editable ||
+        action.index < 0 ||
+        action.index >= options.length ||
+        options[action.index] === action.label
+      )
+        return state;
+      return {
+        ...state,
+        poll: { ...state.poll, options: options.map((o, i) => (i === action.index ? action.label : o)) },
+      };
+    }
+    case 'addPollOption':
+      if (
+        state.poll.phase !== 'setup' ||
+        !POLL_TYPES[state.poll.type].editable ||
+        state.poll.options.length >= MAX_POLL_OPTIONS
+      )
+        return state;
+      return {
+        ...state,
+        poll: { ...state.poll, options: [...state.poll.options, ''], votes: [...state.poll.votes, 0] },
+      };
+    case 'removePollOption':
+      if (
+        state.poll.phase !== 'setup' ||
+        !POLL_TYPES[state.poll.type].editable ||
+        state.poll.options.length <= MIN_POLL_OPTIONS ||
+        action.index < 0 ||
+        action.index >= state.poll.options.length
+      )
+        return state;
+      return {
+        ...state,
+        poll: {
+          ...state.poll,
+          options: state.poll.options.filter((_, i) => i !== action.index),
+          votes: state.poll.votes.filter((_, i) => i !== action.index),
+        },
+      };
+    case 'setPollSetting':
+      return state.poll.phase !== 'setup' || state.poll[action.setting] === action.value
+        ? state
+        : { ...state, poll: { ...state.poll, [action.setting]: action.value } };
     case 'startPoll':
-      return { ...state, poll: { ...state.poll, phase: 'live', shown: false } };
+      return state.poll.phase !== 'setup' || !canStartPoll(state.poll)
+        ? state
+        : { ...state, poll: { ...state.poll, phase: 'live', shown: false } };
     case 'answerPoll': {
       if (state.poll.phase !== 'live' || action.option < 0 || action.option >= state.poll.options.length)
         return state;
@@ -610,6 +685,10 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     }
     case 'setTimerMinimized':
       return { ...state, timer: { ...state.timer, minimized: action.minimized } };
+    case 'setTimerCorner':
+      return state.timer.corner === action.corner
+        ? state
+        : { ...state, timer: { ...state.timer, corner: action.corner } };
     case 'removeTimer':
       return { ...state, timer: { ...state.timer, phase: 'off', endsAt: null, minimized: false } };
 

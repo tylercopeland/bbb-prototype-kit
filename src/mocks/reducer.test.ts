@@ -298,6 +298,46 @@ describe('poll', () => {
     expect(reduce(ended, { type: 'answerPoll', option: 0 })).toBe(ended);
     expect(reduce(ended, { type: 'closePoll' }).poll.phase).toBe('off');
   });
+
+  it('edits the question, answers and settings while in setup, within the bounds, and never live', () => {
+    const setup = reduce(createRoom(), { type: 'setupPoll' });
+    const asked = reduce(setup, { type: 'setPollQuestion', question: 'Ready for the quiz?' });
+    expect(asked.poll.question).toBe('Ready for the quiz?');
+    expect(reduce(asked, { type: 'setPollQuestion', question: 'Ready for the quiz?' })).toBe(asked);
+    const five = run(setup, { type: 'addPollOption' }, { type: 'addPollOption' });
+    expect(five.poll.options).toHaveLength(5);
+    expect(five.poll.votes).toHaveLength(5);
+    expect(reduce(five, { type: 'addPollOption' })).toBe(five);
+    const named = reduce(five, { type: 'setPollOption', index: 4, label: 'Something else' });
+    expect(named.poll.options[4]).toBe('Something else');
+    expect(reduce(named, { type: 'setPollOption', index: 9, label: 'x' })).toBe(named);
+    const two = run(
+      named,
+      { type: 'removePollOption', index: 4 },
+      { type: 'removePollOption', index: 3 },
+      { type: 'removePollOption', index: 2 },
+    );
+    expect(two.poll.options).toEqual(['Grey icons for muted', 'A red badge on everyone']);
+    expect(reduce(two, { type: 'removePollOption', index: 0 })).toBe(two);
+    // A blank answer cannot be asked.
+    const blank = reduce(two, { type: 'setPollOption', index: 1, label: ' ' });
+    expect(reduce(blank, { type: 'startPoll' })).toBe(blank);
+    expect(reduce(two, { type: 'startPoll' }).poll.phase).toBe('live');
+    // The fixed types replace the answers and cannot be edited; back to choice restores the defaults.
+    const yesno = reduce(two, { type: 'setPollType', pollType: 'yesno' });
+    expect(yesno.poll.options).toEqual(['Yes', 'No']);
+    expect(reduce(yesno, { type: 'addPollOption' })).toBe(yesno);
+    expect(reduce(yesno, { type: 'setPollOption', index: 0, label: 'Yep' })).toBe(yesno);
+    expect(reduce(yesno, { type: 'setPollType', pollType: 'rate' }).poll.options).toHaveLength(5);
+    expect(reduce(yesno, { type: 'setPollType', pollType: 'choice' }).poll.options).toHaveLength(4);
+    const open = reduce(setup, { type: 'setPollSetting', setting: 'anonymous', value: false });
+    expect(open.poll.anonymous).toBe(false);
+    expect(reduce(open, { type: 'setPollSetting', setting: 'anonymous', value: false })).toBe(open);
+    const liveP = reduce(setup, { type: 'startPoll' });
+    expect(reduce(liveP, { type: 'setPollQuestion', question: 'Later' })).toBe(liveP);
+    expect(reduce(liveP, { type: 'addPollOption' })).toBe(liveP);
+    expect(reduce(liveP, { type: 'setPollSetting', setting: 'liveResults', value: true })).toBe(liveP);
+  });
 });
 
 describe('timer', () => {
@@ -319,6 +359,8 @@ describe('timer', () => {
       leftSec: 60,
     });
     expect(reduce(paused, { type: 'setTimerMinimized', minimized: true }).timer.minimized).toBe(true);
+    expect(reduce(paused, { type: 'setTimerCorner', corner: 'bottomLeft' }).timer.corner).toBe('bottomLeft');
+    expect(reduce(paused, { type: 'setTimerCorner', corner: 'topRight' })).toBe(paused);
     expect(reduce(paused, { type: 'removeTimer' }).timer.phase).toBe('off');
   });
 

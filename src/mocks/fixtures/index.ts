@@ -4,6 +4,7 @@
  * stories and tests call it directly.
  */
 import { breakoutStudents, roundRobin } from '../breakouts';
+import { CHOICE_OPTIONS } from '../poll';
 import { MINUTE } from '../time';
 import type {
   BreakoutState,
@@ -62,22 +63,27 @@ export const defaultPresentation: PresentationState = {
   color: 'amber',
 };
 
-/** The canvas poll (Focus.dc.html 970–972), multiple choice. */
+/** The canvas poll (Focus.dc.html 968–972), multiple choice, anonymous. */
 export const defaultPoll: PollState = {
   phase: 'off',
+  type: 'choice',
   question: 'Which change makes it easiest to see who is muted?',
-  options: ['Grey icons for muted', 'A red badge on everyone', 'Hide the mic icon', 'Text under each name'],
+  options: CHOICE_OPTIONS,
   votes: [6, 1, 0, 2],
   shown: false,
   anonymous: true,
+  liveResults: false,
+  multipleAnswers: false,
 };
 
+/** Five minutes, in the reserved corner (D1). */
 export const defaultTimer: TimerState = {
   phase: 'off',
   durationSec: 300,
   leftSec: 300,
   endsAt: null,
   minimized: false,
+  corner: 'topRight',
 };
 
 export const defaultPlugins: PluginsState = {

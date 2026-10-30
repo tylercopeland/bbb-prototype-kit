@@ -13,7 +13,8 @@ type Mode = 'light' | 'dark' | 'stage';
 type Pair = { fg: string; bg: string; min: number; modes?: Mode[]; note?: string };
 type Json = Record<string, unknown>;
 
-const FONT_SIZES = new Set([11, 12, 13, 14, 16, 18]);
+// 40 is the display size for the timer's digits (decision 2026-10-30), never running text.
+const FONT_SIZES = new Set([11, 12, 13, 14, 16, 18, 40]);
 const MODES: Mode[] = ['light', 'dark', 'stage'];
 
 const tokens = JSON.parse(await readFile(tokensJsonPath, 'utf8')) as Json;

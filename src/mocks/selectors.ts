@@ -6,6 +6,7 @@
  */
 import { buildRooms, helpFirst, isUneven, sortedHelpQueue, type Room } from './breakouts';
 import { firstName, firstNameWithInitial } from './names';
+import { canStartPoll, pollResults } from './poll';
 import { REACTION_LIFETIME } from './reactions';
 import { canMessagePrivately } from './reducer';
 import { formatAgo, formatElapsed, MINUTE, SECOND } from './time';
@@ -288,6 +289,10 @@ export const selectSlideLabel = (s: RoomState) =>
 export const selectPollAnswered = (s: RoomState) => s.poll.votes.reduce((a, b) => a + b, 0);
 /** Everyone who can answer: the students. */
 export const selectPollEligible = (s: RoomState) => s.participants.filter((p) => p.role === 'student').length;
+/** One row per answer with its count and share (`pollResults`), for the panel and the stage card. */
+export const selectPollResults = memo((s) => pollResults(s.poll));
+/** Whether "Ask the class" can go ahead: a question and at least two answers, none blank. */
+export const selectCanStartPoll = (s: RoomState) => canStartPoll(s.poll);
 
 // ---------- timer ----------
 

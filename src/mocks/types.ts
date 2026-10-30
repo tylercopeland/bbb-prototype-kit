@@ -115,18 +115,37 @@ export type InkColor = 'ink' | 'blue' | 'red' | 'green' | 'amber' | 'purple';
 
 export type PollPhase = 'off' | 'setup' | 'live' | 'ended';
 
+/** The answer presets of the poll builder (Focus.dc.html 977; X8: a radio group, not toggles). `poll.ts` has their labels and options. */
+export type PollType = 'choice' | 'yesno' | 'tf' | 'rate';
+
+/** The switches under "More options" (Focus.dc.html 980). */
+export type PollSetting = 'anonymous' | 'liveResults' | 'multipleAnswers';
+
 export interface PollState {
   phase: PollPhase;
+  type: PollType;
   question: string;
+  /** Editable for `choice`; the other types have fixed options (`POLL_TYPES`). */
   options: string[];
   /** Votes per option, same length as `options`. */
   votes: number[];
   /** Results are on the stage for everyone. */
   shown: boolean;
   anonymous: boolean;
+  /** Students see results as they come in. */
+  liveResults: boolean;
+  /** Allow more than one answer. */
+  multipleAnswers: boolean;
 }
 
 export type TimerPhase = 'off' | 'ready' | 'running' | 'paused' | 'done';
+
+/**
+ * A corner of the stage's overlay layer (D1): where a floating card sits.
+ * The timer defaults to the top right, the reserved corner the slide's
+ * title block keeps clear of.
+ */
+export type StageCorner = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 
 export interface TimerState {
   phase: TimerPhase;
@@ -137,6 +156,8 @@ export interface TimerState {
   /** Room-clock time the timer reaches zero, while running. */
   endsAt: number | null;
   minimized: boolean;
+  /** Where the card or pill sits; moved by keyboard from "Move to corner" (D1). */
+  corner: StageCorner;
 }
 
 export interface PluginEntry {

@@ -165,6 +165,23 @@ describe('announcementsFor', () => {
     ]);
   });
 
+  it('announces a poll answer as the running count, politely, and the timer’s move to a corner', () => {
+    const liveP = reduce(reduce(createRoom(), { type: 'setupPoll' }), { type: 'startPoll' });
+    expect(after(liveP, { type: 'answerPoll', option: 0 })).toEqual([
+      { message: 'Poll: 1 of 13 answered', politeness: 'polite' },
+    ]);
+    // Showing the results or editing nothing says nothing; the bars are never read out.
+    expect(after(liveP, { type: 'showPollResults', shown: true })).toEqual([]);
+    const ready = reduce(createRoom(), { type: 'addTimer' });
+    expect(after(ready, { type: 'setTimerCorner', corner: 'bottomLeft' })).toEqual([
+      { message: 'Timer moved to bottom left', politeness: 'polite' },
+    ]);
+    // Starting, pausing and the ticking time are not announced (X10).
+    const running = reduce(ready, { type: 'startTimer' });
+    expect(after(ready, { type: 'startTimer' })).toEqual([]);
+    expect(after(running, { type: 'tick', now: FIXTURE_NOW + 1000 })).toEqual([]);
+  });
+
   it('uses the disambiguated short name (B9)', () => {
     const s = createRoom({ participants: 'duplicateNames' });
     expect(after(s, { type: 'raiseHand', participantId: 'timo' })).toEqual([
