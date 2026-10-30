@@ -54,6 +54,7 @@ export const defaultPresentation: PresentationState = {
   screenKind: 'Entire screen',
   screenShared: false,
   tool: 'pen',
+  color: 'amber',
 };
 
 /** The canvas poll (Focus.dc.html 970–972), multiple choice. */
@@ -167,7 +168,7 @@ export function createRoom(options: CreateRoomOptions = {}): RoomState {
   const present = new Set(participants.map((p) => p.id));
   const messageIds = new Set(chat.everyone.map((m) => m.id));
   return {
-    session: { title: 'Hack Week: Brazil 2026', recording: true, startedAt: FIXTURE_STARTED_AT },
+    session: { title: 'Hack Week: Brazil 2026', recording: true, startedAt: FIXTURE_STARTED_AT, privateChat: true },
     clock: { now: FIXTURE_NOW },
     participants,
     chat,
@@ -177,6 +178,7 @@ export function createRoom(options: CreateRoomOptions = {}): RoomState {
     plugins: defaultPlugins,
     alerts: questionAlerts.filter((a) => present.has(a.from) && messageIds.has(a.messageId)),
     breakouts: breakoutsFor({ participants }, options.breakouts),
+    reactions: { items: [], seq: 0 },
     ui: { ...defaultUi, ...options.ui },
   };
 }

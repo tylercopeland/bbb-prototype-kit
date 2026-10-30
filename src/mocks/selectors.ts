@@ -6,6 +6,8 @@
  */
 import { buildRooms, helpFirst, isUneven, sortedHelpQueue, type Room } from './breakouts';
 import { firstName, firstNameWithInitial } from './names';
+import { REACTION_LIFETIME } from './reactions';
+import { canMessagePrivately } from './reducer';
 import { formatAgo, formatElapsed, MINUTE, SECOND } from './time';
 import type {
   ChatMessage,
@@ -14,6 +16,7 @@ import type {
   Participant,
   ParticipantId,
   PeopleFilter,
+  ReactionKind,
   RoomState,
 } from './types';
 
@@ -175,6 +178,28 @@ export const selectDirectList = memo((s): DirectSummary[] => {
 export const selectOpenThread = memo((s): DirectThread | null =>
   s.ui.dm === null ? null : (s.chat.direct.find((t) => t.with === s.ui.dm) ?? null),
 );
+
+/**
+ * Whether the local person may start a private conversation with `id`
+ * (owner decision 2026-10-30): always while private chat is on; with it
+ * off, only when one of the two is a moderator. The People row hides
+ * "Message privately" when this is false, so a student sees none.
+ */
+export const selectCanMessage = (id: ParticipantId) => (s: RoomState) => {
+  const me = selectSelf(s);
+  return me !== null && me.id !== id && canMessagePrivately(s, me.id, id);
+};
+
+// ---------- reactions ----------
+
+/** Each person's latest reaction that is still alive at the room time (`REACTION_LIFETIME`). */
+export const selectReactions = memo((s): Record<ParticipantId, ReactionKind> => {
+  const out: Record<ParticipantId, ReactionKind> = {};
+  for (const r of s.reactions.items) {
+    if (s.clock.now - r.sentAt < REACTION_LIFETIME) out[r.from] = r.kind;
+  }
+  return out;
+});
 
 // ---------- alerts ----------
 

@@ -23,6 +23,7 @@ import type {
   BreakoutView,
   ChatMessage,
   ChatScope,
+  InkColor,
   MediaType,
   MobileSheet,
   Orientation,
@@ -31,6 +32,7 @@ import type {
   ParticipantId,
   PeopleFilter,
   PresentationState,
+  ReactionKind,
   RoomActivity,
   RoomState,
   ScreenKind,
@@ -62,6 +64,10 @@ export type RoomAction =
   | { type: 'sendMessage'; from: ParticipantId; text: string; to?: ParticipantId }
   | { type: 'openDm'; participantId: ParticipantId }
   | { type: 'closeDm' }
+  /** The "Private chat" switch in Room settings (owner decision 2026-10-30). */
+  | { type: 'setPrivateChat'; on: boolean }
+  /** A reaction from the tray (D5); it shows on the sender's tile for `REACTION_LIFETIME`. */
+  | { type: 'sendReaction'; from: ParticipantId; kind: ReactionKind }
   // panel and scope
   | { type: 'setPanel'; panel: Panel }
   | { type: 'togglePanel'; panel: Exclude<Panel, 'none'> }
@@ -82,6 +88,11 @@ export type RoomAction =
   | { type: 'setShare'; share: ShareKind }
   | { type: 'stopShare' }
   | { type: 'setTool'; tool: PresentationState['tool'] }
+  | { type: 'setInkColor'; color: InkColor }
+  /** Present another deck from the Share media picker: its first slide goes on stage. */
+  | { type: 'selectDeck'; index: number }
+  /** "Add slides": a new deck with placeholder slides, presented at once. */
+  | { type: 'addDeck'; file: string; slideCount?: number }
   // poll
   | { type: 'setupPoll' }
   | { type: 'startPoll' }
@@ -151,7 +162,19 @@ export function selfId(state: RoomState): ParticipantId | null {
   return state.participants.find((p) => p.isSelf)?.id ?? null;
 }
 
-/** Ids come from a counter in the state (`chat.seq`, `breakouts.helpSeq`); fixtures use their own prefixes. */
+/**
+ * Whether `from` may write privately to `to`: always while private chat is
+ * on; with it off, only when one of them is a moderator (owner decision
+ * 2026-10-30: teacher-to-student messages keep working, students cannot
+ * message each other).
+ */
+export function canMessagePrivately(state: RoomState, from: ParticipantId, to: ParticipantId): boolean {
+  if (state.session.privateChat) return true;
+  const isModerator = (id: ParticipantId) => state.participants.find((p) => p.id === id)?.isModerator ?? false;
+  return isModerator(from) || isModerator(to);
+}
+
+/** Ids come from a counter in the state (`chat.seq`, `breakouts.helpSeq`, `reactions.seq`); fixtures use their own prefixes. */
 function nextId(prefix: string, seq: number): string {
   return `${prefix}-${seq}`;
 }
@@ -310,13 +333,19 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       if (helpQueue.some((h) => h.from === id)) {
         breakouts.helpQueue = helpQueue.map((h) => (h.from === id ? { ...h, from: null } : h));
       }
-      return { ...state, participants, chat, alerts, ui, breakouts };
+      const reactions = state.reactions.items.some((r) => r.from === id)
+        ? { ...state.reactions, items: state.reactions.items.filter((r) => r.from !== id) }
+        : state.reactions;
+      return { ...state, participants, chat, alerts, ui, breakouts, reactions };
     }
 
     // ---------- chat ----------
     case 'sendMessage': {
       const text = action.text.trim();
       if (text.length === 0) return state;
+      // With private chat off, a private message needs a moderator at one end:
+      // a teacher can still write to a student and the student can reply (owner decision 2026-10-30).
+      if (action.to !== undefined && !canMessagePrivately(state, action.from, action.to)) return state;
       const me = selfId(state);
       const seq = state.chat.seq + 1;
       const message: ChatMessage = {
@@ -338,6 +367,8 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     }
     case 'openDm': {
       if (!state.participants.some((p) => p.id === action.participantId && !p.isSelf)) return state;
+      const me = selfId(state);
+      if (me !== null && !canMessagePrivately(state, me, action.participantId)) return state;
       const exists = state.chat.direct.some((t) => t.with === action.participantId);
       const direct = exists ? state.chat.direct : [...state.chat.direct, { with: action.participantId, messages: [] }];
       return readVisibleChat(
@@ -349,6 +380,14 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     }
     case 'closeDm':
       return state.ui.dm === null ? state : withUi(state, { dm: null });
+    case 'setPrivateChat':
+      return state.session.privateChat === action.on ? state : { ...state, session: { ...state.session, privateChat: action.on } };
+    case 'sendReaction': {
+      if (!state.participants.some((p) => p.id === action.from)) return state;
+      const seq = state.reactions.seq + 1;
+      const reaction = { id: nextId('r', seq), from: action.from, kind: action.kind, sentAt: state.clock.now };
+      return { ...state, reactions: { items: [...state.reactions.items, reaction], seq } };
+    }
 
     // ---------- panel and scope ----------
     case 'setPanel':
@@ -415,7 +454,31 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     case 'stopShare':
       return { ...state, presentation: { ...state.presentation, share: 'none', screenShared: false } };
     case 'setTool':
-      return { ...state, presentation: { ...state.presentation, tool: action.tool } };
+      return state.presentation.tool === action.tool
+        ? state
+        : { ...state, presentation: { ...state.presentation, tool: action.tool } };
+    case 'setInkColor':
+      return state.presentation.color === action.color
+        ? state
+        : { ...state, presentation: { ...state.presentation, color: action.color } };
+    case 'selectDeck': {
+      const { decks, deckIndex } = state.presentation;
+      if (!Number.isInteger(action.index) || action.index < 0 || action.index >= decks.length || action.index === deckIndex) {
+        return state;
+      }
+      return { ...state, presentation: { ...state.presentation, deckIndex: action.index, slideIndex: 0, overviewOpen: false } };
+    }
+    case 'addDeck': {
+      const file = action.file.trim();
+      if (file.length === 0) return state;
+      const count = Math.max(1, Math.trunc(action.slideCount ?? 1));
+      const deck = { file, slides: Array.from({ length: count }, (_, i) => `Slide ${i + 1}`) };
+      const decks = [...state.presentation.decks, deck];
+      return {
+        ...state,
+        presentation: { ...state.presentation, decks, deckIndex: decks.length - 1, slideIndex: 0, overviewOpen: false },
+      };
+    }
 
     // ---------- poll ----------
     case 'setupPoll':

@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { CLOSING_SECONDS, MAX_ROOMS, MIN_ROOMS } from './breakouts';
 import { createRoom, FIXTURE_NOW } from './fixtures';
-import { roomReducer as reduce, type RoomAction } from './reducer';
+import { REACTION_LIFETIME } from './reactions';
+import { canMessagePrivately, roomReducer as reduce, type RoomAction } from './reducer';
 import {
   selectBreakoutTimeLeft,
+  selectCanMessage,
   selectClosingLeft,
   selectOpenHelp,
+  selectReactions,
   selectRooms,
   selectRoomsUneven,
   selectTimerLeft,
@@ -496,5 +499,103 @@ describe('mobile', () => {
     expect(people.ui).toMatchObject({ sheet: 'people', sheetStudent: null, panel: 'people' });
     expect(reduce(s, { type: 'setAnnotating', annotating: true }).ui.annotating).toBe(true);
     expect(reduce(s, { type: 'setReacting', reacting: true }).ui).toMatchObject({ reacting: true, sheet: 'react' });
+  });
+});
+
+describe('private chat (owner decision 2026-10-30)', () => {
+  /** The same room seen by a student: Anton is the local person, Helena a moderator. */
+  const asStudent = (state = createRoom()): RoomState => ({
+    ...state,
+    participants: state.participants.map((p) => ({ ...p, isSelf: p.id === 'anton' })),
+  });
+  const off = (state: RoomState) => reduce(state, { type: 'setPrivateChat', on: false });
+
+  it('is on by default and the switch flips it without touching anything else', () => {
+    const s = createRoom();
+    expect(s.session.privateChat).toBe(true);
+    expect(reduce(s, { type: 'setPrivateChat', on: true })).toBe(s);
+    const s2 = off(s);
+    expect(s2.session.privateChat).toBe(false);
+    expect(s2.chat).toBe(s.chat);
+    expect(reduce(s2, { type: 'setPrivateChat', on: true }).session.privateChat).toBe(true);
+  });
+
+  it('off: a student can neither open nor write a private thread to another student', () => {
+    const s = off(asStudent());
+    expect(canMessagePrivately(s, 'anton', 'bruno')).toBe(false);
+    expect(reduce(s, { type: 'openDm', participantId: 'bruno' })).toBe(s);
+    expect(reduce(s, { type: 'sendMessage', from: 'anton', text: 'psst', to: 'bruno' })).toBe(s);
+    expect(selectCanMessage('bruno')(s)).toBe(false);
+    expect(selectCanMessage('helena')(s)).toBe(true);
+  });
+
+  it('off: teacher-to-student messages keep working, and the student can reply', () => {
+    const s = off(createRoom());
+    expect(canMessagePrivately(s, 'helena', 'anton')).toBe(true);
+    const opened = reduce(s, { type: 'openDm', participantId: 'anton' });
+    expect(opened.ui.dm).toBe('anton');
+    const sent = reduce(opened, { type: 'sendMessage', from: 'helena', text: 'All good?', to: 'anton' });
+    expect(sent.chat.direct.find((t) => t.with === 'anton')?.messages.map((m) => m.text)).toEqual(['All good?']);
+    const reply = reduce(sent, { type: 'sendMessage', from: 'anton', text: 'Yes', to: 'helena' });
+    expect(reply.chat.direct.find((t) => t.with === 'anton')?.messages).toHaveLength(2);
+    expect(selectCanMessage('anton')(s)).toBe(true);
+  });
+
+  it('on: students can message each other', () => {
+    const s = asStudent();
+    expect(canMessagePrivately(s, 'anton', 'bruno')).toBe(true);
+    expect(reduce(s, { type: 'openDm', participantId: 'bruno' }).ui.dm).toBe('bruno');
+    expect(selectCanMessage('bruno')(s)).toBe(true);
+    expect(selectCanMessage('anton')(s)).toBe(false);
+  });
+});
+
+describe('reactions (D5)', () => {
+  it('records a reaction at the room time and shows it on the sender for its lifetime', () => {
+    const s = reduce(createRoom(), { type: 'sendReaction', from: 'anton', kind: 'clap' });
+    expect(s.reactions.items).toEqual([{ id: 'r-1', from: 'anton', kind: 'clap', sentAt: FIXTURE_NOW }]);
+    expect(selectReactions(s)).toEqual({ anton: 'clap' });
+    const later = reduce(s, { type: 'sendReaction', from: 'anton', kind: 'love' });
+    expect(selectReactions(later)).toEqual({ anton: 'love' });
+    const gone = reduce(later, { type: 'tick', now: FIXTURE_NOW + REACTION_LIFETIME });
+    expect(selectReactions(gone)).toEqual({});
+    expect(reduce(s, { type: 'sendReaction', from: 'nobody', kind: 'clap' })).toBe(s);
+  });
+
+  it('drops a removed person’s reactions', () => {
+    const s = run(
+      createRoom(),
+      { type: 'sendReaction', from: 'anton', kind: 'clap' },
+      { type: 'removeParticipant', participantId: 'anton' },
+    );
+    expect(s.reactions.items).toEqual([]);
+  });
+});
+
+describe('decks and the whiteboard', () => {
+  it('presents another deck from its first slide, and ignores a bad or current index', () => {
+    const s = run(createRoom(), { type: 'setOverview', open: true });
+    const next = reduce(s, { type: 'selectDeck', index: 1 });
+    expect(next.presentation).toMatchObject({ deckIndex: 1, slideIndex: 0, overviewOpen: false });
+    expect(reduce(s, { type: 'selectDeck', index: 0 })).toBe(s);
+    expect(reduce(s, { type: 'selectDeck', index: 9 })).toBe(s);
+    expect(reduce(s, { type: 'selectDeck', index: -1 })).toBe(s);
+  });
+
+  it('adds a deck with placeholder slides and presents it', () => {
+    const s = reduce(createRoom(), { type: 'addDeck', file: 'lesson-2.pdf', slideCount: 3 });
+    expect(s.presentation.decks).toHaveLength(4);
+    expect(s.presentation.decks[3]).toEqual({ file: 'lesson-2.pdf', slides: ['Slide 1', 'Slide 2', 'Slide 3'] });
+    expect(s.presentation).toMatchObject({ deckIndex: 3, slideIndex: 0 });
+    expect(reduce(s, { type: 'addDeck', file: '  ' })).toBe(s);
+    expect(reduce(s, { type: 'addDeck', file: 'one.pdf' }).presentation.decks.at(-1)?.slides).toEqual(['Slide 1']);
+  });
+
+  it('switches the tool and the ink, returning the same state for no change', () => {
+    const s = createRoom();
+    expect(reduce(s, { type: 'setTool', tool: 'pen' })).toBe(s);
+    expect(reduce(s, { type: 'setTool', tool: 'eraser' }).presentation.tool).toBe('eraser');
+    expect(reduce(s, { type: 'setInkColor', color: 'amber' })).toBe(s);
+    expect(reduce(s, { type: 'setInkColor', color: 'blue' }).presentation.color).toBe('blue');
   });
 });

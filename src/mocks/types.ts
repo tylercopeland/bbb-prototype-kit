@@ -98,8 +98,20 @@ export interface PresentationState {
   screenKind: ScreenKind;
   /** A screen share is running even while the deck is on stage (M2). */
   screenShared: boolean;
-  tool: 'select' | 'pen' | 'highlighter' | 'shapes' | 'text' | 'eraser';
+  tool: WhiteboardTool;
+  /** The whiteboard ink. */
+  color: InkColor;
 }
+
+export type WhiteboardTool = 'select' | 'pen' | 'highlighter' | 'shapes' | 'text' | 'eraser';
+
+/**
+ * The whiteboard inks, named by the token each one draws with (`text`,
+ * `accent`, `danger-text`, `status-live-text`, `status-hand-text`,
+ * `insight-text`), so every swatch reads on the toolbar in every mode. The
+ * canvas's one orange swatch (Focus.dc.html 122) is `amber`.
+ */
+export type InkColor = 'ink' | 'blue' | 'red' | 'green' | 'amber' | 'purple';
 
 export type PollPhase = 'off' | 'setup' | 'live' | 'ended';
 
@@ -263,6 +275,30 @@ export interface SessionState {
   recording: boolean;
   /** Room-clock time the session started. */
   startedAt: number;
+  /**
+   * Students may start private conversations (owner decision 2026-10-30,
+   * the "Private chat" switch in Room settings). Off, students see no
+   * "Message privately" and cannot message each other, while a moderator
+   * can still message a student and the student can reply in that thread.
+   */
+  privateChat: boolean;
+}
+
+/** The reaction tray's set, shared with the phone (Mobile.dc.html 470; P8). */
+export type ReactionKind = 'thumbsUp' | 'clap' | 'laugh' | 'surprised' | 'love' | 'celebrate';
+
+export interface Reaction {
+  id: string;
+  from: ParticipantId;
+  kind: ReactionKind;
+  /** When it was sent, on the room clock; it shows for `REACTION_LIFETIME`. */
+  sentAt: number;
+}
+
+export interface ReactionsState {
+  items: Reaction[];
+  /** The last reaction number handed out; ids are `r-${seq}`. */
+  seq: number;
 }
 
 export interface ClockState {
@@ -281,5 +317,6 @@ export interface RoomState {
   plugins: PluginsState;
   alerts: StoredAlert[];
   breakouts: BreakoutState;
+  reactions: ReactionsState;
   ui: UiState;
 }

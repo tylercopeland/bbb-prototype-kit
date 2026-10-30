@@ -10,6 +10,7 @@
  */
 import type { Politeness } from '../components/Announcer';
 import { roomName } from './breakouts';
+import { reactions } from './reactions';
 import { selectDisplayNames, selectRooms, selectSelf } from './selectors';
 import type { RoomState } from './types';
 
@@ -51,6 +52,14 @@ export function announcementsFor(previous: RoomState, next: RoomState): Announce
       if (!seen.has(m.id) && m.from !== me) {
         out.push({ message: `Direct message from ${nameOf(m.from)}: ${m.text}`, politeness: 'polite' });
       }
+    }
+  }
+
+  // Reactions from other people (D5), like a short chat message.
+  const seenReactions = new Set(previous.reactions.items.map((r) => r.id));
+  for (const r of next.reactions.items) {
+    if (!seenReactions.has(r.id) && r.from !== me) {
+      out.push({ message: `${nameOf(r.from)} reacted: ${reactions[r.kind].label}`, politeness: 'polite' });
     }
   }
 
