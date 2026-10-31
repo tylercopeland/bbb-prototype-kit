@@ -4,6 +4,7 @@ export * from './AlertPill';
 export * from './Announcer';
 export * from './Avatar';
 export * from './Badge';
+export * from './BreakoutSetup';
 export * from './Button';
 export * from './ChatMessage';
 export * from './ChipGroup';
