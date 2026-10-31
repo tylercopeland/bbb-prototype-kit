@@ -134,7 +134,7 @@ test.describe('sharing and media, keyboard only', () => {
     await expect(page.getByRole('button', { name: 'All slides' })).toBeFocused();
   });
 
-  test('F1 → Plugins → Breakout rooms opens the breakout surface; Back to the room returns', async ({
+  test('F1 → Plugins → Breakout rooms opens the breakout surface; Close panel returns focus to Plugins', async ({
     page,
   }) => {
     await page.setViewportSize(SIZE);
@@ -157,10 +157,12 @@ test.describe('sharing and media, keyboard only', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Breakout rooms' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Plugins' })).toHaveAttribute('aria-pressed', 'false');
     await expect(page.getByRole('button', { name: 'Plugins' })).toBeFocused();
-    await tabTo(page, 'Back to the room', 30);
+    // The breakout panel took the side panel's place (batch C); its Close leaves the surface.
+    await expect(page.getByRole('complementary', { name: 'Breakout rooms' })).toBeVisible();
+    await tabTo(page, 'Close panel', 80);
     await page.keyboard.press('Enter');
     await expect(page.getByRole('region', { name: 'Presentation' })).toBeVisible();
-    await expect(page.locator(':focus')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Plugins' })).toBeFocused();
   });
 
   test('BO1 → the Plugins picker is open on load; Close returns focus to the Plugins toggle', async ({

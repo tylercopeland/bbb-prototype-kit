@@ -102,39 +102,32 @@ export const SetupSolo: Story = {
   },
 };
 
+/** The card's width on the board; a `li` may not sit in a wrapper, so it goes on the card itself. */
+const wide = { className: 'w-72' };
+
 /** BO5: a live card, Ana and Bruno talking. */
 export const Live: Story = {
-  decorators: [
-    (Story) => (
-      <div className="w-72">
-        <Story />
-      </div>
-    ),
-  ],
+  args: wide,
 };
 
 /** A room that asked for help: the amber border, the badge and the status say it (B3). */
 export const LiveHelp: Story = {
-  args: { room: liveRooms[1], status: roomStatus(liveRooms[1], 'live', live.clock.now, names) },
-  decorators: Live.decorators,
+  args: { ...wide, room: liveRooms[1], status: roomStatus(liveRooms[1], 'live', live.clock.now, names) },
 };
 
 /** The previewed room: the selected border and ring. */
 export const LivePeeked: Story = {
-  args: { room: liveRooms[2], status: roomStatus(liveRooms[2], 'live', live.clock.now, names), isPeeked: true },
-  decorators: Live.decorators,
+  args: { ...wide, room: liveRooms[2], status: roomStatus(liveRooms[2], 'live', live.clock.now, names), isPeeked: true },
 };
 
 /** The room the teacher joined (B8): "You're here" instead of Join. */
 export const LiveJoined: Story = {
-  args: { isJoined: true },
-  decorators: Live.decorators,
+  args: { ...wide, isJoined: true },
 };
 
 /** A live room with nobody in it (B1). */
 export const LiveEmpty: Story = {
-  args: { room: { ...liveRooms[3], members: [] }, status: 'Empty' },
-  decorators: Live.decorators,
+  args: { ...wide, room: { ...liveRooms[3], members: [] }, status: 'Empty' },
 };
 
 /** BO7: a solo room, compact, with its icon-only Join (B7: the same actions in both modes). */
@@ -143,14 +136,8 @@ export const LiveSolo: Story = {
     room: selectRooms(soloLive)[0],
     status: roomStatus(selectRooms(soloLive)[0], 'live', soloLive.clock.now, names),
     density: 'compact',
+    className: 'w-44',
   },
-  decorators: [
-    (Story) => (
-      <div className="w-44">
-        <Story />
-      </div>
-    ),
-  ],
 };
 
 /** Thirty students in one room: the stack shows four and "+N". */
@@ -176,19 +163,17 @@ export const Back: Story = {
     room: selectRooms(back)[1],
     variant: 'back',
     status: roomStatus(selectRooms(back)[1], 'back', back.clock.now, names),
+    ...wide,
   },
-  decorators: Live.decorators,
 };
 
 /** BO12: this room's work is on stage. */
 export const BackOnStage: Story = {
   args: { ...Back.args, isOnStage: true },
-  decorators: Live.decorators,
 };
 
 /** On the stage, where the board sits: the stage tokens. */
 export const Stage: Story = {
-  args: { room: liveRooms[1], status: roomStatus(liveRooms[1], 'live', live.clock.now, names) },
+  args: { ...wide, room: liveRooms[1], status: roomStatus(liveRooms[1], 'live', live.clock.now, names) },
   globals: { surface: 'stage' },
-  decorators: Live.decorators,
 };
