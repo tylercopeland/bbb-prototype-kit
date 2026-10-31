@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Key } from 'react-aria-components';
-import type { Participant, ParticipantId, ReactionKind, ScreenKind } from '../../mocks/types';
+import type { Participant, ParticipantId, ReactionKind, ScreenKind, StageCorner } from '../../mocks/types';
 import { tv, type VariantProps } from '../../styles/tv';
 import { IconButton } from '../IconButton';
 import { Surface } from '../Surface';
@@ -29,8 +29,8 @@ export const stageStyles = tv({
     chrome: 'flex min-h-control-md items-center justify-between gap-3',
     /** The right end of the chrome row: the share pill (M1, M2), then Minimize. */
     chromeEnd: 'flex min-w-0 flex-1 items-center justify-end gap-3',
-    /** The box the slide fits in. */
-    fit: 'flex min-h-0 min-w-0 items-center justify-center',
+    /** The box the slide fits in; the overlay layer is positioned against it. */
+    fit: 'relative flex min-h-0 min-w-0 items-center justify-center',
     /** The webcam strip. */
     strip: '',
     /** The shared screen's frame: fitted like the slide. */
@@ -73,6 +73,8 @@ export const stageStyles = tv({
 export const slideStyles = tv({
   slots: {
     root: 'group relative flex flex-col justify-between overflow-hidden rounded-tile bg-slide p-6 text-on-slide shadow-overlay',
+    /** The deck name and the title keep clear of the reserved top-right corner (D1): room for the widest card (the poll results, panel width) and its inset. */
+    header: 'flex flex-col pr-96',
     deck: 'text-sm font-semibold tracking-label uppercase',
     title: 'text-xl font-bold text-balance',
     number: 'self-end text-sm font-semibold tabular-nums',
@@ -129,6 +131,36 @@ export const presentationTileStyles = tv({
     restore: 'shrink-0',
   },
 });
+
+/**
+ * The overlay layer (D1): four corner slots over the slide (or over the
+ * whole stage in the grid layouts), each a column of cards. The layer lets
+ * pointer events through to the slide; the cards take them back. The top
+ * right is the reserved corner: the timer defaults there and the poll
+ * results always sit there, and the slide's title block keeps clear of it.
+ * Alert pills live in the session header and the webcam strip is outside
+ * the slide column, so neither overlaps a card.
+ */
+export const stageOverlayStyles = tv({
+  slots: {
+    layer: 'pointer-events-none absolute inset-0 grid grid-cols-2 grid-rows-2 gap-3 p-3',
+    corner: 'flex min-w-0 flex-col gap-3 *:pointer-events-auto',
+  },
+  variants: {
+    corner: {
+      topLeft: { corner: 'items-start justify-start' },
+      topRight: { corner: 'items-end justify-start' },
+      bottomLeft: { corner: 'items-start justify-end' },
+      bottomRight: { corner: 'items-end justify-end' },
+    },
+  },
+});
+
+/** The corners in grid order: top row, then bottom row. */
+export const STAGE_CORNER_ORDER: StageCorner[] = ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
+
+/** Cards per corner. */
+export type StageOverlays = Partial<Record<StageCorner, ReactNode>>;
 
 export type StageWebcams = NonNullable<VariantProps<typeof stageStyles>['webcams']>;
 export type StageColumns = NonNullable<VariantProps<typeof stageGridStyles>['columns']>;
@@ -191,8 +223,8 @@ export interface StageProps {
   onMinimize?: () => void;
   onRestore?: () => void;
   onShowingChange?: (showing: StageTab) => void;
-  /** Overlays drawn over the stage (poll results, the timer) in later milestones. */
-  children?: ReactNode;
+  /** Floating cards (the timer, poll results) by corner, drawn over the slide in the overlay layer (D1). */
+  overlays?: StageOverlays;
   className?: string;
 }
 
@@ -217,11 +249,13 @@ export function Stage({
   onMinimize,
   onRestore,
   onShowingChange,
-  children,
+  overlays,
   className,
 }: StageProps) {
   const styles = stageStyles({ webcams });
   const showGrid = layout === 'grid' || layout === 'minimized' || !presentation;
+  const layer =
+    overlays && STAGE_CORNER_ORDER.some((c) => overlays[c]) ? <OverlayLayer overlays={overlays} /> : null;
   const strip = (
     <WebcamStrip
       participants={participants}
@@ -236,13 +270,16 @@ export function Stage({
   return (
     <Surface kind="stage" className={styles.root({ className })}>
       {showGrid ? (
-        <StageGrid
-          participants={participants}
-          names={names}
-          reactions={reactions}
-          presentation={layout === 'minimized' ? presentation : undefined}
-          onRestore={onRestore}
-        />
+        <>
+          <StageGrid
+            participants={participants}
+            names={names}
+            reactions={reactions}
+            presentation={layout === 'minimized' ? presentation : undefined}
+            onRestore={onRestore}
+          />
+          {layer}
+        </>
       ) : (
         <>
           {webcams === 'top' && strip}
@@ -271,13 +308,27 @@ export function Stage({
                   {controls}
                 </Slide>
               )}
+              {layer}
             </div>
           </section>
           {webcams === 'side' && strip}
         </>
       )}
-      {children}
     </Surface>
+  );
+}
+
+/** The four corner slots; an empty corner renders nothing but keeps its cell. */
+function OverlayLayer({ overlays }: { overlays: StageOverlays }) {
+  const styles = stageOverlayStyles();
+  return (
+    <div className={styles.layer()}>
+      {STAGE_CORNER_ORDER.map((corner) => (
+        <div key={corner} className={stageOverlayStyles({ corner }).corner()}>
+          {overlays[corner]}
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -292,8 +343,10 @@ function Slide({
   const styles = slideStyles({ webcams });
   return (
     <div className={styles.root()}>
-      <p className={styles.deck()}>{deckName}</p>
-      <h2 className={styles.title()}>{slideTitle}</h2>
+      <div className={styles.header()}>
+        <p className={styles.deck()}>{deckName}</p>
+        <h2 className={styles.title()}>{slideTitle}</h2>
+      </div>
       <p className={styles.number()}>
         <span className={styles.numberLabel()}>Slide </span>
         {slideNumber} / {slideCount}

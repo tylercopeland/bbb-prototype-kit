@@ -29,6 +29,13 @@ const H2 = '/desktop/H2MediaScreen-ez5s';
 const O1 = '/desktop/O1Analytics';
 const O2 = '/desktop/O2StudentActions';
 const BO1 = '/desktop/BO1Entry-desk';
+const PL1 = '/desktop/PL1Setup';
+const PL2 = '/desktop/PL2Live';
+const PL3 = '/desktop/PL3Shown';
+const TM1 = '/desktop/TM1Ready';
+const TM2 = '/desktop/TM2Running';
+const TM3 = '/desktop/TM3Min';
+const TM4 = '/desktop/TM4Done';
 
 describe('RoomScreen', () => {
   it('F1: the header, alerts, stage and action bar from the store, with no panel', () => {
@@ -421,6 +428,137 @@ describe('RoomScreen', () => {
     expect(
       within(screen.getByRole('list', { name: 'Messages with Bruno' })).getAllByRole('listitem'),
     ).toHaveLength(4);
+  });
+
+  it('PL1: the poll builder in the panel; Ask the class starts the poll and focuses Show results', async () => {
+    const user = userEvent.setup();
+    renderAt(PL1);
+    const panel = screen.getByRole('complementary', { name: 'Poll' });
+    expect(within(panel).getByRole('textbox', { name: 'Question' })).toHaveValue(
+      'Which change makes it easiest to see who is muted?',
+    );
+    expect(within(panel).getByRole('radio', { name: 'Multiple choice' })).toBeChecked();
+    await user.click(within(panel).getByRole('button', { name: 'Add an answer' }));
+    await user.type(within(panel).getByRole('textbox', { name: 'Answer E' }), 'Something else');
+    expect(window.bbbRoom?.getState().poll.options).toHaveLength(5);
+    await user.click(within(panel).getByRole('radio', { name: 'Yes / No' }));
+    expect(within(panel).queryByRole('textbox', { name: /Answer/ })).not.toBeInTheDocument();
+    expect(within(panel).getByText('Yes')).toBeInTheDocument();
+    await user.click(within(panel).getByRole('button', { name: 'Ask the class' }));
+    expect(window.bbbRoom?.getState().poll).toMatchObject({ phase: 'live', type: 'yesno', votes: [0, 0] });
+    const show = within(panel).getByRole('button', { name: 'Show results to everyone' });
+    await waitFor(() => expect(show).toHaveFocus());
+    expect(within(panel).getByText('Live · 0 of 13 answered')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: /Poll results shown/ })).not.toBeInTheDocument();
+  });
+
+  it('PL2: answers coming in are counted and announced politely; End poll closes it and New poll returns to the builder', async () => {
+    const user = userEvent.setup();
+    renderAt(PL2);
+    const panel = screen.getByRole('complementary', { name: 'Poll' });
+    expect(within(panel).getByText('Live · 9 of 13 answered')).toBeInTheDocument();
+    expect(within(panel).getByText(/Only you see the results until you show them/)).toBeInTheDocument();
+    dispatch({ type: 'answerPoll', option: 2 });
+    expect(within(panel).getByText('Live · 10 of 13 answered')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Poll: 10 of 13 answered');
+    await user.click(within(panel).getByRole('button', { name: 'End poll' }));
+    expect(within(panel).getByText('Poll closed · 10 of 13 answered')).toBeInTheDocument();
+    await user.click(within(panel).getByRole('button', { name: 'New poll' }));
+    const question = within(panel).getByRole('textbox', { name: 'Question' });
+    await waitFor(() => expect(question).toHaveFocus());
+    expect(window.bbbRoom?.getState().poll.votes).toEqual([0, 0, 0, 0]);
+  });
+
+  it('PL3: the results are on the stage for everyone; Hide removes the card and lands on Show results; Close hands focus to Plugins', async () => {
+    const user = userEvent.setup();
+    renderAt(PL3);
+    const card = screen.getByRole('region', { name: 'Poll results shown to everyone' });
+    expect(within(card).getByText('9 of 13 answered · shown to everyone')).toBeInTheDocument();
+    // The card sits in the reserved top-right corner of the slide (D1).
+    expect(card.parentElement).toHaveClass('items-end', 'justify-start');
+    const panel = screen.getByRole('complementary', { name: 'Poll' });
+    expect(within(panel).getByText(/Results are shown to everyone on the stage/)).toBeInTheDocument();
+    await user.click(within(card).getByRole('button', { name: 'Hide results from everyone' }));
+    expect(screen.queryByRole('region', { name: 'Poll results shown to everyone' })).not.toBeInTheDocument();
+    const show = within(panel).getByRole('button', { name: 'Show results to everyone' });
+    await waitFor(() => expect(show).toHaveFocus());
+    await user.click(show);
+    expect(screen.getByRole('region', { name: 'Poll results shown to everyone' })).toBeInTheDocument();
+    await user.click(within(panel).getByRole('button', { name: 'End poll' }));
+    await user.click(within(panel).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: /Poll results/ })).not.toBeInTheDocument();
+    expect(window.bbbRoom?.getState().poll.phase).toBe('off');
+    expect(screen.getByRole('button', { name: 'Plugins' })).toHaveFocus();
+  });
+
+  it('TM1 and TM2: the timer card from the store; the quick times, Start, Pause and +1 min change it; Remove hands focus to Plugins', async () => {
+    const user = userEvent.setup();
+    const { unmount } = renderAt(TM1);
+    const card = screen.getByRole('group', { name: 'Timer' });
+    expect(within(card).getByText('5:00')).toBeInTheDocument();
+    expect(within(card).getByText('Ready')).toBeInTheDocument();
+    expect(within(card).getByRole('radio', { name: '5 min' })).toBeChecked();
+    // Default corner: the reserved top right (D1).
+    expect(card.parentElement).toHaveClass('items-end', 'justify-start');
+    await user.click(within(card).getByRole('radio', { name: '3 min' }));
+    expect(within(card).getByText('3:00')).toBeInTheDocument();
+    await user.click(within(card).getByRole('button', { name: 'Start' }));
+    expect(window.bbbRoom?.getState().timer.phase).toBe('running');
+    expect(within(card).getByText('Running')).toBeInTheDocument();
+    await user.click(within(card).getByRole('button', { name: '+1 min' }));
+    expect(within(card).getByText('4:00')).toBeInTheDocument();
+    await user.click(within(card).getByRole('button', { name: 'Pause' }));
+    expect(within(card).getByText('Paused')).toBeInTheDocument();
+    await user.click(within(card).getByRole('button', { name: 'Remove timer' }));
+    expect(screen.queryByRole('group', { name: 'Timer' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Plugins' })).toHaveFocus();
+    unmount();
+
+    renderAt(TM2);
+    expect(within(screen.getByRole('group', { name: 'Timer' })).getByText('3:42')).toBeInTheDocument();
+    // The ticking time is plain text; a tick announces nothing (X10).
+    dispatch({ type: 'tick', now: window.bbbRoom!.getState().clock.now + 1000 });
+    expect(within(screen.getByRole('group', { name: 'Timer' })).getByText('3:41')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
+  it('TM2: Move to corner moves the card and announces it politely', async () => {
+    const user = userEvent.setup();
+    renderAt(TM2);
+    const card = screen.getByRole('group', { name: 'Timer' });
+    await user.click(within(card).getByRole('button', { name: 'Move to corner' }));
+    await user.click(await screen.findByRole('menuitemradio', { name: 'Bottom left' }));
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    expect(window.bbbRoom?.getState().timer.corner).toBe('bottomLeft');
+    expect(screen.getByRole('group', { name: 'Timer' }).parentElement).toHaveClass(
+      'items-start',
+      'justify-end',
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('Timer moved to bottom left');
+  });
+
+  it('TM3 and TM4: the pill restores to the card; time’s up is announced assertively when the clock reaches the end', async () => {
+    const user = userEvent.setup();
+    const { unmount } = renderAt(TM3);
+    const pill = screen.getByRole('button', { name: 'Expand timer, 3:42 left' });
+    await user.click(pill);
+    expect(screen.getByRole('group', { name: 'Timer' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Minimize timer' })).toHaveFocus();
+    unmount();
+
+    const done = renderAt(TM4);
+    const card = screen.getByRole('group', { name: 'Timer' });
+    expect(within(card).getByText('0:00')).toBeInTheDocument();
+    expect(within(card).getByText('Time’s up!')).toBeInTheDocument();
+    expect(within(card).getByRole('button', { name: 'Restart' })).toBeInTheDocument();
+    done.unmount();
+
+    renderAt(TM2);
+    const state = window.bbbRoom!.getState();
+    dispatch({ type: 'tick', now: state.timer.endsAt! });
+    expect(within(screen.getByRole('group', { name: 'Timer' })).getByText('Time’s up!')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Time’s up');
   });
 
   it('Leave confirms, then returns to the index with focus on its heading', async () => {

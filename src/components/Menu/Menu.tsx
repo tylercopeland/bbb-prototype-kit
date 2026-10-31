@@ -96,6 +96,18 @@ export const menuSwitchStyles = tv({
   defaultVariants: { isSelected: false },
 });
 
+/** The check at the end of a `menuitemradio` row (single selection, the timer's corners): decoration beside `aria-checked`. */
+export const menuCheckStyles = tv({
+  base: 'ml-auto shrink-0 text-accent',
+  variants: {
+    isSelected: {
+      true: '',
+      false: 'invisible',
+    },
+  },
+  defaultVariants: { isSelected: false },
+});
+
 export const menuSectionStyles = tv({
   slots: {
     root: 'flex flex-col',
@@ -152,6 +164,9 @@ export function MenuItem({ children, icon, description, tone, className, ref, ..
               <span aria-hidden="true" className={sw.track()}>
                 <span className={sw.thumb()} />
               </span>
+            )}
+            {selectionMode === 'single' && (
+              <Icon name="check" size="sm" className={menuCheckStyles({ isSelected })} />
             )}
             {hasSubmenu && <Icon name="submenu" size="sm" className={menuItemIconStyles({ tone })} />}
           </>

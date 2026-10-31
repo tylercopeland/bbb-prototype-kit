@@ -142,6 +142,18 @@ const entries: Record<IconName, Entry> = {
   quiz: { meaning: 'Quiz plugin', used: 'Plugins menu' },
   wordCloud: { meaning: 'Word cloud plugin', used: 'Plugins menu' },
   randomPicker: { meaning: 'Random picker plugin', used: 'Plugins menu' },
+  start: { meaning: 'Start / restart the timer', used: 'Timer card' },
+  pause: { meaning: 'Pause the timer', used: 'Timer card' },
+  reset: { meaning: 'Reset the timer', used: 'Timer card' },
+  moveToCorner: {
+    meaning: 'Move to a corner of the stage',
+    used: 'Timer card (D1: the keyboard way to place a floating card)',
+  },
+  delete: {
+    meaning: 'Remove an answer',
+    used: 'Poll builder',
+    note: 'A bin: `close` dismisses, `removeFromSession` removes a person',
+  },
 };
 
 const names = Object.keys(icons) as IconName[];

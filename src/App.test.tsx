@@ -52,19 +52,19 @@ describe('routes', () => {
   });
 
   it('renders an accessible placeholder for an unbuilt artboard, with its state', () => {
-    renderAt('/desktop/PL1Setup');
+    renderAt('/desktop/BO2SetupGroups-desk');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Poll · 1 · Set up from Plugins → Poll',
+      'Breakout · 2 · Set up groups (4 rooms, spread evenly)',
     );
     expect(screen.getByText('Not built yet (milestone 5)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to the artboards' })).toHaveAttribute('href', '/');
     expect(screen.getByText('People')).toBeInTheDocument();
     expect(screen.getByText('14 · 4 hands raised')).toBeInTheDocument();
-    expect(screen.getByText('poll · filter all')).toBeInTheDocument();
+    expect(screen.getByText('none · filter all')).toBeInTheDocument();
   });
 
   it('lets query parameters override the artboard props', () => {
-    renderAt('/desktop/TM1Ready?panel=people&pfilter=low&people=thirty');
+    renderAt('/mobile/MB1Room?panel=people&pfilter=low&people=thirty');
     expect(screen.getByText('30 · 5 hands raised')).toBeInTheDocument();
     expect(screen.getByText('people · filter low')).toBeInTheDocument();
   });
@@ -94,9 +94,14 @@ describe('routes', () => {
   it('navigates from the index to an artboard and back by link', async () => {
     const user = userEvent.setup();
     renderAt('/');
-    await user.click(screen.getByRole('link', { name: 'Poll · 1 · Set up from Plugins → Poll' }));
+    await user.click(
+      screen.getByRole('link', { name: 'Breakout · 2 · Set up groups (4 rooms, spread evenly)' }),
+    );
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Poll · 1 · Set up from Plugins → Poll' }),
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Breakout · 2 · Set up groups (4 rooms, spread evenly)',
+      }),
     ).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Back to the artboards' }));
     expect(

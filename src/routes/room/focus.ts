@@ -15,7 +15,9 @@ export type FocusRequest =
   /** The private thread's composer, after "Message privately". */
   | { kind: 'composer' }
   /** The person's row in the Direct list (or the Direct tab when the row is gone), after "Back". */
-  | { kind: 'dmRow'; participantId: ParticipantId };
+  | { kind: 'dmRow'; participantId: ParticipantId }
+  /** The Poll panel's "Show results to everyone", after the stage card's Hide unmounted the card. */
+  | { kind: 'pollShow' };
 
 export type FocusRequestKind = FocusRequest['kind'];
 

@@ -39,6 +39,17 @@ const MILESTONE_5A = new Set([
   'BO1Entry-desk',
 ]);
 
+/** Milestone 5 batch B: the poll (setup, live, shown) and the timer (ready, running, minimized, done). */
+const MILESTONE_5B = new Set([
+  'PL1Setup',
+  'PL2Live',
+  'PL3Shown',
+  'TM1Ready',
+  'TM2Running',
+  'TM3Min',
+  'TM4Done',
+]);
+
 /** Screens registered as they are built, by `<group>/<stem>`. */
 const screens: Record<string, ComponentType> = {};
 
@@ -50,6 +61,8 @@ export function registerScreen(group: Artboard['group'], stem: string, Screen: C
 for (const stem of MILESTONE_4) registerScreen('desktop', stem, RoomScreen);
 // Milestone 5 batch A: the same screen, with the pickers, overview, sharing and menus from the store.
 for (const stem of MILESTONE_5A) registerScreen('desktop', stem, RoomScreen);
+// Milestone 5 batch B: the same screen, with the poll panel and the floating cards from the store.
+for (const stem of MILESTONE_5B) registerScreen('desktop', stem, RoomScreen);
 
 export function screenFor(artboard: Pick<Artboard, 'group' | 'stem'>): ScreenEntry {
   const milestone = artboard.group === 'mobile' ? 6 : MILESTONE_4.has(artboard.stem) ? 4 : 5;

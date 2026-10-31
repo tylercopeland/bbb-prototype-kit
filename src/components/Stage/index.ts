@@ -4,12 +4,15 @@ export {
   presentationTileStyles,
   slideStyles,
   Stage,
+  STAGE_CORNER_ORDER,
   stageGridStyles,
+  stageOverlayStyles,
   stageStyles,
 } from './Stage';
 export type {
   StageColumns,
   StageLayout,
+  StageOverlays,
   StagePresentation,
   StageProps,
   StageShare,

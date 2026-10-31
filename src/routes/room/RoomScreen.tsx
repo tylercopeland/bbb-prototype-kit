@@ -21,6 +21,7 @@ import {
   Button,
   MediaPicker,
   PluginsMenu,
+  PollResults,
   PresentationControls,
   RoomSettings,
   SessionHeader,
@@ -28,11 +29,13 @@ import {
   SidePanel,
   Stage,
   Surface,
+  Timer,
   ToastRegion,
   showToast,
   type ActionBarPanel,
   type MediaAction,
   type StageLayout,
+  type StageOverlays,
   type StagePresentation,
   type StageShare,
 } from '../../components';
@@ -44,11 +47,15 @@ import {
   selectElapsed,
   selectPeopleCount,
   selectPluginSubtitles,
+  selectPollAnswered,
+  selectPollEligible,
+  selectPollResults,
   selectRaisedHands,
   selectReactions,
   selectSelf,
   selectSlideCount,
   selectTileOrder,
+  selectTimerLeft,
   selectUnreadTotal,
   type Alert,
 } from '../../mocks/selectors';
@@ -56,6 +63,7 @@ import { tv } from '../../styles/tv';
 import { ChatPanel } from './ChatPanel';
 import { RoomFocusContext, type FocusRequest, type FocusRequestKind, type RoomFocus } from './focus';
 import { PeoplePanel } from './PeoplePanel';
+import { PollPanel } from './PollPanel';
 import { useRoomShortcuts } from './useRoomShortcuts';
 
 const roomStyles = tv({
@@ -121,6 +129,12 @@ export function RoomScreen() {
   const deck = useRoom(selectDeck);
   const slideCount = useRoom(selectSlideCount);
   const presentation = useRoom((s) => s.presentation);
+  const poll = useRoom((s) => s.poll);
+  const pollResults = useRoom(selectPollResults);
+  const pollAnswered = useRoom(selectPollAnswered);
+  const pollEligible = useRoom(selectPollEligible);
+  const timer = useRoom((s) => s.timer);
+  const timerLeft = useRoom(selectTimerLeft);
 
   // One pending focus request, written by a handler and taken by the target's mount effect.
   const pendingFocus = useRef<FocusRequest | null>(null);
@@ -141,6 +155,8 @@ export function RoomScreen() {
   const notesButton = useRef<HTMLButtonElement>(null);
   const pluginsButton = useRef<HTMLButtonElement>(null);
   const mediaButton = useRef<HTMLButtonElement>(null);
+  // The Poll panel's "Show results to everyone": the stage card's Hide lands there when the panel is open.
+  const pollShowButton = useRef<HTMLButtonElement>(null);
 
   const stagePresentation: StagePresentation | undefined = deck
     ? {
@@ -182,6 +198,67 @@ export function RoomScreen() {
     }[panel];
     toggle?.current?.focus();
   };
+
+  /** The poll's Close: the poll ends for good and the panel goes; Plugins, which opened it, takes focus (WCAG 2.4.3). */
+  const closePoll = () => {
+    dispatch({ type: 'closePoll' });
+    pluginsButton.current?.focus();
+  };
+
+  /** Hide from the stage card: the card unmounts, so the panel's show button (or Plugins) takes focus. */
+  const hidePollResults = () => {
+    if (panel === 'poll') requestFocus({ kind: 'pollShow' });
+    dispatch({ type: 'showPollResults', shown: false });
+    if (panel !== 'poll') pluginsButton.current?.focus();
+  };
+
+  /** Remove the timer: the card unmounts, so Plugins, which added it, takes focus. */
+  const removeTimer = () => {
+    dispatch({ type: 'removeTimer' });
+    pluginsButton.current?.focus();
+  };
+
+  /** The floating cards (D1): the poll results in the reserved top-right corner, the timer in its own. */
+  const overlays: StageOverlays = {};
+  if (poll.shown && (poll.phase === 'live' || poll.phase === 'ended')) {
+    overlays.topRight = (
+      <PollResults
+        key="poll"
+        variant="stage"
+        question={poll.question}
+        results={pollResults}
+        answered={pollAnswered}
+        eligible={pollEligible}
+        phase={poll.phase}
+        shown
+        anonymous={poll.anonymous}
+        onHide={hidePollResults}
+      />
+    );
+  }
+  if (timer.phase !== 'off') {
+    overlays[timer.corner] = (
+      <>
+        {overlays[timer.corner]}
+        <Timer
+          key="timer"
+          phase={timer.phase}
+          leftSec={timerLeft}
+          durationSec={timer.durationSec}
+          corner={timer.corner}
+          minimized={timer.minimized}
+          onStart={() => dispatch({ type: 'startTimer' })}
+          onPause={() => dispatch({ type: 'pauseTimer' })}
+          onReset={() => dispatch({ type: 'resetTimer' })}
+          onAddMinute={() => dispatch({ type: 'addTimerMinute' })}
+          onDurationChange={(durationSec) => dispatch({ type: 'setTimerDuration', durationSec })}
+          onCornerChange={(corner) => dispatch({ type: 'setTimerCorner', corner })}
+          onMinimizedChange={(minimized) => dispatch({ type: 'setTimerMinimized', minimized })}
+          onRemove={removeTimer}
+        />
+      </>
+    );
+  }
 
   /** Every choice in the Share media picker (canvas notes › Share media). */
   const onMediaPick = (action: MediaAction) => {
@@ -254,7 +331,11 @@ export function RoomScreen() {
             people={<PeoplePanel />}
             chat={<ChatPanel />}
           >
-            <p className={styles.placeholder()}>Not built yet (milestone 5).</p>
+            {panel === 'poll' ? (
+              <PollPanel onClose={closePoll} showButtonRef={pollShowButton} />
+            ) : (
+              <p className={styles.placeholder()}>Not built yet (milestone 5).</p>
+            )}
           </SidePanel>
         )}
         <Surface as="main" kind="stage" className={styles.main()}>
@@ -325,6 +406,7 @@ export function RoomScreen() {
               onShowingChange={(showing) =>
                 dispatch({ type: 'setShare', share: showing === 'screen' ? 'screen' : 'deck' })
               }
+              overlays={overlays}
               className={styles.stage()}
             />
           )}

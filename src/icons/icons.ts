@@ -52,11 +52,15 @@ import {
   Minus,
   Monitor,
   MousePointer2,
+  Move,
   PanelTop,
+  Pause,
   Pencil,
+  Play,
   Plus,
   Presentation,
   Projector,
+  RotateCcw,
   SendHorizontal,
   Settings,
   ShieldCheck,
@@ -65,6 +69,7 @@ import {
   SquarePen,
   SquarePlus,
   Timer,
+  Trash,
   Type,
   Upload,
   User,
@@ -160,6 +165,14 @@ export const icons = {
   quiz: ListChecks,
   wordCloud: Cloud,
   randomPicker: Dices,
+  /** The class timer's controls (Focus.dc.html 194–198). */
+  start: Play,
+  pause: Pause,
+  reset: RotateCcw,
+  /** "Move to corner": the keyboard way to place a floating card (D1). */
+  moveToCorner: Move,
+  /** Remove an answer from the poll builder. `removeFromSession` and `close` are other meanings. */
+  delete: Trash,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

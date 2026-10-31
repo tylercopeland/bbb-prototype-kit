@@ -556,7 +556,9 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       if (state.poll.phase !== 'setup' || state.poll.type === action.pollType) return state;
       // Multiple choice keeps the teacher's own answers; the fixed types reset to theirs.
       const options =
-        action.pollType === 'choice' && state.poll.type !== 'choice' ? POLL_TYPES.choice.options : POLL_TYPES[action.pollType].options;
+        action.pollType === 'choice' && state.poll.type !== 'choice'
+          ? POLL_TYPES.choice.options
+          : POLL_TYPES[action.pollType].options;
       return {
         ...state,
         poll: { ...state.poll, type: action.pollType, options, votes: options.map(() => 0) },

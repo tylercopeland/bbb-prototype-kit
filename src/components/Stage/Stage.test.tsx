@@ -43,11 +43,11 @@ describe('Stage', () => {
     expect(root.firstElementChild).toHaveAttribute('aria-label', 'Webcams');
     expect(screen.getByRole('list', { name: 'Webcams' })).toHaveClass('flex-row');
     expect(screen.getByRole('list', { name: 'Webcams' })).not.toHaveClass('mt-21');
-    expect(screen.getByRole('heading', { level: 2 }).parentElement).toHaveClass('slide-fit-stacked');
+    expect(screen.getByRole('heading', { level: 2 }).closest('.group')).toHaveClass('slide-fit-stacked');
     rerender(<Stage layout="presentation" webcams="side" {...forFixture('class')} />);
     expect(root).toHaveClass('flex-row');
     expect(screen.getByRole('list', { name: 'Webcams' })).toHaveClass('flex-col', 'mt-21');
-    expect(screen.getByRole('heading', { level: 2 }).parentElement).toHaveClass('slide-fit');
+    expect(screen.getByRole('heading', { level: 2 }).closest('.group')).toHaveClass('slide-fit');
   });
 
   it('minimized: a grid of everyone plus the presentation tile, with data-driven columns', async () => {
@@ -130,5 +130,34 @@ describe('Stage', () => {
     const root = container.querySelector('[data-surface="stage"]');
     expect(root).toHaveClass('p-6');
     expect(root).not.toHaveClass('p-3');
+  });
+
+  it('draws floating cards in their corner of the overlay layer over the slide, and the title keeps clear of the top right (D1)', () => {
+    const { rerender } = render(
+      <Stage
+        layout="presentation"
+        {...forFixture('class')}
+        overlays={{ topRight: <p>Poll card</p>, bottomLeft: <p>Timer card</p> }}
+      />,
+    );
+    const layer = screen.getByText('Poll card').parentElement?.parentElement;
+    expect(layer).toHaveClass('pointer-events-none', 'grid-cols-2', 'grid-rows-2');
+    expect(screen.getByText('Poll card').parentElement).toHaveClass('items-end', 'justify-start');
+    expect(screen.getByText('Timer card').parentElement).toHaveClass('items-start', 'justify-end');
+    // The layer sits in the slide's fit box, under the chrome row, not over the webcam strip.
+    const fit = screen.getByRole('heading', { level: 2 }).closest('.group')?.parentElement;
+    expect(fit).toHaveClass('relative');
+    expect(fit).toContainElement(layer as HTMLElement);
+    expect(screen.getByRole('list', { name: 'Webcams' })).not.toContainElement(layer as HTMLElement);
+    expect(screen.getByRole('heading', { level: 2 }).parentElement).toHaveClass('pr-96');
+    // No overlays: no layer at all.
+    rerender(<Stage layout="presentation" {...forFixture('class')} />);
+    expect(document.querySelector('.grid-rows-2')).toBeNull();
+    // Minimized: the layer sits over the whole stage.
+    rerender(
+      <Stage layout="minimized" {...forFixture('class')} overlays={{ topRight: <p>Timer card</p> }} />,
+    );
+    expect(screen.getByText('Timer card')).toBeInTheDocument();
+    expect(screen.getByText('Timer card').closest('[data-surface="stage"]')).not.toBeNull();
   });
 });
