@@ -48,6 +48,8 @@ import { PeoplePanel } from '../room/PeoplePanel';
 const peopleSheetStyles = tv({
   slots: {
     sheet: 'h-full',
+    /** The panels bring the desktop's padding, so the body adds none. */
+    body: 'px-0 pb-0',
     tabs: 'min-h-0 flex-1 gap-0',
     tabList: 'min-w-0 flex-1',
     panel: 'flex min-h-0 flex-1 flex-col',
@@ -59,7 +61,8 @@ const studentSheetStyles = tv({
     header: 'flex items-center gap-3 pb-3',
     summary: 'min-w-0 text-sm text-text-muted',
     actions: 'flex gap-2 pb-2',
-    action: 'min-w-0 flex-1',
+    /** Two side by side in 358px: the touch height with the medium text and padding, so "Make presenter" fits. */
+    action: 'min-w-0 flex-1 px-3 text-md',
     remove: 'mt-2 w-full justify-start px-2',
   },
 });
@@ -96,6 +99,7 @@ export function PeopleSheet({ isOpen, position, triggerRef }: PeopleSheetProps) 
       titleHidden
       position={position}
       className={styles.sheet()}
+      bodyClassName={styles.body()}
       frame={(content) => (
         <Tabs selectedKey={tab} onSelectionChange={onTab} className={styles.tabs()}>
           {content}
@@ -135,6 +139,7 @@ export function PeopleSheet({ isOpen, position, triggerRef }: PeopleSheetProps) 
       <TabPanel id="people" className={styles.panel()}>
         <PeoplePanel
           canModerate={canModerate}
+          actionsVisible
           onOpenActions={(participantId, trigger) => {
             opener.current = trigger;
             dispatch({ type: 'setSheet', sheet: 'student', student: participantId });

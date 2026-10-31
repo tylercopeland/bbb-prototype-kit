@@ -47,6 +47,10 @@ export const participantRowStyles = tv({
     isMenuOpen: {
       true: { root: 'bg-surface-sunken', actions: 'pointer-events-auto opacity-100' },
     },
+    /** The phone's rows (MB3): no hover, so the actions always show. */
+    actionsVisible: {
+      true: { actions: 'pointer-events-auto opacity-100' },
+    },
     sublineTone: {
       hand: { subline: 'text-status-hand-text' },
       presenting: { subline: 'text-accent' },
@@ -121,6 +125,8 @@ export interface ParticipantRowProps extends Omit<ComponentProps<'li'>, 'childre
    * actions): a moderator may, a student may not (MB15). @default true
    */
   canModerate?: boolean;
+  /** Keep the row actions visible instead of revealing them on hover or focus: the phone's sheet has no hover. @default false */
+  actionsVisible?: boolean;
   onAction?: (action: ParticipantAction) => void;
   /**
    * On the phone the ⋯ button opens the student actions sheet (MB4) instead
@@ -162,6 +168,7 @@ export function ParticipantRow({
   onMessage,
   canMessage = true,
   canModerate = true,
+  actionsVisible = false,
   onAction,
   onOpenActions,
   moreRef,
@@ -183,7 +190,7 @@ export function ParticipantRow({
         : 'muted';
   const sublineIcon: IconName | null =
     sublineTone === 'hand' ? 'raiseHand' : sublineTone === 'presenting' ? 'presenter' : null;
-  const styles = participantRowStyles({ isMenuOpen, sublineTone, audio: p.audio });
+  const styles = participantRowStyles({ isMenuOpen, actionsVisible, sublineTone, audio: p.audio });
   const [confirmRemove, setConfirmRemove] = useState(false);
   // The ⋯ button, for the menu's focus fallback (O2 opens the menu on load) as well as the list's ref.
   const moreButton = useRef<HTMLButtonElement>(null);

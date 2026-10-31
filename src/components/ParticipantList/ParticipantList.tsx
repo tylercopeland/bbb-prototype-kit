@@ -57,6 +57,8 @@ export interface ParticipantListProps extends Omit<ComponentProps<'div'>, 'child
   canMessage?: (participantId: ParticipantId) => boolean;
   /** Whether the viewer is a moderator: rows show the ⋯ actions only then (MB15). @default true */
   canModerate?: boolean;
+  /** Keep every row's actions visible (the phone's sheet has no hover). @default false */
+  actionsVisible?: boolean;
   onAction?: (participantId: ParticipantId, action: ParticipantAction) => void;
   /** On the phone, the ⋯ button opens the student actions sheet for this person instead of a menu (MB4); `trigger` is that button. */
   onOpenActions?: (participantId: ParticipantId, trigger: HTMLButtonElement | null) => void;
@@ -96,6 +98,7 @@ export function ParticipantList({
   onMessage,
   canMessage,
   canModerate = true,
+  actionsVisible = false,
   onAction,
   onOpenActions,
   onAnalytics,
@@ -144,6 +147,7 @@ export function ParticipantList({
       onMessage={() => onMessage?.(p.id)}
       canMessage={canMessage ? canMessage(p.id) : true}
       canModerate={canModerate}
+      actionsVisible={actionsVisible}
       onAction={(action) => act(p, action)}
       onOpenActions={onOpenActions ? (trigger) => onOpenActions(p.id, trigger) : undefined}
       moreRef={(el) => {

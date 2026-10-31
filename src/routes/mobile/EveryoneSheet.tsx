@@ -18,6 +18,8 @@ const everyoneSheetStyles = tv({
     sheet: 'h-full',
     count: 'self-center text-lg font-semibold text-text-muted',
     stage: 'rounded-tile bg-surface-stage p-2',
+    /** The list is the sheet's only content and the body scrolls, so the list is tabbable: keyboard users can reach and scroll it (axe: scrollable-region-focusable). */
+    list: 'rounded-tile focus-ring',
   },
 });
 
@@ -49,7 +51,15 @@ export function EveryoneSheet({ isOpen, position, triggerRef }: EveryoneSheetPro
     >
       <FocusFallback target={triggerRef} />
       <Surface kind="stage" className={styles.stage()}>
-        <WebcamStrip direction="grid" participants={tiles} names={names} max={tiles.length} reactions={reactions} />
+        <WebcamStrip
+          direction="grid"
+          participants={tiles}
+          names={names}
+          max={tiles.length}
+          reactions={reactions}
+          tabIndex={0}
+          className={styles.list()}
+        />
       </Surface>
     </Sheet>
   );

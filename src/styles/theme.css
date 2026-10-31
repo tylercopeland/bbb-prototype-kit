@@ -200,6 +200,13 @@
   }
 }
 
+/* A size container: Tailwind's `@container` sets `container-type: inline-size`,
+   under which `cqh` falls back to the viewport. The phone's landscape slide
+   fits by the height its column leaves it, so that box is a size container. */
+@utility container-size {
+  container-type: size;
+}
+
 /* Safe areas (P2): the phone's notch, rounded corners and home indicator.
    Each utility adds the device inset to a spacing step, so `pb-safe-3` is
    12px plus the home indicator's inset and `px-safe-4` is 16px plus the

@@ -18,13 +18,20 @@ import { useParticipantActions } from './participantActions';
 export interface PeoplePanelProps {
   /** Whether the viewer may act on people (the ⋯ actions): a moderator may, a student may not (MB15). @default true */
   canModerate?: boolean;
+  /** Keep the row actions visible: the phone's sheet has no hover. @default false */
+  actionsVisible?: boolean;
   /** On the phone, the ⋯ button opens the student actions sheet (MB4) instead of the menu; `trigger` is that button. */
   onOpenActions?: (participantId: ParticipantId, trigger: HTMLButtonElement | null) => void;
   /** "See full activity in Learning Analytics" in the insight note. */
   onAnalytics?: () => void;
 }
 
-export function PeoplePanel({ canModerate = true, onOpenActions, onAnalytics }: PeoplePanelProps) {
+export function PeoplePanel({
+  canModerate = true,
+  actionsVisible = false,
+  onOpenActions,
+  onAnalytics,
+}: PeoplePanelProps) {
   const store = useRoomStore();
   const dispatch = useRoomDispatch();
   const { requestFocus } = useRoomFocus();
@@ -60,6 +67,7 @@ export function PeoplePanel({ canModerate = true, onOpenActions, onAnalytics }: 
       onMessage={onMessage}
       canMessage={canMessage}
       canModerate={canModerate}
+      actionsVisible={actionsVisible}
       key={privateChat ? 'private-chat-on' : 'private-chat-off'}
       onAction={onAction}
       onOpenActions={onOpenActions}

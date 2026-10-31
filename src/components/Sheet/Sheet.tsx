@@ -103,6 +103,8 @@ export interface SheetProps extends Pick<
   stacked?: ReactNode;
   /** Merged onto the sheet. */
   className?: string;
+  /** Merged onto the scrolling body: `px-0 pb-0` for content that brings its own padding (the People and Chat panels). */
+  bodyClassName?: string;
   /** The dialog element. */
   ref?: Ref<HTMLElement>;
 }
@@ -136,6 +138,7 @@ export function Sheet({
   isDismissable = true,
   isKeyboardDismissDisabled,
   className,
+  bodyClassName,
   ref,
   ...state
 }: SheetProps) {
@@ -170,7 +173,9 @@ export function Sheet({
                     >
                       {headerExtra}
                     </OverlayHeader>
-                    <div className={styles.body()}>{renderWith(children, close)}</div>
+                    <div className={styles.body({ className: bodyClassName })}>
+                      {renderWith(children, close)}
+                    </div>
                     {footer && <div className={styles.footer()}>{renderWith(footer, close)}</div>}
                   </>,
                 )}

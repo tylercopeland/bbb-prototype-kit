@@ -48,7 +48,7 @@ const presentationStyles = tv({
   variants: {
     orientation: {
       portrait: { root: 'shrink-0' },
-      landscape: { root: 'min-h-0 flex-1', fit: '@container flex-1' },
+      landscape: { root: 'min-h-0 flex-1', fit: 'container-size flex-1' },
     },
   },
 });
@@ -58,7 +58,7 @@ const webcamBandStyles = tv({
     root: 'flex min-h-0 flex-col gap-2',
     grid: 'min-h-0 overflow-y-auto',
     row: 'flex shrink-0 items-center justify-between gap-2',
-    hint: 'min-w-0 truncate text-xs text-text-muted',
+    hint: 'min-w-0 text-xs leading-4 text-text-muted',
   },
 });
 
