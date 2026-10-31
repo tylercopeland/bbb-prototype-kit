@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { Button as RacButton, type Key } from 'react-aria-components';
 import { Icon } from '../../icons';
 import type { Participant, ParticipantId, ReactionKind, ScreenKind, StageCorner } from '../../mocks/types';
@@ -477,6 +477,8 @@ export interface PresentationTileProps extends Pick<StagePresentation, 'slideTit
   /** @default 'tile' */
   variant?: PresentationTileVariant;
   className?: string;
+  /** The Restore button (the whole cell as a `button`), so the room can hand it focus after Minimize (WCAG 2.4.3). */
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /**
@@ -495,6 +497,7 @@ export function PresentationTile({
   onRestore,
   variant = 'tile',
   className,
+  ref,
 }: PresentationTileProps) {
   const tile = presentationTileStyles({ variant });
   const plate = `Presentation · ${slideNumber} / ${slideCount}`;
@@ -502,6 +505,7 @@ export function PresentationTile({
     return (
       <li className={tile.root({ className })}>
         <RacButton
+          ref={ref}
           aria-label={`${plate}, restore`}
           onPress={onRestore}
           className={presentationTileButtonStyles()}
@@ -525,6 +529,7 @@ export function PresentationTile({
       <span className={tile.bottom()}>
         <span className={tile.plate()}>{plate}</span>
         <IconButton
+          ref={ref}
           label="Restore presentation"
           icon="restore"
           variant="primary"

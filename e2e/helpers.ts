@@ -4,10 +4,32 @@
  * acting as another participant through the store the `RoomProvider`
  * exposes as `window.bbbRoom`.
  */
+import { readFileSync } from 'node:fs';
 import type { Locator, Page } from '@playwright/test';
 
 /** The desktop artboard size. */
 export const SIZE = { width: 1400, height: 900 };
+
+export type ArtboardEntry = {
+  stem: string;
+  group: 'desktop' | 'mobile';
+  number: number;
+  title: string;
+  size: { width: number; height: number };
+};
+
+/** Every artboard, from the list `npm run artboards` generates out of docs/artboards.md. */
+export function readArtboards(): ArtboardEntry[] {
+  return JSON.parse(readFileSync('src/routes/artboards.json', 'utf8')) as ArtboardEntry[];
+}
+
+/** Opens an artboard's route at its own size (390×844 or 844×390 for the phone), with any extra query. */
+export async function gotoArtboard(page: Page, group: ArtboardEntry['group'], stem: string, query = '') {
+  const artboard = readArtboards().find((a) => a.group === group && a.stem === stem);
+  if (!artboard) throw new Error(`No artboard ${group}/${stem} in src/routes/artboards.json`);
+  await page.setViewportSize(artboard.size);
+  await page.goto(`/${group}/${stem}${query}`);
+}
 
 /**
  * Presses Tab (or `key`, such as Shift+Tab) until the focused element has

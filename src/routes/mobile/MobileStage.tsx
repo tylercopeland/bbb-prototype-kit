@@ -37,6 +37,7 @@ import {
 } from '../../mocks/selectors';
 import type { Orientation } from '../../mocks/types';
 import { tv } from '../../styles/tv';
+import { useRoomFocus } from '../room/focus';
 
 /** Tiles in the band before "+N · See all" (Mobile.dc.html 392: `nTiles = 4`). */
 export const PHONE_TILES = 4;
@@ -109,7 +110,14 @@ export function PresentationBlock({ orientation, allSlidesRef, className }: Pres
   const styles = presentationStyles({ orientation, annotating: annotating && isPresenter });
   const annotateButton = useRef<HTMLButtonElement>(null);
   useAnnotateEscape(annotating && isPresenter, annotateButton);
-  if (!deck || minimized) return null;
+  // After the tile's Restore (which unmounts with the tile) the Minimize button takes focus (WCAG 2.4.3).
+  const { requestFocus, takeFocus } = useRoomFocus();
+  const minimizeButton = useRef<HTMLButtonElement>(null);
+  const shown = deck !== null && !minimized;
+  useEffect(() => {
+    if (shown && takeFocus('presentationMinimize')) minimizeButton.current?.focus();
+  }, [shown, takeFocus]);
+  if (!shown) return null;
   return (
     <section aria-label="Presentation" className={styles.root({ className })}>
       <div className={styles.fit()}>
@@ -123,12 +131,16 @@ export function PresentationBlock({ orientation, allSlidesRef, className }: Pres
         >
           {!annotating && (
             <IconButton
+              ref={minimizeButton}
               label="Minimize presentation"
               icon="minimize"
               variant="soft"
               size="touch"
               className={styles.minimize()}
-              onPress={() => dispatch({ type: 'setPresentationMinimized', minimized: true })}
+              onPress={() => {
+                requestFocus({ kind: 'presentationRestore' });
+                dispatch({ type: 'setPresentationMinimized', minimized: true });
+              }}
             />
           )}
         </StageSlide>
@@ -197,7 +209,9 @@ export function PresentationBlock({ orientation, allSlidesRef, className }: Pres
  * Escape ends annotating (MB12) when nothing above the stage is open: a
  * sheet or a confirmation takes Escape for itself. Focus is kept: when it
  * was on the toolbar, which unmounts, it moves to the Annotate toggle,
- * which stays; anywhere else it stays where it is.
+ * which stays; anywhere else it stays where it is. The listener runs in
+ * the capture phase, so a tooltip open on a tool (which stops Escape at
+ * its trigger) goes with the toolbar instead of eating the key.
  */
 function useAnnotateEscape(active: boolean, toggle: RefObject<HTMLButtonElement | null>) {
   const store = useRoomStore();
@@ -214,8 +228,8 @@ function useAnnotateEscape(active: boolean, toggle: RefObject<HTMLButtonElement 
       if (inRow) button?.focus();
       event.preventDefault();
     };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
   }, [active, store, toggle]);
 }
 
@@ -249,6 +263,12 @@ export function WebcamBand({ orientation, onSeeAll, seeAllRef, className }: Webc
   const presentationTile = minimized && deck !== null;
   const shown = minimized ? tiles : tiles.slice(0, PHONE_TILES);
   const hidden = tiles.length - shown.length;
+  // After Minimize (whose button unmounts with the slide) the tile that restores takes focus (WCAG 2.4.3).
+  const { requestFocus, takeFocus } = useRoomFocus();
+  const restoreButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (presentationTile && takeFocus('presentationRestore')) restoreButton.current?.focus();
+  }, [presentationTile, takeFocus]);
   return (
     <div className={styles.root({ className })}>
       <WebcamStrip
@@ -262,11 +282,15 @@ export function WebcamBand({ orientation, onSeeAll, seeAllRef, className }: Webc
         leading={
           presentationTile ? (
             <PresentationTile
+              ref={restoreButton}
               variant="button"
               slideTitle={deck.slides[slideIndex] ?? ''}
               slideNumber={slideIndex + 1}
               slideCount={slideCount}
-              onRestore={() => dispatch({ type: 'setPresentationMinimized', minimized: false })}
+              onRestore={() => {
+                requestFocus({ kind: 'presentationMinimize' });
+                dispatch({ type: 'setPresentationMinimized', minimized: false });
+              }}
             />
           ) : undefined
         }

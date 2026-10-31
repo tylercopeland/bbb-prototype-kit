@@ -87,9 +87,12 @@ describe('MobileRoomScreen', () => {
     // The tile is the way back: the whole cell, named by its plate (WCAG 2.5.3).
     const restore = within(list).getByRole('button', { name: 'Presentation · 4 / 12, restore' });
     expect(within(list).getAllByRole('listitem')[0]).toContainElement(restore);
+    // Minimize unmounted with the slide: the tile that brings it back holds focus, and Restore hands it back (WCAG 2.4.3).
+    expect(restore).toHaveFocus();
     await user.click(restore);
     expect(screen.getByRole('region', { name: 'Presentation' })).toBeInTheDocument();
     expect(screen.getByRole('list', { name: 'Webcams' })).toHaveClass('grid-cols-2');
+    expect(screen.getByRole('button', { name: 'Minimize presentation' })).toHaveFocus();
   });
 
   it('MB11: the All slides sheet lists the deck three to a row with the current slide marked; a pick moves the deck, closes and returns focus', async () => {

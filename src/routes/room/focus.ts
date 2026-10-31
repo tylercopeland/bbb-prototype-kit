@@ -27,7 +27,11 @@ export type FocusRequest =
   /** The first share-back control, after "Bring everyone back now" replaced the live surface. */
   | { kind: 'shareBack' }
   /** The breakout panel's heading, after "Set up new rooms" replaced the back view. */
-  | { kind: 'breakoutSetup' };
+  | { kind: 'breakoutSetup' }
+  /** The phone's Minimize button, after the presentation tile's Restore brought the slide back (MB13). */
+  | { kind: 'presentationMinimize' }
+  /** The phone's presentation tile, after Minimize replaced the slide with the tile (MB13). */
+  | { kind: 'presentationRestore' };
 
 export type FocusRequestKind = FocusRequest['kind'];
 
