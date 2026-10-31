@@ -293,6 +293,8 @@ export interface UiState {
   analyticsTipShown: boolean;
   /** The breakout surface replaces the Focus stage (BO2 onwards). */
   breakoutsOpen: boolean;
+  /** The "Closing rooms" dialog was dismissed; the panel's countdown banner stays (B5). Reset when the countdown starts, stops or ends. */
+  closingNoticeDismissed: boolean;
   /** Mobile. */
   orientation: Orientation;
   sheet: MobileSheet;

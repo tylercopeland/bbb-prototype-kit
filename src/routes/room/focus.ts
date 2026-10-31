@@ -17,7 +17,17 @@ export type FocusRequest =
   /** The person's row in the Direct list (or the Direct tab when the row is gone), after "Back". */
   | { kind: 'dmRow'; participantId: ParticipantId }
   /** The Poll panel's "Show results to everyone", after the stage card's Hide unmounted the card. */
-  | { kind: 'pollShow' };
+  | { kind: 'pollShow' }
+  /** A student's chip in their new room, after "Move to…" moved it to another card (B2). */
+  | { kind: 'breakoutStudent'; participantId: ParticipantId }
+  /** The live panel's first control, after "Open N rooms" replaced the setup panel. */
+  | { kind: 'breakoutLive' }
+  /** "Close all rooms", after the closing countdown was cancelled or the joined room left. */
+  | { kind: 'closeRooms' }
+  /** The first share-back control, after "Bring everyone back now" replaced the live surface. */
+  | { kind: 'shareBack' }
+  /** The breakout panel's heading, after "Set up new rooms" replaced the back view. */
+  | { kind: 'breakoutSetup' };
 
 export type FocusRequestKind = FocusRequest['kind'];
 

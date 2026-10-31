@@ -83,11 +83,11 @@ export const roomThumbStyles = tv({
 /**
  * A member chip in setup (Breakout.dc.html 63–67): avatar and name on a
  * 44px raised row. It is the "Move to…" menu's trigger (B2), so while its
- * menu is open it takes the selected pair, as the canvas's "Moving" chip
- * did.
+ * menu is open (React Aria keeps a menu trigger pressed while its menu is
+ * open) it takes the selected pair, as the canvas's "Moving" chip did.
  */
 export const memberChipStyles = tv({
-  base: 'flex h-control-touch w-full min-w-0 items-center gap-2 rounded-control border border-border bg-surface-raised px-2 text-left text-md font-semibold text-text focus-ring outline-none aria-expanded:border-selected-border aria-expanded:bg-selected aria-expanded:text-selected-text data-hovered:bg-surface-sunken data-pressed:bg-surface-sunken',
+  base: 'flex h-control-touch w-full min-w-0 items-center gap-2 rounded-control border border-border bg-surface-raised px-2 text-left text-md font-semibold text-text focus-ring outline-none data-hovered:bg-surface-sunken data-pressed:border-selected-border data-pressed:bg-selected data-pressed:text-selected-text',
 });
 
 export const memberChipNameStyles = tv({ base: 'min-w-0 flex-1 truncate' });

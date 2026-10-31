@@ -138,6 +138,8 @@ export type RoomAction =
   | { type: 'setBreakoutView'; view: BreakoutView }
   | { type: 'closeRooms' }
   | { type: 'keepRoomsOpen' }
+  /** Dismiss the "Closing rooms" dialog (Escape or its close button); the countdown keeps running in the panel. */
+  | { type: 'dismissClosingNotice' }
   | { type: 'bringEveryoneBack' }
   | { type: 'showRoomOnStage'; roomIndex: number | null }
   | { type: 'setUpNewRooms' }
@@ -801,13 +803,22 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     case 'closeRooms':
       return state.breakouts.phase !== 'live' || state.breakouts.closingEndsAt !== null
         ? state
-        : withBreakouts(state, { closingEndsAt: state.clock.now + CLOSING_SECONDS * SECOND, peek: null });
+        : withUi(
+            withBreakouts(state, { closingEndsAt: state.clock.now + CLOSING_SECONDS * SECOND, peek: null }),
+            { closingNoticeDismissed: false },
+          );
     case 'keepRoomsOpen':
-      return state.breakouts.closingEndsAt === null ? state : withBreakouts(state, { closingEndsAt: null });
+      return state.breakouts.closingEndsAt === null
+        ? state
+        : withUi(withBreakouts(state, { closingEndsAt: null }), { closingNoticeDismissed: false });
+    case 'dismissClosingNotice':
+      return state.breakouts.closingEndsAt === null || state.ui.closingNoticeDismissed
+        ? state
+        : withUi(state, { closingNoticeDismissed: true });
     case 'bringEveryoneBack':
       return state.breakouts.phase !== 'live'
         ? state
-        : withBreakouts(state, {
+        : withUi(withBreakouts(state, {
             phase: 'back',
             closingEndsAt: null,
             view: 'main',
@@ -818,7 +829,7 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
             helpQueue: state.breakouts.helpQueue.map((h) =>
               h.acknowledgedAt === null ? { ...h, acknowledgedAt: state.clock.now } : h,
             ),
-          });
+          }), { closingNoticeDismissed: false });
     case 'showRoomOnStage':
       return state.breakouts.phase !== 'back'
         ? state

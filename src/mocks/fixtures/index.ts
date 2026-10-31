@@ -112,6 +112,7 @@ export const defaultUi: UiState = {
   mediaType: 'slides',
   analyticsTipShown: false,
   breakoutsOpen: false,
+  closingNoticeDismissed: false,
   orientation: 'portrait',
   sheet: 'none',
   sheetStudent: null,

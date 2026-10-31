@@ -4,8 +4,10 @@
  * alerts on top, the stage in the middle and the action bar at the bottom.
  * Every value comes from the store through `useRoom`; every change is a
  * store action, so a deep link and a click produce the same state. The F1,
- * G1–G5 and L1 artboards (milestone 4) and M1, M2, H1, H2, N1, O1, O2 and
- * BO1 (milestone 5 batch A) all render this screen in different states.
+ * G1–G5 and L1 artboards (milestone 4), M1, M2, H1, H2, N1, O1, O2 and
+ * BO1 (milestone 5 batch A), PL1–PL3 and TM1–TM4 (batch B) and BO2–BO12
+ * (batch C, where the breakout surface replaces the stage) all render this
+ * screen in different states.
  *
  * Focus (WCAG 2.4.3): the screen holds one pending `FocusRequest` for the
  * chat flows whose pressed control unmounts, taken in `ChatPanel`. Closing
@@ -18,7 +20,6 @@ import { useNavigate } from 'react-router';
 import {
   ActionBar,
   AlertPill,
-  Button,
   MediaPicker,
   PluginsMenu,
   PollResults,
@@ -60,6 +61,8 @@ import {
   type Alert,
 } from '../../mocks/selectors';
 import { tv } from '../../styles/tv';
+import { BreakoutPanel } from './BreakoutPanel';
+import { BreakoutScreen } from './BreakoutScreen';
 import { ChatPanel } from './ChatPanel';
 import { RoomFocusContext, type FocusRequest, type FocusRequestKind, type RoomFocus } from './focus';
 import { PeoplePanel } from './PeoplePanel';
@@ -74,24 +77,16 @@ const roomStyles = tv({
     alerts: 'flex min-w-0 shrink-0 items-center gap-2',
     stage: 'p-0',
     placeholder: 'p-4 text-sm text-text-muted',
-    /** The breakout surface's stand-in until batch C: a card on the stage with a way back. */
-    breakouts:
-      'flex min-h-0 flex-1 flex-col items-start gap-3 rounded-tile border border-border bg-surface p-6 text-text',
-    breakoutsTitle: 'text-xl font-bold',
-    breakoutsNote: 'text-md text-text-muted',
   },
 });
 
-/**
- * What pressing an alert opens, as its description (D4: the name stays the
- * visible text). The help and "Breakouts ended" pills have no description
- * until batch C wires them to the breakout surface: until then they are
- * status, not a promise.
- */
-const alertDescriptions: Partial<Record<Alert['kind'], string>> = {
+/** What pressing an alert opens, as its description (D4: the name stays the visible text). */
+const alertDescriptions: Record<Alert['kind'], string> = {
   hands: 'Opens People',
   question: 'Opens Chat',
   insight: 'Opens People filtered to low engagement',
+  help: 'Opens the room’s preview',
+  back: 'Opens the rooms’ work',
 };
 
 /** What the prototype cannot do yet, said in a toast instead of a dead button. */
@@ -120,6 +115,8 @@ export function RoomScreen() {
   const mediaType = useRoom((s) => s.ui.mediaType);
   const analyticsTip = useRoom((s) => s.ui.analyticsTipShown);
   const breakoutsOpen = useRoom((s) => s.ui.breakoutsOpen);
+  const breakoutPhase = useRoom((s) => s.breakouts.phase);
+  const breakoutView = useRoom((s) => s.breakouts.view);
   const raisedHands = useRoom(selectRaisedHands).length;
   const unread = useRoom(selectUnreadTotal);
   const me = useRoom(selectSelf);
@@ -161,6 +158,10 @@ export function RoomScreen() {
   // new button takes focus once the move has rendered (WCAG 2.4.3).
   const timerMoveButton = useRef<HTMLButtonElement>(null);
   const timerMovePending = useRef(false);
+  // The breakout panel's "Close all rooms" and the countdown banner's "Keep rooms open": where the
+  // closing dialog leaves focus when it is cancelled or dismissed (WCAG 2.4.3).
+  const closeRoomsButton = useRef<HTMLButtonElement>(null);
+  const keepOpenButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!timerMovePending.current) return;
     timerMovePending.current = false;
@@ -191,7 +192,21 @@ export function RoomScreen() {
     if (alert.kind === 'hands') dispatch({ type: 'setPanel', panel: 'people' });
     else if (alert.kind === 'question') dispatch({ type: 'setPanel', panel: 'chat' });
     else if (alert.kind === 'insight') dispatch({ type: 'setPeopleFilter', filter: 'low' });
-    // help and back open the breakout surface in batch C.
+    else if (alert.kind === 'help') {
+      // The room that asked, in its preview (B3).
+      dispatch({ type: 'setBreakoutsOpen', open: true });
+      dispatch({ type: 'setBreakoutView', view: 'rooms' });
+      dispatch({ type: 'peekRoom', roomIndex: alert.request.roomIndex });
+    } else if (alert.kind === 'back') {
+      dispatch({ type: 'setBreakoutsOpen', open: true });
+      dispatch({ type: 'setBreakoutView', view: 'rooms' });
+    }
+  };
+
+  /** Leave the breakout surface (the rooms keep running): Plugins, which opened it, takes focus (WCAG 2.4.3). */
+  const closeBreakouts = () => {
+    dispatch({ type: 'setBreakoutsOpen', open: false });
+    pluginsButton.current?.focus();
   };
 
   const closePanel = () => {
@@ -331,9 +346,51 @@ export function RoomScreen() {
       />
     ) : undefined;
 
+  const stage = (
+    <Stage
+      layout={layout}
+      participants={tiles}
+      names={names}
+      reactions={reactions}
+      webcams={panel === 'none' ? 'side' : 'top'}
+      presentation={stagePresentation}
+      share={share}
+      controls={controls}
+      sharePill={
+        share ? (
+          <SharePill
+            showing={share.showing}
+            kind={share.kind}
+            onStop={() => {
+              dispatch({ type: 'stopShare' });
+              // The pill unmounts with its button: Share media, which shows the share's state, takes focus (WCAG 2.4.3).
+              mediaButton.current?.focus();
+            }}
+          />
+        ) : undefined
+      }
+      onShowAll={() => dispatch({ type: 'setPanel', panel: 'people' })}
+      onMinimize={() => dispatch({ type: 'setPresentationMinimized', minimized: true })}
+      onRestore={() => dispatch({ type: 'setPresentationMinimized', minimized: false })}
+      onShowingChange={(showing) => dispatch({ type: 'setShare', share: showing === 'screen' ? 'screen' : 'deck' })}
+      overlays={overlays}
+      className={styles.stage()}
+    />
+  );
+  // The breakout panel shows while the rooms view is open and the rooms have not closed (Breakout.dc.html 458).
+  const breakoutPanelOpen = breakoutsOpen && breakoutView === 'rooms' && breakoutPhase !== 'back';
+
   return (
     <RoomFocusContext.Provider value={focus}>
       <div className={styles.root()}>
+        {panel === 'none' && breakoutPanelOpen && (
+          <BreakoutPanel
+            onClose={closeBreakouts}
+            onPreview={(roomIndex) => dispatch({ type: 'peekRoom', roomIndex })}
+            closeRoomsRef={closeRoomsButton}
+            keepOpenRef={keepOpenButton}
+          />
+        )}
         {panel !== 'none' && (
           <SidePanel
             panel={panel}
@@ -374,55 +431,7 @@ export function RoomScreen() {
               </div>
             )}
           </div>
-          {breakoutsOpen ? (
-            <section aria-labelledby="breakouts-title" className={styles.breakouts()}>
-              <h2 id="breakouts-title" className={styles.breakoutsTitle()}>
-                Breakout rooms
-              </h2>
-              <p className={styles.breakoutsNote()}>Not built yet (milestone 5, batch C).</p>
-              <Button
-                onPress={() => {
-                  dispatch({ type: 'setBreakoutsOpen', open: false });
-                  // This button unmounts with the surface: Plugins, which opened it, takes focus (WCAG 2.4.3).
-                  pluginsButton.current?.focus();
-                }}
-              >
-                Back to the room
-              </Button>
-            </section>
-          ) : (
-            <Stage
-              layout={layout}
-              participants={tiles}
-              names={names}
-              reactions={reactions}
-              webcams={panel === 'none' ? 'side' : 'top'}
-              presentation={stagePresentation}
-              share={share}
-              controls={controls}
-              sharePill={
-                share ? (
-                  <SharePill
-                    showing={share.showing}
-                    kind={share.kind}
-                    onStop={() => {
-                      dispatch({ type: 'stopShare' });
-                      // The pill unmounts with its button: Share media, which shows the share's state, takes focus (WCAG 2.4.3).
-                      mediaButton.current?.focus();
-                    }}
-                  />
-                ) : undefined
-              }
-              onShowAll={() => dispatch({ type: 'setPanel', panel: 'people' })}
-              onMinimize={() => dispatch({ type: 'setPresentationMinimized', minimized: true })}
-              onRestore={() => dispatch({ type: 'setPresentationMinimized', minimized: false })}
-              onShowingChange={(showing) =>
-                dispatch({ type: 'setShare', share: showing === 'screen' ? 'screen' : 'deck' })
-              }
-              overlays={overlays}
-              className={styles.stage()}
-            />
-          )}
+          {breakoutsOpen ? <BreakoutScreen stage={stage} keepOpenRef={keepOpenButton} /> : stage}
           <ActionBar
             panel={panel}
             pluginsOpen={pluginsOpen}

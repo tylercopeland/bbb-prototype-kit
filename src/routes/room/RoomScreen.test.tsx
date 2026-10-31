@@ -36,6 +36,16 @@ const TM1 = '/desktop/TM1Ready';
 const TM2 = '/desktop/TM2Running';
 const TM3 = '/desktop/TM3Min';
 const TM4 = '/desktop/TM4Done';
+const BO2 = '/desktop/BO2SetupGroups-desk';
+const BO3 = '/desktop/BO3SetupMove-desk';
+const BO4 = '/desktop/BO4SetupSolo-desk';
+const BO5 = '/desktop/BO5LiveGroups-desk';
+const BO6 = '/desktop/BO6PeekGroup-desk';
+const BO7 = '/desktop/BO7LiveSolo-desk';
+const BO9 = '/desktop/BO9MainView-desk';
+const BO10 = '/desktop/BO10Closing-desk';
+const BO11 = '/desktop/BO11Back-desk';
+const BO12 = '/desktop/BO12ShareBack-desk';
 
 describe('RoomScreen', () => {
   it('F1: the header, alerts, stage and action bar from the store, with no panel', () => {
@@ -353,8 +363,11 @@ describe('RoomScreen', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(screen.getByRole('heading', { level: 2, name: 'Breakout rooms' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Plugins' })).toHaveAttribute('aria-pressed', 'false');
-    await user.click(screen.getByRole('button', { name: 'Back to the room' }));
+    expect(screen.getByRole('tab', { name: 'Breakout setup' })).toHaveAttribute('aria-selected', 'true');
+    // Closing the panel leaves the surface; Plugins, which opened it, takes focus.
+    await user.click(screen.getByRole('button', { name: 'Close panel' }));
     expect(screen.getByRole('region', { name: 'Presentation' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Plugins' })).toHaveFocus();
     unmount();
 
     renderAt(BO1);
@@ -571,5 +584,218 @@ describe('RoomScreen', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Leave session' }));
     const heading = await screen.findByRole('heading', { level: 1, name: 'BigBlueButton 4.0 prototype' });
     await waitFor(() => expect(heading).toHaveFocus());
+  });
+});
+
+describe('RoomScreen breakouts (batch C)', () => {
+  it('BO2: the setup panel and the board of four rooms; Open 4 rooms confirms, then the live panel’s +5 min takes focus', async () => {
+    const user = userEvent.setup();
+    renderAt(BO2);
+    const panel = screen.getByRole('complementary', { name: 'Breakout rooms' });
+    expect(within(panel).getByText('Set up · nothing is sent until you open rooms')).toBeInTheDocument();
+    expect(within(panel).getByRole('radiogroup', { name: 'How to split the class' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Breakout setup' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Presentation 3 / 12' })).toBeInTheDocument();
+    const board = screen.getByRole('list', { name: 'Rooms' });
+    expect(within(board).getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual([
+      'Room 1',
+      'Room 2',
+      'Room 3',
+      'Room 4',
+    ]);
+    expect(screen.getByRole('button', { name: 'Shuffle evenly' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Even out/ })).not.toBeInTheDocument();
+    await user.click(within(panel).getByRole('button', { name: 'Open 4 rooms' }));
+    const dialog = await screen.findByRole('alertdialog', { name: 'Open 4 rooms?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Open 4 rooms' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('tab', { name: /^4 rooms live/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('status')).toHaveTextContent('4 breakout rooms opened');
+    await waitFor(() => expect(screen.getByRole('button', { name: '+5 min' })).toHaveFocus());
+    expect(screen.getByRole('button', { name: 'Close all rooms' })).toBeInTheDocument();
+  });
+
+  it('BO3: Ana’s Move to… menu is open on load; moving her keeps focus on her chip in the new room and announces it (B2, B4)', async () => {
+    const user = userEvent.setup();
+    renderAt(BO3);
+    const menu = await screen.findByRole('menu', { name: 'Move Ana Souza to another room' });
+    expect(screen.getByText('Pick a room for Ana')).toBeInTheDocument();
+    await waitFor(() => expect(within(menu).getByRole('menuitem', { name: /^Room 1/ })).toHaveFocus());
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    const room1 = screen.getByRole('list', { name: 'Room 1 students' });
+    const chip = within(room1).getByRole('button', { name: 'Move Ana Souza to another room' });
+    await waitFor(() => expect(chip).toHaveFocus());
+    expect(screen.getByRole('status')).toHaveTextContent('Ana moved to Room 1');
+    expect(screen.getByText('5 students')).toBeInTheDocument();
+    // Uneven now: Even out rebalances around the move (B4) and Ana stays put.
+    await user.click(screen.getByRole('button', { name: 'Rooms are uneven · Even out' }));
+    expect(within(screen.getByRole('list', { name: 'Room 1 students' })).getByText('Ana')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Even out/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Shuffle evenly' }));
+    expect(within(screen.getByRole('list', { name: 'Room 1 students' })).getByText('Ana')).toBeInTheDocument();
+  });
+
+  it('BO4: one room per student, as compact cards with no menu; the stepper gives way to the note (B6, B7)', () => {
+    renderAt(BO4);
+    const board = screen.getByRole('list', { name: 'Rooms' });
+    expect(within(board).getAllByRole('heading', { level: 3 })).toHaveLength(13);
+    expect(within(board).getAllByRole('heading', { level: 3 })[0]).toHaveTextContent('Room 1');
+    expect(within(board).queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Shuffle evenly' })).not.toBeInTheDocument();
+    expect(screen.getByText('One student per room')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open 13 rooms' })).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Rooms' })).not.toBeInTheDocument();
+  });
+
+  it('BO5: the live panel and board from the store; the help pill opens the preview; Join and Leave room (B3, B8)', async () => {
+    const user = userEvent.setup();
+    renderAt(BO5);
+    const panel = screen.getByRole('complementary', { name: 'Breakout rooms' });
+    expect(within(panel).getByText('8:42')).toBeInTheDocument();
+    expect(within(panel).getByText('4 rooms · 10 min')).toBeInTheDocument();
+    expect(within(panel).getByRole('region', { name: 'Help requests 1' })).toHaveTextContent('Room 2 · Rafaela');
+    expect(within(panel).getByRole('radio', { name: 'Need help 1 rooms' })).toBeInTheDocument();
+    const rows = within(within(panel).getByRole('list', { name: 'All rooms' })).getAllByRole('button');
+    expect(rows[0]).toHaveAccessibleName('Preview Room 2');
+    const board = screen.getByRole('list', { name: 'Rooms' });
+    expect(within(board).getByRole('button', { name: 'Preview Room 2' })).toBeInTheDocument();
+    expect(within(board).getByText('Asked for help · 1 min')).toBeInTheDocument();
+    expect(within(board).getByText('Bruno and Frederick are talking')).toBeInTheDocument();
+    const help = screen.getByRole('button', { name: 'Room 2 asked for help' });
+    expect(help).toHaveAccessibleDescription('Opens the room’s preview');
+    await user.click(help);
+    expect(await screen.findByRole('dialog', { name: 'Room 2' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Join Room 2' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('group', { name: 'Your room' })).toHaveTextContent('You’re in Room 2');
+    expect(screen.getAllByText('You’re here')).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Leave room' }));
+    expect(screen.queryByRole('group', { name: 'Your room' })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Close all rooms' })).toHaveFocus());
+    // Acknowledge the help request: the pill goes, the queue keeps the row as acknowledged.
+    await user.click(screen.getByRole('button', { name: 'Acknowledge Room 2 · Rafaela' }));
+    expect(screen.queryByRole('button', { name: 'Room 2 asked for help' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Clear Room 2 · Rafaela' })).toHaveFocus();
+  });
+
+  it('BO6: the preview is open on load; Next room moves on; a message is sent to the room; Escape returns focus to the room’s preview button', async () => {
+    const user = userEvent.setup();
+    renderAt(BO6);
+    const dialog = await screen.findByRole('dialog', { name: 'Room 2' });
+    expect(dialog).toHaveAccessibleDescription('Room 2 of 4 · Asked for help · 1 min');
+    expect(within(dialog).getByRole('region', { name: 'Room chat' })).toHaveTextContent(
+      'We’re stuck on what “live” means, can the teacher pop in?',
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Next room' }));
+    expect(screen.getByRole('dialog', { name: 'Room 3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next room' })).toHaveFocus();
+    await user.click(screen.getByRole('textbox', { name: 'Message Room 3' }));
+    await user.keyboard('Two more minutes{Enter}');
+    expect(within(screen.getByRole('region', { name: 'Room chat' })).getByText('Two more minutes')).toBeInTheDocument();
+    expect(window.bbbRoom!.getState().breakouts.messages.at(-1)).toMatchObject({ roomIndex: 2, from: 'helena' });
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    const board = screen.getByRole('list', { name: 'Rooms' });
+    await waitFor(() => expect(within(board).getByRole('button', { name: 'Preview Room 3' })).toHaveFocus());
+  });
+
+  it('BO7: thirteen solo rooms, compact, with the same preview and join actions; the filter narrows the list (B6, B7)', async () => {
+    const user = userEvent.setup();
+    renderAt(BO7);
+    const board = screen.getByRole('list', { name: 'Rooms' });
+    expect(within(board).getAllByRole('heading', { level: 3 })).toHaveLength(13);
+    expect(within(board).getByRole('button', { name: 'Join Room 3' })).toBeInTheDocument();
+    expect(within(board).getByRole('button', { name: 'Preview Room 3' })).toBeInTheDocument();
+    const panel = screen.getByRole('complementary', { name: 'Breakout rooms' });
+    expect(within(panel).getByRole('region', { name: 'Help requests 1' })).toHaveTextContent('Room 3 · Cibelle');
+    await user.click(within(panel).getByRole('radio', { name: 'Need help 1 rooms' }));
+    expect(within(within(panel).getByRole('list', { name: 'Rooms that need help' })).getAllByRole('button')).toHaveLength(1);
+    await user.click(within(panel).getByRole('radio', { name: /^Quiet/ }));
+    expect(within(within(panel).getByRole('list', { name: 'Quiet rooms' })).getAllByRole('button').length).toBeGreaterThan(1);
+  });
+
+  it('BO9: the main view keeps the stage and the Main room card; Back to rooms returns to the board and the panel', async () => {
+    const user = userEvent.setup();
+    renderAt(BO9);
+    expect(screen.getByRole('tab', { name: 'Presentation 3 / 12' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('region', { name: 'Presentation' })).toBeInTheDocument();
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(screen.getByText('Every room can see this slide')).toBeInTheDocument();
+    const card = screen.getByRole('region', { name: 'Main room' });
+    await user.click(within(card).getByRole('button', { name: 'Back to rooms' }));
+    expect(screen.getByRole('tab', { name: /^4 rooms live/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('complementary', { name: 'Breakout rooms' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Rooms' })).toBeInTheDocument();
+  });
+
+  it('BO10: the closing dialog and the banner show the countdown as plain text; Keep rooms open cancels it and lands on Close all rooms (B5, X10)', async () => {
+    const user = userEvent.setup();
+    renderAt(BO10);
+    const dialog = await screen.findByRole('dialog', { name: 'Closing rooms' });
+    expect(within(dialog).getByText('1:00')).toBeInTheDocument();
+    expect(dialog.querySelector('[aria-live], [role="status"], [role="timer"]')).toBeNull();
+    // The banner in the panel keeps the countdown in view once the dialog is dismissed.
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    const banner = screen.getByRole('group', { name: 'Closing rooms' });
+    expect(within(banner).getByText('1:00')).toBeInTheDocument();
+    await waitFor(() => expect(within(banner).getByRole('button', { name: 'Keep rooms open' })).toHaveFocus());
+    await user.keyboard('{Enter}');
+    expect(screen.queryByRole('group', { name: 'Closing rooms' })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Rooms stay open');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Close all rooms' })).toHaveFocus());
+    // Close again: the countdown starts and is announced assertively; bringing everyone back closes the rooms.
+    await user.keyboard('{Enter}');
+    expect(await screen.findByRole('dialog', { name: 'Closing rooms' })).toBeInTheDocument();
+    // The announcer sits outside the modal, which hides the rest of the page from assistive technology.
+    expect(screen.getByRole('alert', { hidden: true })).toHaveTextContent('Rooms close in 60 seconds');
+    await user.click(screen.getByRole('button', { name: 'Bring everyone back now' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('alert')).toHaveTextContent('Breakout rooms closed. Everyone is back in the main room');
+    expect(screen.getByRole('region', { name: 'Everyone is back' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Show Room 1 on stage' })).toHaveFocus());
+  });
+
+  it('BO11 and BO12: the share-back card puts a room’s work on the stage and Back to slides returns to the row; Set up new rooms lands on the panel heading', async () => {
+    const user = userEvent.setup();
+    const { unmount } = renderAt(BO11);
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Breakouts ended/ })).toHaveAccessibleDescription('Opens the rooms’ work');
+    expect(screen.getByRole('tab', { name: 'Room work · 4' })).toBeInTheDocument();
+    const back = screen.getByRole('region', { name: 'Everyone is back' });
+    expect(within(back).getAllByRole('button', { name: /on stage$/ })).toHaveLength(4);
+    await user.click(within(back).getByRole('button', { name: 'Show Room 2 on stage' }));
+    expect(screen.getByRole('region', { name: 'Room 2 on stage' })).toBeInTheDocument();
+    expect(screen.getByText('Everyone sees Room 2’s work')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show Room 2 on stage' })).toHaveAttribute('aria-pressed', 'true');
+    await user.click(screen.getByRole('button', { name: 'Back to slides' }));
+    expect(screen.getByRole('region', { name: 'Presentation' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show Room 2 on stage' })).toHaveFocus();
+    unmount();
+
+    renderAt(BO12);
+    expect(screen.getByRole('region', { name: 'Room 2 on stage' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show Room 2 on stage' })).toHaveAttribute('aria-pressed', 'true');
+    // The rooms view after the close: the board with Show on stage toggles.
+    await user.click(screen.getByRole('tab', { name: 'Room work · 4' }));
+    const board = screen.getByRole('list', { name: 'Rooms' });
+    expect(within(board).getAllByRole('button', { name: 'Show on stage' })).toHaveLength(4);
+    expect(within(board).getByText('Shared notes saved')).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Presentation 3 / 12' }));
+    await user.click(screen.getByRole('button', { name: 'Set up new rooms' }));
+    const panel = screen.getByRole('complementary', { name: 'Breakout rooms' });
+    expect(within(panel).getByRole('heading', { level: 2, name: 'Breakout rooms' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Open 4 rooms' })).toBeInTheDocument();
+  });
+
+  it('BO5: closing the breakout panel leaves the surface while the rooms stay live; Plugins takes focus and says so', async () => {
+    const user = userEvent.setup();
+    renderAt(BO5);
+    await user.click(screen.getByRole('button', { name: 'Close panel' }));
+    expect(screen.getByRole('region', { name: 'Presentation' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Plugins' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Room 2 asked for help' })).toBeInTheDocument();
+    expect(window.bbbRoom!.getState().breakouts.phase).toBe('live');
   });
 });

@@ -520,6 +520,15 @@ describe('breakouts live', () => {
     expect(reduce(kept, { type: 'keepRoomsOpen' })).toBe(kept);
     const back = reduce(closing, { type: 'bringEveryoneBack' });
     expect(back.breakouts).toMatchObject({ phase: 'back', view: 'main', closingEndsAt: null });
+    // The dismissed dialog stays dismissed while this countdown runs, and comes back with the next one.
+    const dismissed = reduce(closing, { type: 'dismissClosingNotice' });
+    expect(dismissed.ui.closingNoticeDismissed).toBe(true);
+    expect(reduce(dismissed, { type: 'dismissClosingNotice' })).toBe(dismissed);
+    const open = live();
+    expect(reduce(open, { type: 'dismissClosingNotice' })).toBe(open);
+    expect(reduce(dismissed, { type: 'keepRoomsOpen' }).ui.closingNoticeDismissed).toBe(false);
+    expect(reduce(dismissed, { type: 'bringEveryoneBack' }).ui.closingNoticeDismissed).toBe(false);
+    expect(run(dismissed, { type: 'keepRoomsOpen' }, { type: 'closeRooms' }).ui.closingNoticeDismissed).toBe(false);
     const setup = createRoom();
     expect(reduce(setup, { type: 'closeRooms' })).toBe(setup);
   });
