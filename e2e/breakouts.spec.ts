@@ -5,29 +5,8 @@
  * work. Every walk ends with a `toBeFocused()` check, so focus is never
  * lost to <body> (WCAG 2.4.3).
  */
-import { test, expect, type Page } from '@playwright/test';
-
-const SIZE = { width: 1400, height: 900 };
-
-/** Presses Tab (or Shift+Tab) until the focused element has the accessible name, or fails after `max` presses. */
-async function tabTo(page: Page, name: string | RegExp, max = 60, key = 'Tab') {
-  for (let i = 0; i < max; i++) {
-    await page.keyboard.press(key);
-    const label = await page.evaluate(() => {
-      const el = document.activeElement as HTMLElement | null;
-      if (!el) return '';
-      const byIds = (attr: string) =>
-        el
-          .getAttribute(attr)
-          ?.split(/\s+/)
-          .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
-          .join(' ');
-      return el.getAttribute('aria-label') ?? byIds('aria-labelledby') ?? el.textContent?.trim() ?? '';
-    });
-    if (typeof name === 'string' ? label === name : name.test(label)) return;
-  }
-  throw new Error(`Never reached a control named ${String(name)}`);
-}
+import { test, expect } from '@playwright/test';
+import { SIZE, tabTo } from './helpers.ts';
 
 test.describe('breakout rooms, keyboard only', () => {
   test('BO2 → Move to… moves Ana and keeps focus on her → Open 4 rooms confirms → the live panel’s +5 min takes focus', async ({

@@ -199,11 +199,12 @@ export function BreakoutScreen({ stage, keepOpenRef }: BreakoutScreenProps) {
   const moveTargets: MoveTarget[] = rooms.map((r) => ({ index: r.index, name: r.name, count: r.members.length }));
   const movingName = breakouts.moving ? names[breakouts.moving] : null;
 
+  // The live tab's name is stable ("4 rooms live"); the ticking time beside it is visual only (X10).
   const roomsTabLabel =
     phase === 'back'
       ? `Room work · ${rooms.length}`
       : phase === 'live'
-        ? `${rooms.length} rooms live · ${formatCountdown(timeLeft ?? 0)}`
+        ? `${rooms.length} rooms live`
         : 'Breakout setup';
 
   const hint =
@@ -248,7 +249,9 @@ export function BreakoutScreen({ stage, keepOpenRef }: BreakoutScreenProps) {
         <div className={styles.header()}>
           <TabList label="What you’re looking at" className={styles.tabList()}>
             <Tab id="main">{`Presentation ${slideLabel}`}</Tab>
-            <Tab id="rooms">{roomsTabLabel}</Tab>
+            <Tab id="rooms" detail={phase === 'live' ? formatCountdown(timeLeft ?? 0) : undefined}>
+              {roomsTabLabel}
+            </Tab>
           </TabList>
           <p className={styles.hint()}>{hint}</p>
           <span className={styles.grow()} />

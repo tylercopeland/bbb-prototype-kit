@@ -107,6 +107,13 @@
       "note": "Accent as link text"
     },
     {
+      "fg": "semantic.color.accent",
+      "bg": "semantic.color.accent-soft",
+      "min": 4.5,
+      "modes": ["light", "dark", "stage"],
+      "note": "Accent text and icons on the soft accent fill (the plugin tiles, the share-back check)"
+    },
+    {
       "fg": "semantic.color.on-accent",
       "bg": "semantic.color.accent",
       "min": 4.5,

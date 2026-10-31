@@ -7,8 +7,10 @@
  * close).
  *
  * Focus (WCAG 2.4.3): "Ask the class" unmounts with the builder, so the
- * results' first action takes focus; "New poll" unmounts with the results,
- * so the question field takes it; hiding the results from the stage card
+ * results' first action takes focus; "End poll" unmounts when the footer
+ * swaps it for "New poll" and "Close", so "New poll" takes it; "New poll"
+ * unmounts with the results, so the question field takes it; hiding the
+ * results from the stage card
  * (which unmounts) lands on "Show results to everyone" through the room's
  * focus request. Close hands focus to Plugins, in `RoomScreen`.
  */
@@ -47,11 +49,14 @@ export function PollPanel({ onClose, showButtonRef }: PollPanelProps) {
   const questionRef = useRef<HTMLInputElement>(null);
   const ownShowRef = useRef<HTMLButtonElement>(null);
   const showRef = showButtonRef ?? ownShowRef;
-  // Which control takes focus after the builder and the results swap places.
-  const focusAfter = useRef<'results' | 'builder' | null>(null);
+  const newPollRef = useRef<HTMLButtonElement>(null);
+  // Which control takes focus after the builder and the results swap places, or after "End poll"
+  // unmounts itself (the footer swaps it for "New poll" and "Close").
+  const focusAfter = useRef<'results' | 'builder' | 'ended' | null>(null);
   useEffect(() => {
     if (focusAfter.current === 'results' && poll.phase !== 'setup') showRef.current?.focus();
     if (focusAfter.current === 'builder' && poll.phase === 'setup') questionRef.current?.focus();
+    if (focusAfter.current === 'ended' && poll.phase === 'ended') newPollRef.current?.focus();
     focusAfter.current = null;
   }, [poll.phase, showRef]);
   // The stage card's Hide unmounted the card: land on the button that can show it again.
@@ -108,12 +113,19 @@ export function PollPanel({ onClose, showButtonRef }: PollPanelProps) {
           {poll.shown ? 'Hide results from everyone' : 'Show results to everyone'}
         </Button>
         {phase === 'live' ? (
-          <Button size="touch" onPress={() => dispatch({ type: 'endPoll' })}>
+          <Button
+            size="touch"
+            onPress={() => {
+              focusAfter.current = 'ended';
+              dispatch({ type: 'endPoll' });
+            }}
+          >
             End poll
           </Button>
         ) : (
           <>
             <Button
+              ref={newPollRef}
               size="touch"
               onPress={() => {
                 focusAfter.current = 'builder';

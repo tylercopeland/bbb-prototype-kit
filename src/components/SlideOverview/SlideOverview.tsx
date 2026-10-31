@@ -8,6 +8,8 @@ import { Popover } from '../Popover';
 /** The grid of thumbnails (Focus.dc.html 88–105): four columns, 10px apart. */
 export const slideOverviewStyles = tv({
   slots: {
+    /** The popover: wide enough for four thumbnails a row. */
+    popover: 'w-166',
     subtitle: 'text-sm text-text-muted',
     grid: 'grid grid-cols-4 gap-2',
     empty: 'py-6 text-center text-sm text-text-muted',
@@ -105,7 +107,7 @@ export function SlideOverview({
       defaultOpen={defaultOpen}
       onOpenChange={onOpenChange}
       placement="top start"
-      className="w-166"
+      className={styles.popover()}
     >
       <p className={styles.subtitle()}>
         {deckName} · {slides.length} {slides.length === 1 ? 'slide' : 'slides'}

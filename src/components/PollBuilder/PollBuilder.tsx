@@ -34,6 +34,8 @@ export const pollBuilderStyles = tv({
     field: 'min-w-0 flex-1',
     /** A fixed answer (Yes / No, True / False, a rating step): a bordered row like the field, not editable. */
     fixed: 'flex h-control-lg min-w-0 flex-1 items-center rounded-control border border-border px-3 text-md',
+    /** The fixed answer's name ("Answer A: "), for assistive technology only. */
+    fixedName: 'sr-only',
     add: 'self-start',
     more: 'flex flex-col gap-1',
     switches: 'flex flex-col',
@@ -152,7 +154,7 @@ export function PollBuilder({
                     </>
                   ) : (
                     <span className={styles.fixed()}>
-                      <span className="sr-only">{name}: </span>
+                      <span className={styles.fixedName()}>{name}: </span>
                       {label}
                     </span>
                   )}

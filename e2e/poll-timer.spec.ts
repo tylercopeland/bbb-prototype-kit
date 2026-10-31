@@ -7,46 +7,8 @@
  * Other participants act through `window.bbbRoom`, the store the
  * `RoomProvider` exposes.
  */
-import { test, expect, type Page } from '@playwright/test';
-
-const SIZE = { width: 1400, height: 900 };
-
-/** Presses Tab until the focused element has the accessible name, or fails after `max` presses. */
-async function tabTo(page: Page, name: string | RegExp, max = 60) {
-  for (let i = 0; i < max; i++) {
-    await page.keyboard.press('Tab');
-    const label = await page.evaluate(() => {
-      const el = document.activeElement as HTMLElement | null;
-      if (!el) return '';
-      const byIds = (attr: string) =>
-        el
-          .getAttribute(attr)
-          ?.split(/\s+/)
-          .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
-          .join(' ');
-      return el.getAttribute('aria-label') ?? byIds('aria-labelledby') ?? el.textContent?.trim() ?? '';
-    });
-    if (typeof name === 'string' ? label === name : name.test(label)) return;
-  }
-  throw new Error(`Never reached a control named ${String(name)}`);
-}
-
-/** Presses Tab until `locator` holds focus (a radio input is named by its label element, which `tabTo` cannot read). */
-async function tabUntilFocused(page: Page, locator: ReturnType<Page['getByRole']>, max = 60, key = 'Tab') {
-  for (let i = 0; i < max; i++) {
-    await page.keyboard.press(key);
-    if (await locator.evaluate((el) => el === document.activeElement)) return;
-  }
-  throw new Error('Never reached the control');
-}
-
-/** Dispatches a store action as if another participant acted. */
-async function dispatch(page: Page, action: Record<string, unknown>) {
-  await page.evaluate((a) => {
-    const w = window as unknown as { bbbRoom?: { dispatch: (action: unknown) => void } };
-    w.bbbRoom?.dispatch(a);
-  }, action);
-}
+import { test, expect } from '@playwright/test';
+import { SIZE, dispatch, tabTo, tabUntilFocused } from './helpers.ts';
 
 test.describe('poll and timer, keyboard only', () => {
   test('F1 → Plugins → Poll → set up → Ask the class → an answer arrives → Show results → End poll → Close returns focus to Plugins', async ({
@@ -122,7 +84,10 @@ test.describe('poll and timer, keyboard only', () => {
     await tabTo(page, 'End poll', 5);
     await page.keyboard.press('Enter');
     await expect(panel.getByText('Poll closed · 1 of 13 answered')).toBeVisible();
-    await tabTo(page, 'Close', 5);
+    // "End poll" unmounted: "New poll" took its place and its focus; Close is the next stop.
+    await expect(panel.getByRole('button', { name: 'New poll' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(panel.getByRole('button', { name: 'Close' })).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.getByRole('complementary')).toHaveCount(0);
     await expect(card).toHaveCount(0);

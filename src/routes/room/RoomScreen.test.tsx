@@ -476,6 +476,8 @@ describe('RoomScreen', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Poll: 10 of 13 answered');
     await user.click(within(panel).getByRole('button', { name: 'End poll' }));
     expect(within(panel).getByText('Poll closed · 10 of 13 answered')).toBeInTheDocument();
+    // "End poll" unmounted: "New poll" took its place and its focus (WCAG 2.4.3).
+    await waitFor(() => expect(within(panel).getByRole('button', { name: 'New poll' })).toHaveFocus());
     await user.click(within(panel).getByRole('button', { name: 'New poll' }));
     const question = within(panel).getByRole('textbox', { name: 'Question' });
     await waitFor(() => expect(question).toHaveFocus());

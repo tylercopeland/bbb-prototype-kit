@@ -25,6 +25,8 @@ import { VideoTile } from '../VideoTile';
  */
 export const roomPreviewStyles = tv({
   slots: {
+    /** The dialog: 952px wide (the canvas); a consumer's class merges with it. */
+    dialog: 'max-w-238',
     toolbar: 'flex flex-wrap items-center gap-2',
     note: 'flex h-control-sm items-center gap-1 rounded-full bg-surface-sunken px-3 text-sm font-semibold text-text-secondary',
     grow: 'flex-1',
@@ -139,7 +141,7 @@ export function RoomPreview({
       onOpenChange={onOpenChange}
       title={room.name}
       description={`${room.name} of ${roomCount} · ${status}`}
-      className={className ?? 'max-w-238'}
+      className={styles.dialog({ className })}
       footer={
         <form onSubmit={submit} className={styles.form()}>
           <TextField

@@ -82,6 +82,9 @@ export type TabVariant = NonNullable<VariantProps<typeof tabStyles>['variant']>;
 
 export const tabLabelStyles = tv({ base: 'truncate' });
 
+/** A `detail` after the label ("· 8:42"): visual only, so a ticking value never changes the tab's name (X10). */
+export const tabDetailStyles = tv({ base: 'ml-1 shrink-0 tabular-nums' });
+
 /** The panel: focusable when it has no focusable child, so it carries the ring. */
 export const tabPanelStyles = tv({
   base: 'min-h-0 flex-1 rounded-xs focus-ring outline-none',
@@ -142,6 +145,12 @@ export function TabList({ label, variant = 'segmented', children, className, ...
 export interface TabProps extends Omit<RacTabProps, 'className' | 'children' | 'style' | 'href'> {
   /** The tab's text; its accessible name together with the badge label. */
   children: string;
+  /**
+   * Text shown after the label but kept out of the name and the tooltip
+   * ("8:42" on "4 rooms live"), for a value that changes while the tab is
+   * on screen: a name that ticks would be re-announced at every change.
+   */
+  detail?: string;
   /** A count on the tab (D3): raised hands on People, unread on Chat. */
   badge?: Pick<BadgeProps, 'count' | 'label' | 'tone'>;
   /** Match the list's variant. @default 'segmented' */
@@ -159,7 +168,7 @@ export interface TabProps extends Omit<RacTabProps, 'className' | 'children' | '
  * a Tooltip (`useTruncationTooltip`); the accessible name is always the
  * full text.
  */
-export function Tab({ children, badge, variant = 'segmented', icon, className, ref, ...props }: TabProps) {
+export function Tab({ children, detail, badge, variant = 'segmented', icon, className, ref, ...props }: TabProps) {
   const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } =
     useTruncationTooltip<HTMLDivElement>(ref);
   return (
@@ -176,6 +185,11 @@ export function Tab({ children, badge, variant = 'segmented', icon, className, r
       <span ref={labelRef} className={tabLabelStyles()}>
         {children}
       </span>
+      {detail && (
+        <span aria-hidden="true" className={tabDetailStyles()}>
+          · {detail}
+        </span>
+      )}
       {/* The space keeps the name "Chat 2 unread", not "Chat2 unread"; flex drops it visually. */}
       {badge && (
         <>

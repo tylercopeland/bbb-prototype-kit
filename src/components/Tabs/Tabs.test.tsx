@@ -97,6 +97,24 @@ describe('Tabs', () => {
     expect(screen.getByRole('tab', { name: 'Shared notes' })).toBeInTheDocument();
   });
 
+  it('keeps a `detail` visible but out of the name, so a ticking value never renames the tab (X10)', () => {
+    render(
+      <Tabs defaultSelectedKey="rooms">
+        <TabList label="What you’re looking at">
+          <Tab id="main">Presentation</Tab>
+          <Tab id="rooms" detail="8:42">
+            4 rooms live
+          </Tab>
+        </TabList>
+        <TabPanel id="main">Slides</TabPanel>
+        <TabPanel id="rooms">Rooms</TabPanel>
+      </Tabs>,
+    );
+    const tab = screen.getByRole('tab', { name: '4 rooms live' });
+    expect(tab).toHaveTextContent('4 rooms live· 8:42');
+    expect(screen.queryByRole('tab', { name: /8:42/ })).not.toBeInTheDocument();
+  });
+
   it('selects with the arrow keys, wraps, and Home / End jump', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();
