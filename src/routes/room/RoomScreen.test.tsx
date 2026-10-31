@@ -536,6 +536,8 @@ describe('RoomScreen', () => {
       'justify-end',
     );
     expect(screen.getByRole('status')).toHaveTextContent('Timer moved to bottom left');
+    // The card remounted in its new corner: its Move to corner button holds focus (WCAG 2.4.3).
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Move to corner' })).toHaveFocus());
   });
 
   it('TM3 and TM4: the pill restores to the card; time’s up is announced assertively when the clock reaches the end', async () => {

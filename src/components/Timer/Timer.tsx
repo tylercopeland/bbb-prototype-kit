@@ -138,6 +138,12 @@ export interface TimerProps {
   onDurationChange?: (durationSec: number) => void;
   /** "Move to corner" picked a corner; the room moves the card and announces it. */
   onCornerChange?: (corner: StageCorner) => void;
+  /**
+   * The "Move to corner" button. Moving the card to another corner remounts
+   * it in that corner's slot, so the room focuses the new button through
+   * this ref once the move has rendered (WCAG 2.4.3).
+   */
+  moveButtonRef?: Ref<HTMLButtonElement>;
   /** Minimize on the card, or a press on the pill. */
   onMinimizedChange?: (minimized: boolean) => void;
   /** Remove the timer. The room focuses Plugins, which added it, because the card unmounts. */
@@ -169,6 +175,7 @@ export function Timer({
   onAddMinute,
   onDurationChange,
   onCornerChange,
+  moveButtonRef,
   onMinimizedChange,
   onRemove,
   className,
@@ -250,7 +257,9 @@ export function Timer({
             Timer <span className={styles.titleNote()}>Everyone sees it</span>
           </span>
         </p>
-        <Menu trigger={<IconButton label="Move to corner" icon="moveToCorner" size="sm" />}>
+        <Menu
+          trigger={<IconButton ref={moveButtonRef} label="Move to corner" icon="moveToCorner" size="sm" />}
+        >
           <MenuSection
             aria-label="Corner"
             selectionMode="single"

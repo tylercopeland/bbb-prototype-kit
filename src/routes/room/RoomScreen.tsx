@@ -13,7 +13,7 @@
  * lands on the index page's heading. The pickers are popovers anchored to
  * their action-bar toggles, so closing one returns focus to its toggle.
  */
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ActionBar,
@@ -157,6 +157,15 @@ export function RoomScreen() {
   const mediaButton = useRef<HTMLButtonElement>(null);
   // The Poll panel's "Show results to everyone": the stage card's Hide lands there when the panel is open.
   const pollShowButton = useRef<HTMLButtonElement>(null);
+  // The timer's "Move to corner": a move remounts the card in another corner slot, so the
+  // new button takes focus once the move has rendered (WCAG 2.4.3).
+  const timerMoveButton = useRef<HTMLButtonElement>(null);
+  const timerMovePending = useRef(false);
+  useEffect(() => {
+    if (!timerMovePending.current) return;
+    timerMovePending.current = false;
+    timerMoveButton.current?.focus();
+  }, [timer.corner]);
 
   const stagePresentation: StagePresentation | undefined = deck
     ? {
@@ -252,7 +261,11 @@ export function RoomScreen() {
           onReset={() => dispatch({ type: 'resetTimer' })}
           onAddMinute={() => dispatch({ type: 'addTimerMinute' })}
           onDurationChange={(durationSec) => dispatch({ type: 'setTimerDuration', durationSec })}
-          onCornerChange={(corner) => dispatch({ type: 'setTimerCorner', corner })}
+          onCornerChange={(corner) => {
+            timerMovePending.current = true;
+            dispatch({ type: 'setTimerCorner', corner });
+          }}
+          moveButtonRef={timerMoveButton}
           onMinimizedChange={(minimized) => dispatch({ type: 'setTimerMinimized', minimized })}
           onRemove={removeTimer}
         />
