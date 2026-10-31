@@ -472,7 +472,10 @@ function StageGrid({
   );
 }
 
-export interface PresentationTileProps extends Pick<StagePresentation, 'slideTitle' | 'slideNumber' | 'slideCount'> {
+export interface PresentationTileProps extends Pick<
+  StagePresentation,
+  'slideTitle' | 'slideNumber' | 'slideCount'
+> {
   onRestore?: () => void;
   /** @default 'tile' */
   variant?: PresentationTileVariant;

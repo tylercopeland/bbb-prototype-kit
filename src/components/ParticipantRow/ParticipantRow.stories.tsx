@@ -19,6 +19,7 @@ const meta = {
   argTypes: {
     participant: { control: false },
     now: { control: false },
+    onOpenActions: { control: false },
   },
   decorators: [
     (Story) => (
@@ -115,6 +116,36 @@ export const ThirtyParticipants: Story = {
 /** Alone in the room: only your own row. */
 export const OneParticipant: Story = {
   args: { participant: room.participants[0] },
+};
+
+/** A student's view of the list (MB15): no ⋯, and no Message privately while private chat is off. */
+export const StudentViewer: Story = {
+  args: { canModerate: false, canMessage: false, actionsVisible: true },
+  render: (args) => (
+    <>
+      <ParticipantRow {...args} participant={by('bruno')} />
+      <ParticipantRow {...args} participant={by('anton')} />
+    </>
+  ),
+};
+
+/** A student's view with private chat on: Message privately stays, the ⋯ does not. */
+export const StudentViewerCanMessage: Story = {
+  args: { canModerate: false, actionsVisible: true },
+};
+
+/**
+ * The phone's row (MB3): the actions always visible and the ⋯ opening the
+ * student actions sheet (`onOpenActions`, `aria-haspopup="dialog"`) instead
+ * of a menu; `isMenuOpen` says whether that sheet is open for this person.
+ */
+export const OpensSheet: Story = {
+  args: { actionsVisible: true, onOpenActions: () => {} },
+};
+
+/** The same row while its sheet is open: the ⋯ reports `aria-expanded`. */
+export const OpensSheetExpanded: Story = {
+  args: { actionsVisible: true, isMenuOpen: true, onOpenActions: () => {} },
 };
 
 export const Stage: Story = {

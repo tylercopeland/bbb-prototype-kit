@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { Button } from '../Button';
 import { IconButton } from '../IconButton';
 import { Surface } from '../Surface';
+import { Tab, TabList, TabPanel, Tabs } from '../Tabs';
 import { Sheet } from './Sheet';
 
 function Subject(props: Partial<React.ComponentProps<typeof Sheet>>) {
@@ -178,6 +179,87 @@ describe('Sheet', () => {
     await user.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
     expect(onOpenChange).toHaveBeenCalledTimes(2);
+  });
+
+  it('frames the header, body and footer in one wrapper, so tabs in the header drive panels in the body', async () => {
+    const user = userEvent.setup();
+    render(
+      <Sheet
+        title="People and chat"
+        titleHidden
+        defaultOpen
+        frame={(content) => <Tabs defaultSelectedKey="people">{content}</Tabs>}
+        headerExtra={
+          <TabList label="People and chat">
+            <Tab id="people">People</Tab>
+            <Tab id="chat">Chat</Tab>
+          </TabList>
+        }
+      >
+        <TabPanel id="people">
+          <Button>Bruno</Button>
+        </TabPanel>
+        <TabPanel id="chat">
+          <Button>Send</Button>
+        </TabPanel>
+      </Sheet>,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'People and chat' });
+    const tablist = screen.getByRole('tablist', { name: 'People and chat' });
+    // The tab list sits in the header, before the close button; the panel is in the body under it.
+    const close = screen.getByRole('button', { name: 'Close' });
+    expect(tablist.compareDocumentPosition(close) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(dialog).toContainElement(tablist);
+    expect(screen.getByRole('tabpanel')).toContainElement(screen.getByRole('button', { name: 'Bruno' }));
+    await user.click(screen.getByRole('tab', { name: 'Chat' }));
+    expect(screen.getByRole('tab', { name: 'Chat' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel')).toContainElement(screen.getByRole('button', { name: 'Send' }));
+    expect(screen.queryByRole('button', { name: 'Bruno' })).not.toBeInTheDocument();
+  });
+
+  it('renders a `stacked` sheet under the one scrim, and closing it keeps the parent', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const { rerender } = render(
+      <Sheet
+        title="People"
+        isOpen
+        stacked={
+          <Sheet isOpen title="Anton Georgiev" onOpenChange={onOpenChange}>
+            <Button>Make presenter</Button>
+          </Sheet>
+        }
+      >
+        <Button>Anton Georgiev</Button>
+      </Sheet>,
+    );
+    const people = screen.getByRole('dialog', { name: 'People' });
+    const student = await screen.findByRole('dialog', { name: 'Anton Georgiev' });
+    // The stacked sheet portals like any modal; the depth context (one scrim) is what proves the stacking.
+    expect(people.parentElement?.parentElement).toHaveClass('bg-scrim');
+    expect(student.parentElement?.parentElement).toHaveClass('bg-transparent');
+    expect(document.querySelectorAll('.bg-scrim')).toHaveLength(1);
+    await waitFor(() => expect(student.contains(document.activeElement)).toBe(true));
+    await user.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    rerender(
+      <Sheet title="People" isOpen>
+        <Button>Anton Georgiev</Button>
+      </Sheet>,
+    );
+    expect(screen.queryByRole('dialog', { name: 'Anton Georgiev' })).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'People' })).toBeInTheDocument();
+  });
+
+  it('merges bodyClassName onto the scrolling body, replacing its padding', () => {
+    render(
+      <Sheet title="Everyone" defaultOpen bodyClassName="px-0 pb-0">
+        <Button>Frederick</Button>
+      </Sheet>,
+    );
+    const body = screen.getByRole('button', { name: 'Frederick' }).parentElement;
+    expect(body).toHaveClass('overflow-auto', 'px-0', 'pb-0');
+    expect(body).not.toHaveClass('px-4', 'pb-4');
   });
 
   it('forwards its ref to the dialog element', () => {

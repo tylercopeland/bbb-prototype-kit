@@ -176,6 +176,36 @@ describe('ParticipantList', () => {
     expect(onMenuOpenChange).toHaveBeenCalledWith('anton', false);
   });
 
+  it('shows no ⋯ on any row to a viewer who may not moderate (MB15)', () => {
+    render(<Subject canModerate={false} actionsVisible />);
+    expect(screen.queryByRole('button', { name: /^More actions for/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /privately$/ })).toHaveLength(13);
+    expect(screen.getByRole('list', { name: 'Raised hands 4' })).toBeInTheDocument();
+  });
+
+  it('opens the student sheet from a row’s ⋯ on the phone (onOpenActions) and marks that row expanded', async () => {
+    const user = userEvent.setup();
+    const onOpenActions = vi.fn();
+    const onMenuOpenChange = vi.fn();
+    const { rerender } = render(
+      <Subject actionsVisible onOpenActions={onOpenActions} onMenuOpenChange={onMenuOpenChange} />,
+    );
+    const more = screen.getByRole('button', { name: 'More actions for Anton Georgiev' });
+    expect(more).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    await user.click(more);
+    expect(onOpenActions).toHaveBeenCalledWith('anton', more);
+    expect(onMenuOpenChange).not.toHaveBeenCalled();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    rerender(<Subject actionsVisible onOpenActions={onOpenActions} openMenu="anton" />);
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'More actions for Bruno' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
   it('after a removal, focuses the next row’s ⋯ button, then the previous one, then the heading (WCAG 2.4.3)', async () => {
     const user = userEvent.setup();
     render(<Removable people="four" />);

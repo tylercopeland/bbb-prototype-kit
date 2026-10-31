@@ -8,7 +8,15 @@ import {
   selectTileOrder,
   type ParticipantFixture,
 } from '../../mocks';
-import { Stage as StageComponent, type StageLayout, type StagePresentation, type StageTab } from './Stage';
+import { Surface } from '../Surface';
+import {
+  PresentationTile,
+  Stage as StageComponent,
+  StageSlide,
+  type StageLayout,
+  type StagePresentation,
+  type StageTab,
+} from './Stage';
 
 const forFixture = (people: ParticipantFixture) => {
   const state = createRoom({ participants: people });
@@ -132,6 +140,43 @@ function Interactive(props: React.ComponentProps<typeof StageComponent>) {
 export const Playground: Story = {
   args: { layout: 'presenter' },
   render: (args) => <Interactive {...args} />,
+};
+
+/** The phone's slide in portrait (MB1, `StageSlide webcams="below"`): full width, 16:9, the webcams under it. */
+export const SlideBelow: Story = {
+  render: (args) => (
+    <Surface kind="stage" className="flex w-96 max-w-full flex-col gap-3 bg-surface-stage p-4">
+      <StageSlide {...args.presentation!} webcams="below" />
+      <p className="text-sm text-text-muted">The webcam band sits here.</p>
+    </Surface>
+  ),
+};
+
+/** The phone's slide in landscape (MB8, `StageSlide webcams="beside"`): fitted by height, the webcams beside it. */
+export const SlideBeside: Story = {
+  render: (args) => (
+    <Surface kind="stage" className="flex h-80 w-full gap-3 bg-surface-stage p-4">
+      <div className="container-size flex min-h-0 min-w-0 flex-1 items-center justify-center">
+        <StageSlide {...args.presentation!} webcams="beside" />
+      </div>
+      <p className="w-60 shrink-0 text-sm text-text-muted">The webcam column sits here.</p>
+    </Surface>
+  ),
+};
+
+/** The minimized presentation as a whole-tile Restore button (MB13, `PresentationTile variant="button"`), among 16:9 cells. */
+export const PresentationTileButton: Story = {
+  render: (args) => (
+    <Surface kind="stage" className="bg-surface-stage p-4">
+      <ul
+        aria-label="Webcams and minimized presentation"
+        className="grid w-90 max-w-full list-none grid-cols-3 gap-2 p-0"
+      >
+        <PresentationTile {...args.presentation!} variant="button" />
+        <PresentationTile {...args.presentation!} variant="tile" />
+      </ul>
+    </Surface>
+  ),
 };
 
 /** The stage is its own Surface; this is the default layout under the stage toolbar setting. */

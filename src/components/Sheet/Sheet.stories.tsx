@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Avatar } from '../Avatar';
 import { Button } from '../Button';
 import { IconButton } from '../IconButton';
+import { Tab, TabList, TabPanel, Tabs } from '../Tabs';
 import { Sheet } from './Sheet';
 
 /** The More sheet's rows (Mobile.dc.html 273): one ghost button per action, full width. */
@@ -40,6 +41,8 @@ const meta = {
     children: { control: false },
     footer: { control: false },
     headerExtra: { control: false },
+    frame: { control: false },
+    stacked: { control: false },
     position: { control: 'radio', options: ['bottom', 'end'] },
   },
   decorators: [
@@ -122,6 +125,93 @@ export const Stacked: Story = {
 export const WithoutTrigger: Story = {
   tags: ['wait-for-overlay'],
   args: { trigger: undefined, isOpen: true },
+};
+
+/**
+ * The People & chat sheet's shape (MB3, D3): `frame` wraps the header, body
+ * and footer in one `Tabs`, so the `TabList` sits in the header
+ * (`headerExtra`) with the `TabPanel`s in the body. The title is hidden
+ * behind the tabs but still names the dialog.
+ */
+export const WithFrame: Story = {
+  tags: ['wait-for-overlay'],
+  args: {
+    defaultOpen: true,
+    title: 'People and chat',
+    titleHidden: true,
+    frame: (content) => (
+      <Tabs defaultSelectedKey="people" className="min-h-0 flex-1 gap-0">
+        {content}
+      </Tabs>
+    ),
+    headerExtra: (
+      <TabList label="People and chat" className="min-w-0 flex-1">
+        <Tab id="people" badge={{ count: 4, label: '4 raised hands' }}>
+          People
+        </Tab>
+        <Tab id="chat" badge={{ count: 2, label: '2 unread messages' }}>
+          Chat
+        </Tab>
+      </TabList>
+    ),
+    children: (
+      <>
+        <TabPanel id="people">
+          <Rows items={['Bruno', 'Rafaela', 'Anton Georgiev', 'Michelle Winkler']} />
+        </TabPanel>
+        <TabPanel id="chat">
+          <Rows items={['Rafaela: Will the new layout work for 25+ classes too?', 'Bruno: Thanks!']} />
+        </TabPanel>
+      </>
+    ),
+  },
+};
+
+/**
+ * The student actions sheet stacked over People through the `stacked`
+ * prop (MB4): driven from state, rendered inside the People dialog, so it
+ * shares the scrim and returns focus here when it closes.
+ */
+export const StackedProp: Story = {
+  tags: ['wait-for-overlay'],
+  args: {
+    defaultOpen: true,
+    title: 'People',
+    headerExtra: <span className="text-text-muted">14</span>,
+    children: <Rows items={['Anton Georgiev', 'Michelle Winkler', 'Ellen', 'Timo']} />,
+    stacked: (
+      <Sheet
+        isOpen
+        title="Anton Georgiev"
+        footer={
+          <Button tone="danger" className="w-full">
+            Remove from session
+          </Button>
+        }
+      >
+        <Rows items={['Message', 'Make presenter', 'Turn off camera']} />
+      </Sheet>
+    ),
+  },
+};
+
+/** `bodyClassName="px-0 pb-0"`: a body without padding, for content that brings its own (the People and Chat panels). */
+export const BodyWithoutPadding: Story = {
+  tags: ['wait-for-overlay'],
+  args: {
+    defaultOpen: true,
+    title: 'Everyone',
+    bodyClassName: 'px-0 pb-0',
+    children: (
+      <ul className="grid list-none grid-cols-2 gap-2 p-0">
+        {['Frederick', 'Bruno', 'Rafaela', 'You'].map((name) => (
+          <li key={name} className="flex aspect-video items-end bg-surface-sunken p-2 text-sm font-semibold">
+            {name}
+          </li>
+        ))}
+      </ul>
+    ),
+  },
 };
 
 /** Opened over the stage. */

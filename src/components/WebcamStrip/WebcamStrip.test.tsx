@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRoom, selectDisplayNames, selectTileOrder, type ParticipantFixture } from '../../mocks';
+import { PresentationTile } from '../Stage';
 import { WebcamStrip } from './WebcamStrip';
 
 const forFixture = (people: ParticipantFixture) => {
@@ -64,5 +65,71 @@ describe('WebcamStrip', () => {
     expect(list).toHaveClass('flex-row', 'gap-4');
     expect(list).not.toHaveClass('flex-col', 'gap-2');
     expect(screen.getByRole('button')).toHaveClass('h-24', 'w-24', 'border-dashed');
+  });
+
+  it('lays the grid out in two, three or five columns with 16:9 cells, and the more cell as a full cell', () => {
+    const { rerender } = render(<WebcamStrip {...forFixture('class')} direction="grid" max={4} />);
+    const list = screen.getByRole('list', { name: 'Webcams' });
+    expect(list).toHaveClass('grid', 'grid-cols-2');
+    expect(list).not.toHaveClass('flex');
+    expect(screen.getAllByRole('figure')).toHaveLength(4);
+    expect(screen.getAllByRole('figure')[0]).toHaveClass('aspect-video', 'w-full');
+    const more = screen.getByRole('button', { name: '+10 more, show all 14 people' });
+    expect(more).toHaveClass('aspect-video', 'w-full', 'border-dashed');
+    rerender(<WebcamStrip {...forFixture('class')} direction="grid" columns={3} max={30} />);
+    expect(list).toHaveClass('grid-cols-3');
+    expect(list).not.toHaveClass('grid-cols-2');
+    expect(screen.getAllByRole('figure')).toHaveLength(14);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    rerender(<WebcamStrip {...forFixture('class')} direction="grid" columns={5} max={30} />);
+    expect(list).toHaveClass('grid-cols-5');
+    // Columns only shape the grid: the column keeps its flex layout.
+    rerender(<WebcamStrip {...forFixture('class')} direction="column" columns={5} />);
+    expect(list).toHaveClass('flex-col');
+    expect(list).not.toHaveClass('grid-cols-5');
+  });
+
+  it('renders the grid for nobody, one person and thirty people', () => {
+    const { rerender } = render(<WebcamStrip participants={[]} names={{}} direction="grid" />);
+    expect(screen.getByRole('list', { name: 'Webcams' })).toBeEmptyDOMElement();
+    rerender(<WebcamStrip {...forFixture('one')} direction="grid" />);
+    expect(screen.getAllByRole('figure')).toHaveLength(1);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    rerender(<WebcamStrip {...forFixture('thirty')} direction="grid" max={4} />);
+    expect(screen.getAllByRole('figure')).toHaveLength(4);
+    expect(screen.getByRole('button', { name: '+26 more, show all 30 people' })).toBeInTheDocument();
+  });
+
+  it('puts a leading item before the tiles, and it is reached first by Tab', async () => {
+    const user = userEvent.setup();
+    const onRestore = vi.fn();
+    render(
+      <WebcamStrip
+        {...forFixture('class')}
+        direction="grid"
+        columns={3}
+        max={30}
+        aria-label="Webcams and minimized presentation"
+        leading={
+          <PresentationTile
+            variant="button"
+            slideTitle="Scalable UI"
+            slideNumber={3}
+            slideCount={12}
+            onRestore={onRestore}
+          />
+        }
+      />,
+    );
+    const list = screen.getByRole('list', { name: 'Webcams and minimized presentation' });
+    const items = list.querySelectorAll(':scope > li');
+    expect(items).toHaveLength(15);
+    const restore = screen.getByRole('button', { name: 'Presentation · 3 / 12, restore' });
+    expect(items[0]).toContainElement(restore);
+    expect(items[1].querySelector('figure')).not.toBeNull();
+    await user.tab();
+    expect(restore).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onRestore).toHaveBeenCalledTimes(1);
   });
 });
