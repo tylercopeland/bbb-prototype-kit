@@ -22,8 +22,10 @@ import {
   Dices,
   Disc,
   DoorOpen,
+  Ear,
   Ellipsis,
   Eraser,
+  Eye,
   ExternalLink,
   FileText,
   Frame,
@@ -41,6 +43,7 @@ import {
   ListChecks,
   Lock,
   LockKeyhole,
+  LogIn,
   LogOut,
   Maximize2,
   MessageCircleQuestionMark,
@@ -61,9 +64,11 @@ import {
   Presentation,
   Projector,
   RotateCcw,
+  Scale,
   SendHorizontal,
   Settings,
   ShieldCheck,
+  Shuffle,
   Smile,
   Square,
   SquarePen,
@@ -173,6 +178,16 @@ export const icons = {
   moveToCorner: Move,
   /** Remove an answer from the poll builder. `removeFromSession` and `close` are other meanings. */
   delete: Trash,
+  /** The breakout setup's "Shuffle evenly" (Breakout.dc.html 45). */
+  shuffle: Shuffle,
+  /** "Rooms are uneven · Even out" (Breakout.dc.html 44): rebalance around the manual moves (B4). */
+  evenOut: Scale,
+  /** Look in on a breakout room without joining it (Breakout.dc.html 135). */
+  preview: Eye,
+  /** "Listen in" on a previewed room's audio (Breakout.dc.html 156). `listenOnly` is a person's audio state. */
+  listenIn: Ear,
+  /** "Join Room N" from a preview (B8). `leave` is leaving the session. */
+  joinRoom: LogIn,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

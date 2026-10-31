@@ -154,6 +154,22 @@ const entries: Record<IconName, Entry> = {
     used: 'Poll builder',
     note: 'A bin: `close` dismisses, `removeFromSession` removes a person',
   },
+  shuffle: { meaning: 'Shuffle students into rooms', used: 'Breakout setup' },
+  evenOut: {
+    meaning: 'Even out the rooms',
+    used: 'Breakout setup (B4: rebalances around the manual moves)',
+  },
+  preview: { meaning: 'Preview a breakout room', used: 'Room cards, the live room list' },
+  listenIn: {
+    meaning: 'Listen in on a room',
+    used: 'Room preview',
+    note: 'An ear: `listenOnly` (headphones) is a person’s own audio state',
+  },
+  joinRoom: {
+    meaning: 'Join a breakout room',
+    used: 'Room preview (B8)',
+    note: 'An arrow into a door: `leave` (an arrow out) leaves the session',
+  },
 };
 
 const names = Object.keys(icons) as IconName[];
