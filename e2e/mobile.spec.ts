@@ -19,7 +19,9 @@ const bar = (page: Page) => page.getByRole('navigation', { name: 'Actions' });
 /** Focus is on `locator` or inside it (a dialog opened by touch focuses itself; opened by keyboard, its first control). */
 async function expectFocusWithin(locator: ReturnType<Page['getByRole']>) {
   await expect
-    .poll(() => locator.evaluate((el) => el === document.activeElement || el.contains(document.activeElement)))
+    .poll(() =>
+      locator.evaluate((el) => el === document.activeElement || el.contains(document.activeElement)),
+    )
     .toBe(true);
 }
 
@@ -35,11 +37,16 @@ async function openAndClose(page: Page, trigger: ReturnType<Page['getByRole']>, 
 }
 
 test.describe('phone, by touch', () => {
-  test('MB1 → every sheet opens from its control and closes with Close, focus back on the control', async ({ page }) => {
+  test('MB1 → every sheet opens from its control and closes with Close, focus back on the control', async ({
+    page,
+  }) => {
     await gotoArtboard(page, 'mobile', 'MB1Room');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hack Week: Brazil 2026');
     await openAndClose(page, bar(page).getByRole('button', { name: 'People and chat' }), 'People and chat');
-    await expect(bar(page).getByRole('button', { name: 'People and chat' })).toHaveAttribute('aria-pressed', 'false');
+    await expect(bar(page).getByRole('button', { name: 'People and chat' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
     await openAndClose(page, bar(page).getByRole('button', { name: 'React' }), 'React');
     await openAndClose(page, bar(page).getByRole('button', { name: 'More' }), 'More');
     await openAndClose(page, page.getByRole('button', { name: '3 updates' }), 'Updates');
@@ -113,7 +120,9 @@ test.describe('phone, by touch', () => {
     await expect(you.getByRole('img', { name: 'Reacted: Thumbs up' })).toBeVisible();
   });
 
-  test('MB1 → More → an item closes the sheet, says what is not built and returns focus to More', async ({ page }) => {
+  test('MB1 → More → an item closes the sheet, says what is not built and returns focus to More', async ({
+    page,
+  }) => {
     await gotoArtboard(page, 'mobile', 'MB1Room');
     const more = bar(page).getByRole('button', { name: 'More' });
     await more.tap();
@@ -150,10 +159,9 @@ test.describe('phone, by touch', () => {
     await expect(allSlides).toHaveAttribute('aria-expanded', 'true');
     await expect(sheet.getByLabel('Slide 3 of 12')).toHaveText('3 / 12');
     await expect(sheet.getByRole('list', { name: 'Slides' }).getByRole('listitem')).toHaveCount(12);
-    await expect(sheet.getByRole('button', { name: 'Go to slide 3: BigBlueButton 4.0, refined' })).toHaveAttribute(
-      'aria-current',
-      'true',
-    );
+    await expect(
+      sheet.getByRole('button', { name: 'Go to slide 3: BigBlueButton 4.0, refined' }),
+    ).toHaveAttribute('aria-current', 'true');
     await sheet.getByRole('button', { name: 'Go to slide 9: Scalable UI' }).tap();
     await expect(sheet).toHaveCount(0);
     await expect(page.getByRole('group', { name: 'Slides' })).toContainText('9 / 12');
@@ -193,7 +201,9 @@ test.describe('phone, by touch', () => {
     await expect(annotate).toBeFocused();
   });
 
-  test('MB12 → Escape from the toolbar ends annotating and lands on the Annotate toggle', async ({ page }) => {
+  test('MB12 → Escape from the toolbar ends annotating and lands on the Annotate toggle', async ({
+    page,
+  }) => {
     await gotoArtboard(page, 'mobile', 'MB12Annotate');
     const row = page.getByRole('group', { name: 'Slides' });
     await expect(row.getByRole('group', { name: 'Whiteboard tools' })).toBeVisible();
@@ -240,7 +250,9 @@ test.describe('phone, by touch', () => {
     await expect(page.getByRole('list', { name: 'Webcams' }).getByRole('listitem')).toHaveCount(4);
   });
 
-  test('MB17 → the composer is focused above the keyboard; typing and Enter send to everyone', async ({ page }) => {
+  test('MB17 → the composer is focused above the keyboard; typing and Enter send to everyone', async ({
+    page,
+  }) => {
     await gotoArtboard(page, 'mobile', 'MB17KeyboardChat');
     const sheet = page.getByRole('dialog', { name: 'People and chat' });
     await expect(sheet).toBeVisible();

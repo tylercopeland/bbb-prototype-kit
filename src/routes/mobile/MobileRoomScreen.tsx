@@ -21,9 +21,22 @@
  */
 import { useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { ConfirmDialog, FocusFallback, SessionHeader, Surface, ToastRegion, UpdatesPill } from '../../components';
+import {
+  ConfirmDialog,
+  FocusFallback,
+  SessionHeader,
+  Surface,
+  ToastRegion,
+  UpdatesPill,
+} from '../../components';
 import { useRoom, useRoomDispatch } from '../../mocks/context';
-import { selectAlerts, selectElapsed, selectPeopleCount, selectSelf, selectUnreadTotal } from '../../mocks/selectors';
+import {
+  selectAlerts,
+  selectElapsed,
+  selectPeopleCount,
+  selectSelf,
+  selectUnreadTotal,
+} from '../../mocks/selectors';
 import { tv } from '../../styles/tv';
 import { RoomFocusContext, useRoomFocusState } from '../room/focus';
 import { useRoomShortcuts } from '../room/useRoomShortcuts';
