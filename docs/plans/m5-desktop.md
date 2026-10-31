@@ -112,7 +112,7 @@ Built as planned. The deviations are also in `PLAN.md` › Decisions log.
 - **Timings:** `npm run check` takes about 17 s (vitest 9–13 s of it); `npm run test:e2e` about 8 minutes (365 Playwright tests).
 - **Known flake, not from this batch:** `Components/Toast › Open` in stage mode occasionally fails axe's color contrast with a blended color (`#437bd7`) while the toast's `animate-overlay-in` runs; it passes on rerun. Waiting for `animationend` in `storyReady` would fix it.
 
-### Owner decisions needed (batch A)
+### Owner decisions needed (batch A) — approved as built 2026-10-31
 
 1. **Live-share pill placement.** It sits in the chrome row next to the share tabs (never over the presentation controls); the canvas draws it over the bottom of the stage. Confirm, or move it over the stage for M1 only (when the screen is on stage there are no controls to collide with).
 2. **Dark controls on the white slide.** The presentation controls and the whiteboard toolbar inside the stage surface are dark cards (the milestone 4 rule for controls inside the stage), where the canvas draws white cards. A white variant needs panel tokens inside the stage, which the token modes do not express today.
@@ -139,7 +139,7 @@ Built as planned. The deviations are also in `PLAN.md` › Decisions log.
 - **e2e:** `e2e/poll-timer.spec.ts`: Plugins → Poll → edit the question, the type (arrow keys), remove and add an answer, a switch → Ask the class → an answer arrives (`bbbRoom`) and is announced → Show results → End poll → Close returns focus to Plugins; PL3 → Hide on the stage card lands on the show button; Plugins → Timer → 3 min (arrow key) → Start → Pause → Move to corner → Minimize → restore lands on Minimize; TM2 → the clock reaching zero announces assertively → Remove hands focus to Plugins.
 - **Timings:** `npm run check` takes about 15–17 s.
 
-### Owner decisions needed (batch B)
+### Owner decisions needed (batch B) — approved as built 2026-10-31
 
 1. **The timer does not tick on its own.** The room clock moves only with `?clock=live` (the milestone 4 rule: a route renders the same at any wall-clock time, and batch C's screenshot baselines depend on it), so Start on TM1 changes the state and the status word but the digits stay until the clock ticks. Confirm, or let the timer run the live clock while it is running.
 2. **Dark cards on the stage.** The timer card and the poll results card take the stage tokens (dark cards over the white slide), as the batch A controls do; the canvas draws white cards. Same question as batch A, decision 2.
@@ -163,7 +163,7 @@ Built as planned. The deviations are also in `PLAN.md` › Decisions log.
 - **e2e:** `e2e/breakouts.spec.ts`, five walks ending on a focus check (listed in the spec's docblock). `e2e/visual.spec.ts` and `.github/workflows/update-snapshots.yml` (see `CLAUDE.md` › Scripts › Visual baselines): the spec skips itself until baselines exist for the platform, the workflow seeds or refreshes them on CI's Chromium with `VISUAL_UPDATE=1` and `--update-snapshots`, commits them to the chosen branch and uploads them as an artifact; the CI `e2e` job runs the spec with the rest.
 - **Timings:** `npm run check` takes about 16–17 s (vitest about 16 s of it).
 
-### Owner decisions needed (batch C)
+### Owner decisions needed (batch C) — approved as built 2026-10-31
 
 1. **No "Move here" drop buttons.** The canvas marks a moving student and shows "Move Ana here" on every other card; here the student's chip opens a "Move to…" menu listing the rooms (B2), and nothing else changes on the board while it is open. Confirm, or add the dashed drop buttons as a second way.
 2. **The eye button beside Join is gone.** The thumbnail is the Preview button (a big target, named "Preview Room 2"), so the small eye the canvas draws next to Join would be a duplicate. Confirm, or restore it.
