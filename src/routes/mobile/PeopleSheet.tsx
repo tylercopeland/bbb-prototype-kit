@@ -10,6 +10,10 @@
  * Tapping a row's ⋯ opens the student actions sheet (MB4) over this one:
  * one stacking model, one scrim (P4); its rows are real switches (P5) and
  * Remove confirms (P9). A student viewer (MB15) sees no ⋯ at all.
+ *
+ * With the on-screen keyboard up (MB17) the sheet's overlay is padded by
+ * the keyboard's height (`pb-keyboard`, from `useKeyboardInset`), so the
+ * sheet shrinks and the composer, which then holds focus, stays above it.
  */
 import { useEffect, useRef, type RefObject } from 'react';
 import type { Key } from 'react-aria-components';
@@ -84,6 +88,8 @@ export function PeopleSheet({ isOpen, position, triggerRef }: PeopleSheetProps) 
   const me = useRoom(selectSelf);
   const canModerate = me?.isModerator ?? false;
   const tab = sheet === 'chat' ? 'chat' : 'people';
+  // With the keyboard up (MB17) the composer is what the keyboard is for, so it holds focus.
+  const keyboardOpen = useRoom((s) => s.ui.keyboardInset > 0);
   // The ⋯ button that opened the student sheet, and the People tab as the fallback when that row is gone
   // (the person was removed, or the sheet opened from a deep link): React Aria's own restore does not reach
   // a trigger inside another modal, so the student sheet moves focus itself (WCAG 2.4.3).
@@ -151,7 +157,7 @@ export function PeopleSheet({ isOpen, position, triggerRef }: PeopleSheetProps) 
         />
       </TabPanel>
       <TabPanel id="chat" className={styles.panel()}>
-        <ChatPanel />
+        <ChatPanel autoFocusComposer={keyboardOpen} />
       </TabPanel>
     </Sheet>
   );

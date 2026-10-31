@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import type { Key } from 'react-aria-components';
+import { Button as RacButton, type Key } from 'react-aria-components';
+import { Icon } from '../../icons';
 import type { Participant, ParticipantId, ReactionKind, ScreenKind, StageCorner } from '../../mocks/types';
 import { tv, type VariantProps } from '../../styles/tv';
-import type { ControlSize } from '../Button';
 import { IconButton } from '../IconButton';
 import { Surface } from '../Surface';
 import { Tab, TabList, TabPanel, Tabs } from '../Tabs';
@@ -138,8 +138,31 @@ export const presentationTileStyles = tv({
     plate:
       'min-w-0 truncate rounded-xs bg-surface-overlay px-2 text-xs leading-5 font-semibold text-text-on-stage',
     restore: 'shrink-0',
+    /** The restore glyph in the corner of the whole-tile button (Mobile.dc.html 73). */
+    glyph:
+      'absolute top-2 right-2 flex size-6 items-center justify-center rounded-full bg-surface-overlay text-text-on-stage',
   },
+  variants: {
+    variant: {
+      /** The desktop grid's cell: the plate and a Restore button share the bottom row. */
+      tile: {},
+      /** The phone's cell (MB13, MB14): the whole tile is the Restore button, so a small cell still has a 44px target (X14); the thumbnail is bare paper. */
+      button: {
+        thumb: 'inset-x-3 top-2 bottom-8 p-0',
+        thumbTitle: 'hidden',
+        bottom: 'justify-start',
+      },
+    },
+  },
+  defaultVariants: { variant: 'tile' },
 });
+
+/** The whole-tile Restore button: fills the cell, the focus ring on the cell's radius, the raised fill under the pointer. */
+export const presentationTileButtonStyles = tv({
+  base: 'absolute inset-0 rounded-tile focus-ring outline-none data-hovered:bg-surface-raised data-pressed:bg-surface-raised',
+});
+
+export type PresentationTileVariant = NonNullable<VariantProps<typeof presentationTileStyles>['variant']>;
 
 /**
  * The overlay layer (D1): four corner slots over the slide (or over the
@@ -451,40 +474,61 @@ function StageGrid({
 
 export interface PresentationTileProps extends Pick<StagePresentation, 'slideTitle' | 'slideNumber' | 'slideCount'> {
   onRestore?: () => void;
-  /** The Restore button's size: `sm` in the desktop grid, `touch` on the phone (X14). @default 'sm' */
-  restoreSize?: ControlSize;
+  /** @default 'tile' */
+  variant?: PresentationTileVariant;
   className?: string;
 }
 
 /**
  * The minimized presentation as one cell of a webcam list (Focus.dc.html
  * 143–148; Mobile.dc.html 73): the slide thumbnail, a plate with the slide
- * number and the Restore button. A list item, so it sits among the tiles
- * of `StageGrid` or `WebcamStrip` (the phone, MB13 / MB14).
+ * number and the way back. A list item, so it sits among the tiles of
+ * `StageGrid` or `WebcamStrip`. As a `tile` the plate and a Restore button
+ * share the bottom row; as a `button` (the phone, MB13 / MB14) the whole
+ * cell is the button, named by its visible plate ("Presentation · 3 / 12,
+ * restore", WCAG 2.5.3) with the restore glyph in its corner.
  */
 export function PresentationTile({
   slideTitle,
   slideNumber,
   slideCount,
   onRestore,
-  restoreSize = 'sm',
+  variant = 'tile',
   className,
 }: PresentationTileProps) {
-  const tile = presentationTileStyles();
+  const tile = presentationTileStyles({ variant });
+  const plate = `Presentation · ${slideNumber} / ${slideCount}`;
+  if (variant === 'button') {
+    return (
+      <li className={tile.root({ className })}>
+        <RacButton
+          aria-label={`${plate}, restore`}
+          onPress={onRestore}
+          className={presentationTileButtonStyles()}
+        >
+          <span aria-hidden="true" className={tile.thumb()} />
+          <span aria-hidden="true" className={tile.glyph()}>
+            <Icon name="restore" size="xs" />
+          </span>
+          <span aria-hidden="true" className={tile.bottom()}>
+            <span className={tile.plate()}>{plate}</span>
+          </span>
+        </RacButton>
+      </li>
+    );
+  }
   return (
     <li className={tile.root({ className })}>
       <span aria-hidden="true" className={tile.thumb()}>
         <span className={tile.thumbTitle()}>{slideTitle}</span>
       </span>
       <span className={tile.bottom()}>
-        <span className={tile.plate()}>
-          Presentation · {slideNumber} / {slideCount}
-        </span>
+        <span className={tile.plate()}>{plate}</span>
         <IconButton
           label="Restore presentation"
           icon="restore"
           variant="primary"
-          size={restoreSize}
+          size="sm"
           onPress={onRestore}
           className={tile.restore()}
         />

@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { RouterProvider } from 'react-router';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 import { App } from './App';
-import { artboards } from './routes/artboards';
+import { RoomProvider } from './mocks';
+import { artboards, findArtboard } from './routes/artboards';
+import { stateForArtboard } from './routes/initialState';
+import { Placeholder } from './routes/pages/ArtboardPage';
 import { createTestRouter } from './routes/router';
 import { screenFor } from './routes/screens';
 
@@ -52,19 +55,28 @@ describe('routes', () => {
     expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
-  // MB11 (All slides) is batch B of milestone 6, so it still renders the placeholder.
-  it('renders an accessible placeholder for an unbuilt artboard, with its state', () => {
-    renderAt('/mobile/MB11Slides');
+  // Every artboard has a screen since milestone 6 batch B, so the placeholder is rendered on its own.
+  it('renders an accessible placeholder for an artboard without a screen, with its state', () => {
+    const artboard = findArtboard('mobile', 'MB11Slides')!;
+    render(
+      <RouterProvider
+        router={createMemoryRouter([
+          {
+            path: '/',
+            element: (
+              <RoomProvider initialState={stateForArtboard(artboard, { people: 'thirty', pfilter: 'low', panel: 'people' })}>
+                <Placeholder artboard={artboard} milestone={6} />
+              </RoomProvider>
+            ),
+          },
+        ])}
+      />,
+    );
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Phone · All slides (grid button)');
     expect(screen.getByText('Not built yet (milestone 6)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to the artboards' })).toHaveAttribute('href', '/');
     expect(screen.getByText('People')).toBeInTheDocument();
-    expect(screen.getByText('14 · 4 hands raised')).toBeInTheDocument();
-    expect(screen.getByText('none · filter all')).toBeInTheDocument();
-  });
-
-  it('lets query parameters override the artboard props', () => {
-    renderAt('/mobile/MB11Slides?panel=people&pfilter=low&people=thirty');
+    // The query overrides the props: thirty people, the People panel filtered to low engagement.
     expect(screen.getByText('30 · 5 hands raised')).toBeInTheDocument();
     expect(screen.getByText('people · filter low')).toBeInTheDocument();
   });
@@ -76,28 +88,12 @@ describe('routes', () => {
     expect(screen.getByRole('complementary', { name: 'People' })).toBeInTheDocument();
   });
 
-  it('marks unbuilt mobile artboards with their milestone, and renders every desktop artboard as a screen', () => {
+  it('renders every desktop and every mobile artboard as a screen: no placeholder remains', () => {
+    expect(artboards.length).toBeGreaterThan(0);
+    for (const a of artboards) expect(screenFor(a).Screen, `${a.group}/${a.stem}`).toBeDefined();
     renderAt('/mobile/MB11Slides');
-    expect(screen.getByText('Not built yet (milestone 6)')).toBeInTheDocument();
-    const desktop = artboards.filter((a) => a.group === 'desktop');
-    expect(desktop.length).toBeGreaterThan(0);
-    for (const a of desktop) expect(screenFor(a).Screen, a.stem).toBeDefined();
-    // Milestone 6 batch A: the phone shell, its sheets, the student view and the confirmations.
-    const built = artboards.filter((a) => a.group === 'mobile' && screenFor(a).Screen);
-    expect(built.map((a) => a.stem)).toEqual([
-      'MB1Room',
-      'MB2Updates',
-      'MB3People',
-      'MB4Student',
-      'MB5Chat',
-      'MB6React',
-      'MB7More',
-      'MB8Landscape',
-      'MB9LandscapePeople',
-      'MB10Everyone',
-      'MB15Attendee',
-      'MB16Confirm',
-    ]);
+    expect(screen.getByRole('heading', { level: 1, hidden: true })).toHaveTextContent('Hack Week: Brazil 2026');
+    expect(screen.queryByText(/Not built yet/)).not.toBeInTheDocument();
   });
 
   it('shows the not-found page for an unknown artboard or group', () => {
@@ -110,11 +106,15 @@ describe('routes', () => {
   it('navigates from the index to an artboard and back by link', async () => {
     const user = userEvent.setup();
     renderAt('/');
-    await user.click(screen.getByRole('link', { name: 'Phone · All slides (grid button)' }));
+    await user.click(screen.getByRole('link', { name: 'Phone · Confirm Leave' }));
+    // The confirmation is open on this route, so the room's heading is behind it.
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Phone · All slides (grid button)' }),
+      await screen.findByRole('heading', { level: 1, name: 'Hack Week: Brazil 2026', hidden: true }),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole('link', { name: 'Back to the artboards' }));
+    // Leaving the session goes back to the index (MB16's confirmation).
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Leave session' }),
+    );
     expect(
       await screen.findByRole('heading', { level: 1, name: 'BigBlueButton 4.0 prototype' }),
     ).toBeInTheDocument();

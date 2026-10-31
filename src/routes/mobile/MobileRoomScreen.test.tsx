@@ -24,8 +24,12 @@ const MB7 = '/mobile/MB7More';
 const MB8 = '/mobile/MB8Landscape';
 const MB9 = '/mobile/MB9LandscapePeople';
 const MB10 = '/mobile/MB10Everyone';
+const MB11 = '/mobile/MB11Slides';
+const MB12 = '/mobile/MB12Annotate';
+const MB14 = '/mobile/MB14LandMin';
 const MB15 = '/mobile/MB15Attendee';
 const MB16 = '/mobile/MB16Confirm';
+const MB17 = '/mobile/MB17KeyboardChat';
 
 // A modal sheet marks the rest of the page aria-hidden, so the bar is queried with `hidden` while one is open.
 const nav = () => within(screen.getByRole('navigation', { name: 'Actions', hidden: true }));
@@ -69,16 +73,126 @@ describe('MobileRoomScreen', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('MB1: the pager turns the slides and Minimize swaps the slide for every webcam with a way back', async () => {
+  it('MB1 → MB13: the pager turns the slides and Minimize swaps the slide for everyone plus the presentation tile', async () => {
     const user = userEvent.setup();
     renderAt(MB1);
     await user.click(screen.getByRole('button', { name: 'Next slide' }));
     expect(within(screen.getByRole('group', { name: 'Slides' })).getByText(/4 \/ 12/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Minimize presentation' }));
     expect(screen.queryByRole('region', { name: 'Presentation' })).not.toBeInTheDocument();
-    expect(within(screen.getByRole('list', { name: 'Webcams' })).getAllByRole('listitem')).toHaveLength(14);
-    await user.click(screen.getByRole('button', { name: 'Show presentation' }));
+    const list = screen.getByRole('list', { name: 'Webcams and minimized presentation' });
+    expect(within(list).getAllByRole('listitem')).toHaveLength(15);
+    expect(list).toHaveClass('grid-cols-3');
+    expect(screen.queryByRole('button', { name: /See all/ })).not.toBeInTheDocument();
+    // The tile is the way back: the whole cell, named by its plate (WCAG 2.5.3).
+    const restore = within(list).getByRole('button', { name: 'Presentation · 4 / 12, restore' });
+    expect(within(list).getAllByRole('listitem')[0]).toContainElement(restore);
+    await user.click(restore);
     expect(screen.getByRole('region', { name: 'Presentation' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Webcams' })).toHaveClass('grid-cols-2');
+  });
+
+  it('MB11: the All slides sheet lists the deck three to a row with the current slide marked; a pick moves the deck, closes and returns focus', async () => {
+    const user = userEvent.setup();
+    renderAt(MB11);
+    const sheet = within(await screen.findByRole('dialog', { name: 'All slides' }));
+    expect(sheet.getByLabelText('Slide 3 of 12')).toHaveTextContent('3 / 12');
+    const slides = sheet.getByRole('list', { name: 'Slides' });
+    expect(slides).toHaveClass('grid-cols-3');
+    expect(within(slides).getAllByRole('listitem')).toHaveLength(12);
+    expect(
+      within(slides).getByRole('button', { name: 'Go to slide 3: BigBlueButton 4.0, refined' }),
+    ).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByRole('button', { name: 'All slides', hidden: true })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await user.click(within(slides).getByRole('button', { name: 'Go to slide 9: Scalable UI' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(within(screen.getByRole('group', { name: 'Slides' })).getByText(/9 \/ 12/)).toBeInTheDocument();
+    const allSlides = screen.getByRole('button', { name: 'All slides' });
+    expect(allSlides).toHaveAttribute('aria-expanded', 'false');
+    await waitFor(() => expect(allSlides).toHaveFocus());
+    // Opened by a tap, closed by Escape: back on the button.
+    await user.click(allSlides);
+    await screen.findByRole('dialog', { name: 'All slides' });
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(allSlides).toHaveFocus());
+  });
+
+  it('MB12: Annotate swaps the pager for the whiteboard toolbar; the toggle and Escape end it with focus kept', async () => {
+    const user = userEvent.setup();
+    renderAt(MB12);
+    const row = within(screen.getByRole('group', { name: 'Slides' }));
+    const annotate = row.getByRole('button', { name: 'Annotate' });
+    expect(annotate).toHaveAttribute('aria-pressed', 'true');
+    expect(row.getByRole('group', { name: 'Whiteboard tools' })).toBeInTheDocument();
+    expect(row.getByRole('radio', { name: 'Pen' })).toBeChecked();
+    expect(row.getByRole('radio', { name: 'Blue' })).toHaveClass('size-control-touch');
+    expect(row.queryByRole('button', { name: 'All slides' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Minimize presentation' })).not.toBeInTheDocument();
+    // The ink changes through the store, as on desktop.
+    await user.click(row.getByRole('radio', { name: 'Red' }));
+    expect(row.getByRole('radio', { name: 'Red' })).toBeChecked();
+    // Escape from the toolbar ends annotating and lands on the toggle, which stays in place.
+    await user.keyboard('{Escape}');
+    expect(row.queryByRole('group', { name: 'Whiteboard tools' })).not.toBeInTheDocument();
+    expect(row.getByRole('button', { name: 'All slides' })).toBeInTheDocument();
+    expect(annotate).toHaveAttribute('aria-pressed', 'false');
+    expect(annotate).toHaveFocus();
+    // The toggle starts and ends it, keeping focus and its label (X7).
+    await user.click(annotate);
+    expect(annotate).toHaveAttribute('aria-pressed', 'true');
+    expect(row.getByRole('group', { name: 'Whiteboard tools' })).toBeInTheDocument();
+    await user.click(annotate);
+    expect(annotate).toHaveAttribute('aria-pressed', 'false');
+    expect(annotate).toHaveFocus();
+    expect(annotate).toHaveTextContent('');
+    expect(annotate).toHaveAccessibleName('Annotate');
+  });
+
+  it('MB12: Escape leaves a sheet over the stage to the sheet, and annotating stays on', async () => {
+    const user = userEvent.setup();
+    renderAt(`${MB12}&sheet=more`.replace('&', '?'));
+    await screen.findByRole('dialog', { name: 'More' });
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Annotate' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('MB14: landscape with the presentation minimized goes to one column, five tiles a row, the bar centred', () => {
+    renderAt(MB14);
+    expect(screen.getByRole('main')).toHaveClass('flex-col');
+    const list = screen.getByRole('list', { name: 'Webcams and minimized presentation' });
+    expect(list).toHaveClass('grid-cols-5');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(15);
+    expect(within(list).getByRole('button', { name: 'Presentation · 3 / 12, restore' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Actions' })).toHaveClass('w-panel');
+  });
+
+  it('MB17: the chat sheet with the keyboard up: the composer holds focus and the overlay is padded by the keyboard', async () => {
+    const user = userEvent.setup();
+    renderAt(MB17);
+    const sheet = await screen.findByRole('dialog', { name: 'People and chat' });
+    expect(within(sheet).getByRole('tab', { name: 'Chat' })).toHaveAttribute('aria-selected', 'true');
+    const composer = within(sheet).getByRole('textbox', { name: 'Message everyone' });
+    await waitFor(() => expect(composer).toHaveFocus());
+    expect(document.documentElement.style.getPropertyValue('--bbb-keyboard-inset')).toBe('336px');
+    expect(sheet.closest('.pb-keyboard')).not.toBeNull();
+    // Enter sends to everyone, as on desktop.
+    await user.keyboard('Hello from the phone{Enter}');
+    const messages = within(sheet).getByRole('list', { name: 'Messages to everyone' });
+    expect(within(messages).getAllByRole('listitem')).toHaveLength(4);
+    expect(within(messages).getByText('Hello from the phone')).toBeInTheDocument();
+    expect(composer).toHaveValue('');
+  });
+
+  it('MB5: with the keyboard down the chat sheet pads nothing and the composer waits for a tap', async () => {
+    renderAt(MB5);
+    await screen.findByRole('dialog', { name: 'People and chat' });
+    expect(document.documentElement.style.getPropertyValue('--bbb-keyboard-inset')).toBe('0px');
+    expect(screen.getByRole('textbox', { name: 'Message everyone' })).not.toHaveFocus();
   });
 
   it('MB2: the Updates sheet lists each alert with what it opens; the hands row opens People filtered to raised hands', async () => {

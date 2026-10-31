@@ -66,7 +66,7 @@ const MILESTONE_5C = new Set([
   'BO12ShareBack-desk',
 ]);
 
-/** Milestone 6 batch A: the phone shell and its sheets, the student view and the confirmations. Batch B adds MB11–MB14 and MB17. */
+/** Milestone 6 batch A: the phone shell and its sheets, the student view and the confirmations. */
 const MILESTONE_6A = new Set([
   'MB1Room',
   'MB2Updates',
@@ -81,6 +81,9 @@ const MILESTONE_6A = new Set([
   'MB15Attendee',
   'MB16Confirm',
 ]);
+
+/** Milestone 6 batch B: the slides sheet, annotating, the minimized presentation and the keyboard-open chat. */
+const MILESTONE_6B = new Set(['MB11Slides', 'MB12Annotate', 'MB13Minimized', 'MB14LandMin', 'MB17KeyboardChat']);
 
 /** Screens registered as they are built, by `<group>/<stem>`. */
 const screens: Record<string, ComponentType> = {};
@@ -99,6 +102,8 @@ for (const stem of MILESTONE_5B) registerScreen('desktop', stem, RoomScreen);
 for (const stem of MILESTONE_5C) registerScreen('desktop', stem, RoomScreen);
 // Milestone 6 batch A: the phone room renders its artboards from the store, portrait and landscape.
 for (const stem of MILESTONE_6A) registerScreen('mobile', stem, MobileRoomScreen);
+// Milestone 6 batch B: the same screen, with the slides sheet, the toolbar, the minimized tile and the keyboard.
+for (const stem of MILESTONE_6B) registerScreen('mobile', stem, MobileRoomScreen);
 
 export function screenFor(artboard: Pick<Artboard, 'group' | 'stem'>): ScreenEntry {
   const milestone = artboard.group === 'mobile' ? 6 : MILESTONE_4.has(artboard.stem) ? 4 : 5;

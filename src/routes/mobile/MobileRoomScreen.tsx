@@ -5,16 +5,19 @@
  * its pager (P1: slide on top, webcams below), the webcam band, the action
  * bar. In landscape two columns: the header, slide, pager and bar on the
  * left, the webcams on the right (P3: pager below the slide, sheets from
- * the end). The insets come from the safe-area utilities (P2), never a
- * fixed notch. Every value comes from the store through `useRoom`; every
- * change is a store action, so a deep link and a tap agree. MB1–MB10, MB15
- * and MB16 render this screen in different states.
+ * the end); with the presentation minimized (MB14) the landscape goes back
+ * to one column, the tiles across the full width five to a row and the bar
+ * centred under them, as the canvas draws it (Mobile.dc.html 408). The
+ * insets come from the safe-area utilities (P2), never a fixed notch.
+ * Every value comes from the store through `useRoom`; every change is a
+ * store action, so a deep link and a tap agree. MB1–MB17 render this
+ * screen in different states.
  *
  * Sheets are driven by `ui.sheet` (and `ui.reacting`), the confirmations by
- * `ui.confirm`. Focus (WCAG 2.4.3): React Aria returns focus to the control
- * that opened a sheet; a sheet open on load had no press to return to, so
- * each carries a `FocusFallback` to its bar button, and focus is never lost
- * to `<body>`.
+ * `ui.confirm`, the keyboard by `ui.keyboardInset` (MB17). Focus (WCAG
+ * 2.4.3): React Aria returns focus to the control that opened a sheet; a
+ * sheet open on load had no press to return to, so each carries a
+ * `FocusFallback` to its button, and focus is never lost to `<body>`.
  */
 import { useRef } from 'react';
 import { useNavigate } from 'react-router';
@@ -26,11 +29,13 @@ import { RoomFocusContext, useRoomFocusState } from '../room/focus';
 import { useRoomShortcuts } from '../room/useRoomShortcuts';
 import { AlertsSheet } from './AlertsSheet';
 import { EveryoneSheet } from './EveryoneSheet';
+import { useKeyboardInset } from './keyboard';
 import { MobileActionBar } from './MobileActionBar';
 import { PresentationBlock, WebcamBand } from './MobileStage';
 import { MoreSheet } from './MoreSheet';
 import { PeopleSheet } from './PeopleSheet';
 import { ReactSheet } from './ReactSheet';
+import { SlidesSheet } from './SlidesSheet';
 
 const mobileRoomStyles = tv({
   slots: {
@@ -43,26 +48,38 @@ const mobileRoomStyles = tv({
     bar: 'shrink-0',
   },
   variants: {
-    orientation: {
-      portrait: { root: 'flex-col', main: 'px-safe-4', band: 'min-h-0 flex-1' },
-      landscape: {
+    /** One column (portrait, or landscape with the presentation minimized) or the landscape's two. */
+    layout: {
+      column: { root: 'flex-col', main: 'px-safe-4', band: 'min-h-0 flex-1' },
+      row: {
         root: 'flex-row',
         main: 'pl-safe-4',
         band: 'w-72 shrink-0 pt-safe-3 pr-safe-3 pb-safe-2 pl-3',
       },
     },
+    orientation: {
+      portrait: {},
+      landscape: {},
+    },
   },
-  defaultVariants: { orientation: 'portrait' },
+  compoundVariants: [
+    // The landscape's single column (MB14): the bar keeps the portrait bar's width, centred under the tiles.
+    { layout: 'column', orientation: 'landscape', className: { bar: 'w-panel max-w-full self-center' } },
+  ],
+  defaultVariants: { layout: 'column', orientation: 'portrait' },
 });
 
 export function MobileRoomScreen() {
   const dispatch = useRoomDispatch();
   const navigate = useNavigate();
   useRoomShortcuts();
+  useKeyboardInset();
   const focus = useRoomFocusState();
 
   const orientation = useRoom((s) => s.ui.orientation);
-  const styles = mobileRoomStyles({ orientation });
+  const minimized = useRoom((s) => s.presentation.minimized);
+  const layout = orientation === 'landscape' && !minimized ? 'row' : 'column';
+  const styles = mobileRoomStyles({ layout, orientation });
   const position = orientation === 'landscape' ? 'end' : 'bottom';
   const session = useRoom((s) => s.session);
   const elapsed = useRoom(selectElapsed);
@@ -84,9 +101,11 @@ export function MobileRoomScreen() {
   const moreButton = useRef<HTMLButtonElement>(null);
   const leaveButton = useRef<HTMLButtonElement>(null);
   const seeAllButton = useRef<HTMLButtonElement>(null);
+  const allSlidesButton = useRef<HTMLButtonElement>(null);
 
   const band = (
     <WebcamBand
+      orientation={orientation}
       onSeeAll={() => dispatch({ type: 'setSheet', sheet: 'cams' })}
       seeAllRef={seeAllButton}
       className={styles.band()}
@@ -117,8 +136,8 @@ export function MobileRoomScreen() {
               />
             )}
           </div>
-          <PresentationBlock orientation={orientation} />
-          {orientation === 'portrait' && band}
+          <PresentationBlock orientation={orientation} allSlidesRef={allSlidesButton} />
+          {layout === 'column' && band}
           <MobileActionBar
             className={styles.bar()}
             peopleOpen={peopleOpen}
@@ -139,13 +158,14 @@ export function MobileRoomScreen() {
             refs={{ people: peopleButton, react: reactButton, more: moreButton, leave: leaveButton }}
           />
         </div>
-        {orientation === 'landscape' && band}
+        {layout === 'row' && band}
 
         <AlertsSheet isOpen={sheet === 'alerts'} position={position} triggerRef={updatesButton} />
         <PeopleSheet isOpen={peopleOpen} position={position} triggerRef={peopleButton} />
         <ReactSheet isOpen={reacting} position={position} triggerRef={reactButton} />
         <MoreSheet isOpen={sheet === 'more'} position={position} triggerRef={moreButton} />
         <EveryoneSheet isOpen={sheet === 'cams'} position={position} triggerRef={seeAllButton} />
+        <SlidesSheet isOpen={sheet === 'slides'} position={position} triggerRef={allSlidesButton} />
         <ConfirmDialog
           isOpen={confirm === 'leave'}
           onOpenChange={(open) => !open && dispatch({ type: 'setConfirm', confirm: 'none' })}
