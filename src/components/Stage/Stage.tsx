@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Key } from 'react-aria-components';
 import type { Participant, ParticipantId, ReactionKind, ScreenKind, StageCorner } from '../../mocks/types';
 import { tv, type VariantProps } from '../../styles/tv';
+import type { ControlSize } from '../Button';
 import { IconButton } from '../IconButton';
 import { Surface } from '../Surface';
 import { Tab, TabList, TabPanel, Tabs } from '../Tabs';
@@ -428,7 +429,6 @@ function StageGrid({
 }: Pick<StageProps, 'participants' | 'names' | 'reactions' | 'presentation' | 'onRestore'>) {
   const count = participants.length + (presentation ? 1 : 0);
   const styles = stageStyles();
-  const tile = presentationTileStyles();
   return (
     <ul
       aria-label={presentation ? 'Webcams and minimized presentation' : 'Webcams'}
@@ -444,26 +444,51 @@ function StageGrid({
           />
         </li>
       ))}
-      {presentation && (
-        <li className={tile.root()}>
-          <span aria-hidden="true" className={tile.thumb()}>
-            <span className={tile.thumbTitle()}>{presentation.slideTitle}</span>
-          </span>
-          <span className={tile.bottom()}>
-            <span className={tile.plate()}>
-              Presentation · {presentation.slideNumber} / {presentation.slideCount}
-            </span>
-            <IconButton
-              label="Restore presentation"
-              icon="restore"
-              variant="primary"
-              size="sm"
-              onPress={onRestore}
-              className={tile.restore()}
-            />
-          </span>
-        </li>
-      )}
+      {presentation && <PresentationTile {...presentation} onRestore={onRestore} />}
     </ul>
+  );
+}
+
+export interface PresentationTileProps extends Pick<StagePresentation, 'slideTitle' | 'slideNumber' | 'slideCount'> {
+  onRestore?: () => void;
+  /** The Restore button's size: `sm` in the desktop grid, `touch` on the phone (X14). @default 'sm' */
+  restoreSize?: ControlSize;
+  className?: string;
+}
+
+/**
+ * The minimized presentation as one cell of a webcam list (Focus.dc.html
+ * 143–148; Mobile.dc.html 73): the slide thumbnail, a plate with the slide
+ * number and the Restore button. A list item, so it sits among the tiles
+ * of `StageGrid` or `WebcamStrip` (the phone, MB13 / MB14).
+ */
+export function PresentationTile({
+  slideTitle,
+  slideNumber,
+  slideCount,
+  onRestore,
+  restoreSize = 'sm',
+  className,
+}: PresentationTileProps) {
+  const tile = presentationTileStyles();
+  return (
+    <li className={tile.root({ className })}>
+      <span aria-hidden="true" className={tile.thumb()}>
+        <span className={tile.thumbTitle()}>{slideTitle}</span>
+      </span>
+      <span className={tile.bottom()}>
+        <span className={tile.plate()}>
+          Presentation · {slideNumber} / {slideCount}
+        </span>
+        <IconButton
+          label="Restore presentation"
+          icon="restore"
+          variant="primary"
+          size={restoreSize}
+          onPress={onRestore}
+          className={tile.restore()}
+        />
+      </span>
+    </li>
   );
 }

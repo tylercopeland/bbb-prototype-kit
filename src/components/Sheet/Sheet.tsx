@@ -20,7 +20,7 @@ import { SurfaceProvider } from '../Surface';
  * visible"). A sheet stacked on another draws no scrim of its own (P4).
  */
 export const sheetOverlayStyles = tv({
-  base: 'fixed inset-0 z-50 flex data-entering:animate-fade-in data-exiting:animate-fade-out',
+  base: 'fixed inset-0 z-50 flex pb-keyboard data-entering:animate-fade-in data-exiting:animate-fade-out',
   variants: {
     position: {
       bottom: 'items-end justify-center pt-16',
@@ -119,7 +119,9 @@ export interface SheetProps extends Pick<
  * decision: decided in milestone 6); the handle is decoration.
  *
  * The bottom sheet pads its bottom and the side sheet its end by the
- * device's safe-area inset (P2), through the `p*-safe-*` utilities.
+ * device's safe-area inset (P2), through the `p*-safe-*` utilities. The
+ * overlay pads its bottom by the on-screen keyboard (`pb-keyboard`, MB17),
+ * so a sheet never ends behind it.
  *
  * It always draws as a panel, white over the dark stage too (owner
  * decision 2026-10-24). Its content sits in a `SurfaceProvider`, so a

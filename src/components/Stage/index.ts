@@ -1,6 +1,7 @@
 export {
   gridColumns,
   MAX_GRID_COLUMNS,
+  PresentationTile,
   presentationTileStyles,
   slideStyles,
   Stage,
@@ -15,6 +16,7 @@ export type {
   StageLayout,
   StageOverlays,
   StagePresentation,
+  PresentationTileProps,
   StageProps,
   StageShare,
   StageSlideProps,

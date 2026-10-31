@@ -230,6 +230,15 @@
   padding-right: calc(--value(integer) * var(--spacing) + env(safe-area-inset-right, 0px));
 }
 
+/* The on-screen keyboard (MB17): the phone room writes the keyboard's height
+   to `--bbb-keyboard-inset` on the document (from `visualViewport`, or the
+   fixed fake of `keyboard=open`), and every sheet's overlay pads its bottom
+   by it, so a bottom sheet and its composer end above the keyboard. Unset,
+   it is nothing. */
+@utility pb-keyboard {
+  padding-bottom: var(--bbb-keyboard-inset, 0px);
+}
+
 /* Speaking ring for avatars and tiles. Always pair it with an icon or badge.
    The ring is kept in a variable so focus-ring can layer its own ring outside it. */
 @utility ring-speaking {
