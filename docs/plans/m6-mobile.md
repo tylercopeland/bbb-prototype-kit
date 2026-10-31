@@ -7,11 +7,13 @@ Approved 2026-10-31. Two sequential Fable batches on `m6-mobile`, one reviewer p
 The 17 phone artboards in `docs/artboards.md` › Prototype - Mobile: the canvas's 14 (`MB1Room`–`MB14LandMin`, source board `docs/canvas/project/Mobile.dc.html`) and the P9 core set (`MB15Attendee`, `MB16Confirm`, `MB17KeyboardChat`), routes at 390×844 or 844×390.
 
 Owner decisions (PLAN.md › Decisions log, 2026-10-31):
+
 - **P9 core set:** the student (attendee) view, the confirm dialogs for Leave and Remove, and the keyboard-open chat. Reconnecting, phone screen share and the landscape variants of Student, More, Slides and Alerts are out of scope.
 - **No swipe to close.** Sheets close with their visible close button, Escape or a tap outside.
 - Earlier decisions that apply here: overlays (sheets, menus, dialogs, toasts) are white panels; landscape sheets are full-height side sheets (`Sheet position="end"`, `w-panel`); cards and controls on the stage take the stage tokens (dark); join audio muted; one neutral badge style.
 
 Changes from the canvas, agreed in the review (PLAN.md › Milestone 6):
+
 - In portrait the slide sits above the webcams.
 - In landscape the pager sits below the slide.
 - `env(safe-area-inset-*)` replaces the canvas's fixed insets, through a utility in `theme.css` (P2).
@@ -23,6 +25,7 @@ Read `docs/review-findings.md` for every finding marked milestone 6 (P1–P9 and
 ## Reuse
 
 Reuse rather than fork. Extend a component with a prop or variant only when the phone really differs. The components to reuse:
+
 - **Overlays:** `Sheet` (bottom and end, stacking), `Dialog`/`ConfirmDialog`, `Menu`, `Popover`, `Toast`.
 - **Room and stage:** `ActionBar`, `SessionHeader`, `AlertPill`, `Stage`, `VideoTile`, `WebcamStrip`.
 - **People and chat:** `ParticipantList`/`ParticipantRow`, `ChatMessage`, `Composer`, `DMList`, `Tabs`, `ChipGroup`.
@@ -31,6 +34,7 @@ Reuse rather than fork. Extend a component with a prop or variant only when the 
 The routes in `src/routes/room/` (`RoomScreen`, `PeoplePanel`, `ChatPanel`, `focus.ts`, `useRoomShortcuts`) are the desktop patterns to follow: focus requests, panel toggles, announcements. The store already has `ui.orientation`, `ui.sheet`, `ui.sheetStudent`, `reacting` and `annotating` (`setOrientation`, `setSheet`, `setReacting`, `setAnnotating`), and `initialState.ts` maps `orient`, `sheet` and `annot`.
 
 New props, already in `KNOWN_PROPS.Mobile`, are to be mapped in `stateForArtboard` through store actions:
+
 - `presmin=min` is the existing minimize action.
 - `role=student` makes the viewer a student, with Raise hand instead of moderator controls, through a viewer/role field in the store if there isn't one.
 - `confirm=leave|remove` opens the matching confirmation.
@@ -57,6 +61,7 @@ Build `MobileRoomScreen` (portrait and landscape) and register it for MB1–MB10
   - everyone (MB10, all cameras)
 
   Focus moves in on open; Escape and the close button close a sheet, and focus returns to the trigger. A stacked sheet draws no second scrim.
+
 - **MB15:** the student's own view. Raise hand is a toggle (`selectedTone="hand"`). There are no moderator actions in the rows or More.
 - **MB16:** Leave asks first (`ConfirmDialog`, alert dialog, Cancel autofocused). `confirm=remove` shows the Remove confirmation.
 - Safe areas: add the utility, apply it to the bar, the header and the sheets.
@@ -84,6 +89,7 @@ Build `MobileRoomScreen` (portrait and landscape) and register it for MB1–MB10
 ## Batch reports
 
 Each batch appends "Build notes (batch X)" here, covering:
+
 - what was built
 - deviations from the canvas
 - tokens or utilities added (also in PLAN.md › Decisions log)
@@ -136,3 +142,13 @@ Built as planned: MB11–MB14 and MB17 render `MobileRoomScreen` (`src/routes/sc
 5. **Landscape minimized goes back to one column** (five tiles a row, the bar centred at 360px), as the canvas draws it, rather than keeping the two-column landscape with the tiles in the right column. Confirm.
 6. **The fake keyboard is 336px** (`keyboard=open`), and a measured zero is ignored until a keyboard was seen, so a desktop window resize never flattens the deep link. Confirm the height, or pick another phone's.
 7. **Every sheet shrinks above the keyboard,** not only the chat sheet (`pb-keyboard` on the Sheet overlay). Confirm.
+
+## Review fixes (2026-10-31)
+
+The reviewer's findings after batch B, fixed on `m6-mobile`:
+
+- **Updates sheet rows (blocking, WCAG 1.4.11):** each row now takes its kind's soft fill with a dashed border in the kind's text color, as the canvas tints them (Mobile.dc.html 263, 497–499): hands `bg-status-hand-soft` + `border-status-hand-text`, question `bg-accent-soft` + `border-accent`, insight `bg-insight-soft` + `border-insight-text`, help `bg-danger-soft` + `border-danger-text`, back `bg-status-live-soft` + `border-status-live-text`. The `*-text` tokens are the borders because the fills do not pass in dark mode (`insight` is 2.4:1 on the dark tint); every border is at least 3:1 on its tint and on the sheet in light, dark and stage through pairs that already existed. **No new tokens.** Fifteen pairs added to `contrast.json`: `text`, `text-muted` and `icon-subtle` on the five soft tints (title, second line, chevron). Hover and press turn the border solid instead of swapping the fill away.
+- The row chevron is the `submenu` icon (ChevronRight); the question row's title comes from the alert's sender (`names[from.id] ?? from.name`, "Someone" without one), not a regex on its text; `AlertPill` exports `alertPillKindIcon` and the rows reuse it.
+- **Stories and tests** for every variant batch B added: `Sheet` `frame`, `stacked` and `bodyClassName`; `WebcamStrip` `direction="grid"` with 2, 3 and 5 columns and `leading`, at 0, 1, 14 and 30 people; `PresentationTile variant="button"` (named "Presentation · 3 / 12, restore", Enter, Space, forwarded ref) and `StageSlide webcams="below" | "beside"`; `SessionHeader layout="stacked"`; `ParticipantRow` and `ParticipantList` with `canModerate={false}` and the sheet-opening ⋯ (`onOpenActions`, `aria-haspopup="dialog"`). Every story file keeps its `Stage` story; axe passes in light, dark and stage.
+- **e2e (`e2e/mobile.spec.ts`):** MB9 opens People as a side sheet on the right edge of the landscape screen and Close returns focus to the bar; a tap on the scrim above the More sheet dismisses it with focus back on More; MB16 cancels Leave back onto Leave; `?confirm=remove` opens the student sheet and the Remove confirmation together, Cancel lands on Remove from session, Remove takes the person out with focus kept in People.
+- The phone's ⋯ reports a real `aria-expanded`: `PeoplePanel` passes `ui.sheet === 'student' ? ui.sheetStudent : null` as the open row when `onOpenActions` is set. `MoreSheet` drops its unused `rowIcon` slot (the Learning Analytics row keeps the ghost button's icon color).

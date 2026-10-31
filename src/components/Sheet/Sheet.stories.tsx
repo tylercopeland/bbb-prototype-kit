@@ -203,13 +203,9 @@ export const BodyWithoutPadding: Story = {
     title: 'Everyone',
     bodyClassName: 'px-0 pb-0',
     children: (
-      <ul className="grid list-none grid-cols-2 gap-2 p-0">
-        {['Frederick', 'Bruno', 'Rafaela', 'You'].map((name) => (
-          <li key={name} className="flex aspect-video items-end bg-surface-sunken p-2 text-sm font-semibold">
-            {name}
-          </li>
-        ))}
-      </ul>
+      <div className="bg-surface-sunken py-2">
+        <Rows items={['Frederick', 'Bruno', 'Rafaela', 'You']} />
+      </div>
     ),
   },
 };
