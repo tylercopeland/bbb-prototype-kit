@@ -157,7 +157,10 @@ export function BreakoutPanel({ onClose, onPreview, closeRoomsRef, keepOpenRef }
 
   // The live panel just replaced the setup panel: its first control takes focus.
   useEffect(() => {
-    if (phase === 'live' && takeFocus('breakoutLive')) addTimeRef.current?.focus();
+    if (phase !== 'live' || !takeFocus('breakoutLive')) return;
+    // After the confirm dialog's focus scope has let go (it restores on the next frame).
+    const timer = setTimeout(() => addTimeRef.current?.focus(), 0);
+    return () => clearTimeout(timer);
   }, [phase, takeFocus]);
   // "Close all rooms" came back (the countdown was cancelled, or the joined room left).
   useEffect(() => {
