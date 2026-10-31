@@ -15,7 +15,8 @@ import { IconButton } from '../IconButton';
 export const pollResultsStyles = tv({
   slots: {
     root: 'flex flex-col gap-3 text-text',
-    status: 'flex flex-col gap-2 rounded-lg bg-surface-sunken px-3 py-3',
+    /** The live tint under the live status (a checked 4.5:1 pair), the sunken fill once the poll is closed. */
+    status: 'flex flex-col gap-2 rounded-lg px-3 py-3',
     statusLine: 'flex items-center gap-2 text-sm font-bold',
     statusDot: 'size-2 shrink-0 rounded-full',
     progress: 'h-2 w-full overflow-hidden rounded-full',
@@ -49,8 +50,16 @@ export const pollResultsStyles = tv({
       },
     },
     isLive: {
-      true: { statusLine: 'text-status-live-text', statusDot: 'bg-status-live' },
-      false: { statusLine: 'text-text-secondary', statusDot: 'bg-border-control' },
+      true: {
+        status: 'bg-status-live-soft',
+        statusLine: 'text-status-live-text',
+        statusDot: 'bg-status-live',
+      },
+      false: {
+        status: 'bg-surface-sunken',
+        statusLine: 'text-text-secondary',
+        statusDot: 'bg-border-control',
+      },
     },
     isTop: {
       true: { label: 'font-bold', percent: 'text-accent' },
