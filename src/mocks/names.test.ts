@@ -5,7 +5,11 @@ describe('names', () => {
   it('drops honorifics and a trailing generational suffix', () => {
     expect(nameWords('Prof. Helena Costa')).toEqual(['Helena', 'Costa']);
     expect(nameWords('Dra. Marta Ribeiro')).toEqual(['Marta', 'Ribeiro']);
-    expect(nameWords('Frederick Alexander Dixon-Whitworth III')).toEqual(['Frederick', 'Alexander', 'Dixon-Whitworth']);
+    expect(nameWords('Frederick Alexander Dixon-Whitworth III')).toEqual([
+      'Frederick',
+      'Alexander',
+      'Dixon-Whitworth',
+    ]);
     expect(nameWords('Martin Luther King Jr.')).toEqual(['Martin', 'Luther', 'King']);
     // A suffix alone is still a name.
     expect(nameWords('V')).toEqual(['V']);

@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode, Ref } from 'react';
+import { useState, type ReactElement, type ReactNode, type Ref, type RefObject } from 'react';
 import {
   Header,
   MenuTrigger,
@@ -18,6 +18,7 @@ import {
 } from 'react-aria-components';
 import { Icon, type IconName } from '../../icons';
 import { tv, type VariantProps } from '../../styles/tv';
+import { FocusFallback } from '../Popover';
 import { SurfaceProvider } from '../Surface';
 
 /**
@@ -86,10 +87,22 @@ export const menuSwitchStyles = tv({
   variants: {
     isSelected: {
       true: {
-        track: 'bg-accent forced-colors-track-on',
-        thumb: 'translate-x-4 bg-on-accent forced-colors-thumb-on',
+        track: 'forced-colors-track-on bg-accent',
+        thumb: 'translate-x-4 forced-colors-thumb-on bg-on-accent',
       },
-      false: { track: 'bg-border-control forced-colors-track', thumb: 'bg-surface forced-colors-thumb' },
+      false: { track: 'forced-colors-track bg-border-control', thumb: 'forced-colors-thumb bg-surface' },
+    },
+  },
+  defaultVariants: { isSelected: false },
+});
+
+/** The check at the end of a `menuitemradio` row (single selection, the timer's corners): decoration beside `aria-checked`. */
+export const menuCheckStyles = tv({
+  base: 'ml-auto shrink-0 text-accent',
+  variants: {
+    isSelected: {
+      true: '',
+      false: 'invisible',
     },
   },
   defaultVariants: { isSelected: false },
@@ -151,6 +164,9 @@ export function MenuItem({ children, icon, description, tone, className, ref, ..
               <span aria-hidden="true" className={sw.track()}>
                 <span className={sw.thumb()} />
               </span>
+            )}
+            {selectionMode === 'single' && (
+              <Icon name="check" size="sm" className={menuCheckStyles({ isSelected })} />
             )}
             {hasSubmenu && <Icon name="submenu" size="sm" className={menuItemIconStyles({ tone })} />}
           </>
@@ -251,6 +267,12 @@ export interface MenuProps extends Pick<MenuTriggerProps, 'isOpen' | 'defaultOpe
   className?: string;
   /** The menu element. */
   ref?: Ref<HTMLDivElement>;
+  /**
+   * Where focus goes when the menu closes and nothing else holds it: a menu
+   * that was open on load (O2) had no trigger press to return to. Pass the
+   * trigger's ref.
+   */
+  restoreFocusTo?: RefObject<Element | null>;
 }
 
 /**
@@ -280,8 +302,12 @@ export function Menu({
   placement = 'bottom end',
   className,
   ref,
+  restoreFocusTo,
   ...state
 }: MenuProps) {
+  // A menu that is open on load (O2, the `pmenu` prop) had no trigger press to set
+  // the focus strategy, so its first item takes focus; otherwise the trigger decides.
+  const [openedOnMount] = useState(() => state.isOpen ?? state.defaultOpen ?? false);
   return (
     <MenuTrigger {...state}>
       {trigger}
@@ -291,8 +317,14 @@ export function Menu({
         className={composeRenderProps(className, (cls) => menuPopoverStyles({ className: cls }))}
       >
         <SurfaceProvider kind="panel">
+          <FocusFallback target={restoreFocusTo} />
           {header && <div className={menuHeaderStyles()}>{header}</div>}
-          <RacMenu ref={ref} onAction={onAction} className={menuStyles()}>
+          <RacMenu
+            ref={ref}
+            onAction={onAction}
+            autoFocus={openedOnMount ? 'first' : undefined}
+            className={menuStyles()}
+          >
             {children}
           </RacMenu>
         </SurfaceProvider>

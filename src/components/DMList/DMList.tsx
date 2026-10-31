@@ -106,11 +106,20 @@ export function DMList({ threads, onOpen, onPickPerson, rowRef, className, ...pr
 }
 
 /** One row. A cut-off name shows in a tooltip while the row is hovered or focused (`useTruncationTooltip`, as Chip and Tab). */
-function DMRow({ summary, ref, onPress }: { summary: DirectSummary; ref?: Ref<HTMLButtonElement>; onPress: () => void }) {
+function DMRow({
+  summary,
+  ref,
+  onPress,
+}: {
+  summary: DirectSummary;
+  ref?: Ref<HTMLButtonElement>;
+  onPress: () => void;
+}) {
   const isUnread = summary.unread > 0;
   const text = dmRowTextStyles({ isUnread });
   const name = summary.person?.name ?? 'Someone who left';
-  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLButtonElement>(ref);
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } =
+    useTruncationTooltip<HTMLButtonElement>(ref);
   return (
     <RacButton {...triggerProps} ref={triggerRef} onPress={onPress} className={dmRowStyles({ isUnread })}>
       <Avatar aria-hidden="true" name={name} participantId={summary.thread.with} />

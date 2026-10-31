@@ -11,7 +11,8 @@ import {
   type TabProps as RacTabProps,
   type TabsProps as RacTabsProps,
 } from 'react-aria-components';
-import { tv } from '../../styles/tv';
+import { Icon, type IconName } from '../../icons';
+import { tv, type VariantProps } from '../../styles/tv';
 import { Badge, type BadgeProps } from '../Badge';
 import { Tooltip, useTruncationTooltip } from '../Tooltip';
 
@@ -36,27 +37,53 @@ export const tabsStyles = tv({
  * track with 4px of padding and equal-width segments.
  */
 export const tabListStyles = tv({
-  base: 'flex rounded-control bg-surface-sunken p-1',
+  base: 'flex',
   variants: {
     orientation: {
       horizontal: 'flex-row',
       vertical: 'flex-col',
     },
+    /** `segmented` is the sunken track; `stacked` is a plain row of icon-over-label tabs (the Share media types, Focus.dc.html 400–407). */
+    variant: {
+      segmented: 'rounded-control bg-surface-sunken p-1',
+      stacked: 'gap-1',
+    },
   },
-  defaultVariants: { orientation: 'horizontal' },
+  defaultVariants: { orientation: 'horizontal', variant: 'segmented' },
 });
 
 /**
  * One segment: 32px tall, equal width, bold 13px text. The selected
  * segment lifts to the surface with the inset `selected-ring` as its
  * non-color cue (the canvas's white-on-grey alone is 1.1:1). Hover and
- * press on an unselected tab use the raised fill.
+ * press on an unselected tab use the raised fill. A `stacked` tab is the
+ * icon square over a 12px label; its square carries the selected fill and
+ * ring (see `tabIconStyles`).
  */
 export const tabStyles = tv({
-  base: 'hit-area flex h-control-sm min-w-0 flex-1 cursor-default items-center justify-center gap-2 rounded-xs px-3 text-sm font-semibold whitespace-nowrap text-text-secondary focus-ring outline-none data-disabled:text-text-muted data-hovered:bg-surface-raised data-pressed:bg-surface-raised data-selected:bg-surface data-selected:text-text data-selected:selected-ring data-selected:data-hovered:bg-surface data-selected:data-pressed:bg-surface',
+  base: 'group flex min-w-0 flex-1 cursor-default items-center justify-center focus-ring outline-none data-disabled:text-text-muted',
+  variants: {
+    variant: {
+      segmented:
+        'hit-area h-control-sm gap-2 rounded-xs px-3 text-sm font-semibold whitespace-nowrap text-text-secondary data-hovered:bg-surface-raised data-pressed:bg-surface-raised data-selected:bg-surface data-selected:text-text data-selected:selected-ring data-selected:data-hovered:bg-surface data-selected:data-pressed:bg-surface',
+      stacked:
+        'flex-col gap-1 rounded-control p-1 text-xs font-semibold text-text-secondary data-selected:font-bold data-selected:text-text',
+    },
+  },
+  defaultVariants: { variant: 'segmented' },
 });
 
+/** The icon square of a stacked tab: 44px, a hairline, the selected pair plus the inset ring when selected. */
+export const tabIconStyles = tv({
+  base: 'flex size-control-touch items-center justify-center rounded-lg border border-border bg-surface text-icon group-data-hovered:bg-surface-sunken group-data-pressed:bg-surface-sunken group-data-selected:border-selected-border group-data-selected:bg-selected group-data-selected:text-selected-text group-data-selected:selected-ring',
+});
+
+export type TabVariant = NonNullable<VariantProps<typeof tabStyles>['variant']>;
+
 export const tabLabelStyles = tv({ base: 'truncate' });
+
+/** A `detail` after the label ("· 8:42"): visual only, so a ticking value never changes the tab's name (X10). */
+export const tabDetailStyles = tv({ base: 'ml-1 shrink-0 tabular-nums' });
 
 /** The panel: focusable when it has no focusable child, so it carries the ring. */
 export const tabPanelStyles = tv({
@@ -94,18 +121,20 @@ export interface TabListProps extends Omit<
 > {
   /** The accessible name of the tab list: "People and chat", "Chat type". */
   label: string;
+  /** Give the tabs the same variant. @default 'segmented' */
+  variant?: TabVariant;
   children: ReactNode;
   className?: string;
   ref?: Ref<HTMLDivElement>;
 }
 
-export function TabList({ label, children, className, ...props }: TabListProps) {
+export function TabList({ label, variant = 'segmented', children, className, ...props }: TabListProps) {
   return (
     <RacTabList
       {...props}
       aria-label={label}
       className={composeRenderProps(className, (cls, { orientation }) =>
-        tabListStyles({ orientation, className: cls }),
+        tabListStyles({ orientation, variant, className: cls }),
       )}
     >
       {children}
@@ -116,8 +145,18 @@ export function TabList({ label, children, className, ...props }: TabListProps) 
 export interface TabProps extends Omit<RacTabProps, 'className' | 'children' | 'style' | 'href'> {
   /** The tab's text; its accessible name together with the badge label. */
   children: string;
+  /**
+   * Text shown after the label but kept out of the name and the tooltip
+   * ("8:42" on "4 rooms live"), for a value that changes while the tab is
+   * on screen: a name that ticks would be re-announced at every change.
+   */
+  detail?: string;
   /** A count on the tab (D3): raised hands on People, unread on Chat. */
   badge?: Pick<BadgeProps, 'count' | 'label' | 'tone'>;
+  /** Match the list's variant. @default 'segmented' */
+  variant?: TabVariant;
+  /** The glyph above the label of a `stacked` tab. */
+  icon?: IconName;
   className?: string;
   ref?: Ref<HTMLDivElement>;
 }
@@ -129,17 +168,28 @@ export interface TabProps extends Omit<RacTabProps, 'className' | 'children' | '
  * a Tooltip (`useTruncationTooltip`); the accessible name is always the
  * full text.
  */
-export function Tab({ children, badge, className, ref, ...props }: TabProps) {
-  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLDivElement>(ref);
+export function Tab({ children, detail, badge, variant = 'segmented', icon, className, ref, ...props }: TabProps) {
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } =
+    useTruncationTooltip<HTMLDivElement>(ref);
   return (
     <RacTab
       {...mergeProps(props, triggerProps)}
       ref={triggerRef}
-      className={composeRenderProps(className, (cls) => tabStyles({ className: cls }))}
+      className={composeRenderProps(className, (cls) => tabStyles({ variant, className: cls }))}
     >
+      {icon && (
+        <span className={tabIconStyles()}>
+          <Icon name={icon} size="md" />
+        </span>
+      )}
       <span ref={labelRef} className={tabLabelStyles()}>
         {children}
       </span>
+      {detail && (
+        <span aria-hidden="true" className={tabDetailStyles()}>
+          · {detail}
+        </span>
+      )}
       {/* The space keeps the name "Chat 2 unread", not "Chat2 unread"; flex drops it visually. */}
       {badge && (
         <>

@@ -15,7 +15,13 @@ import {
 import { ParticipantList } from './ParticipantList';
 
 /** The list over a live state: Remove from session takes the person out, as the room does. */
-function Removable({ people = 'class', filter = 'all' }: { people?: ParticipantFixture; filter?: PeopleFilter }) {
+function Removable({
+  people = 'class',
+  filter = 'all',
+}: {
+  people?: ParticipantFixture;
+  filter?: PeopleFilter;
+}) {
   const [state, setState] = useState<RoomState>(() => createRoom({ participants: people }));
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const { hands, others } = selectPeople(filter)(state);
@@ -29,7 +35,8 @@ function Removable({ people = 'class', filter = 'all' }: { people?: ParticipantF
       openMenu={openMenu}
       onMenuOpenChange={(id, open) => setOpenMenu(open ? id : null)}
       onAction={(participantId, action) => {
-        if (action.type === 'remove') setState((s) => roomReducer(s, { type: 'removeParticipant', participantId }));
+        if (action.type === 'remove')
+          setState((s) => roomReducer(s, { type: 'removeParticipant', participantId }));
       }}
     />
   );
@@ -47,7 +54,10 @@ function Subject({
   people = 'class',
   filter = 'all',
   ...props
-}: Partial<React.ComponentProps<typeof ParticipantList>> & { people?: ParticipantFixture; filter?: PeopleFilter }) {
+}: Partial<React.ComponentProps<typeof ParticipantList>> & {
+  people?: ParticipantFixture;
+  filter?: PeopleFilter;
+}) {
   const state = createRoom({ participants: people });
   const { hands, others } = selectPeople(filter)(state);
   return (
@@ -118,7 +128,15 @@ describe('ParticipantList', () => {
     expect(screen.getByText('No raised hands right now.')).toBeInTheDocument();
     rerender(<Subject people="one" filter="low" />);
     expect(screen.getByText('Everyone has been active.')).toBeInTheDocument();
-    rerender(<ParticipantList hands={[]} others={[]} counts={{ all: 0, hands: 0, low: 0 }} filter="all" now={FIXTURE_NOW} />);
+    rerender(
+      <ParticipantList
+        hands={[]}
+        others={[]}
+        counts={{ all: 0, hands: 0, low: 0 }}
+        filter="all"
+        now={FIXTURE_NOW}
+      />,
+    );
     expect(screen.getByText('No one is here yet.')).toBeInTheDocument();
   });
 
@@ -136,12 +154,21 @@ describe('ParticipantList', () => {
     const onMessage = vi.fn();
     const onMenuOpenChange = vi.fn();
     const onAction = vi.fn();
-    const { rerender } = render(<Subject onMessage={onMessage} onMenuOpenChange={onMenuOpenChange} onAction={onAction} />);
+    const { rerender } = render(
+      <Subject onMessage={onMessage} onMenuOpenChange={onMenuOpenChange} onAction={onAction} />,
+    );
     await user.click(screen.getByRole('button', { name: 'Message Bruno privately' }));
     expect(onMessage).toHaveBeenCalledWith('bruno');
     await user.click(screen.getByRole('button', { name: 'More actions for Anton Georgiev' }));
     expect(onMenuOpenChange).toHaveBeenCalledWith('anton', true);
-    rerender(<Subject onMessage={onMessage} onMenuOpenChange={onMenuOpenChange} onAction={onAction} openMenu="anton" />);
+    rerender(
+      <Subject
+        onMessage={onMessage}
+        onMenuOpenChange={onMenuOpenChange}
+        onAction={onAction}
+        openMenu="anton"
+      />,
+    );
     const menu = await screen.findByRole('menu', { name: 'More actions for Anton Georgiev' });
     expect(menu).toBeInTheDocument();
     await user.click(screen.getByRole('menuitem', { name: 'Make presenter' }));
@@ -154,11 +181,15 @@ describe('ParticipantList', () => {
     render(<Removable people="four" />);
     // Bruno (the one raised hand) is followed by Everyone: you (no ⋯), Frederick, Ellen.
     await remove(user, 'Bruno');
-    await waitFor(() => expect(screen.getByRole('button', { name: 'More actions for Frederick Dixon' })).toHaveFocus());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'More actions for Frederick Dixon' })).toHaveFocus(),
+    );
     expect(screen.queryByRole('heading', { name: /Raised hands/ })).not.toBeInTheDocument();
     // Ellen is last: the previous row with actions is Frederick.
     await remove(user, 'Ellen');
-    await waitFor(() => expect(screen.getByRole('button', { name: 'More actions for Frederick Dixon' })).toHaveFocus());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'More actions for Frederick Dixon' })).toHaveFocus(),
+    );
     // Frederick was the last person with actions: the section heading takes focus.
     await remove(user, 'Frederick Dixon');
     await waitFor(() => expect(screen.getByRole('heading', { level: 3, name: 'Everyone 1' })).toHaveFocus());

@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { createRoom, FIXTURE_NOW } from './fixtures';
 import { roomReducer as reduce } from './reducer';
 import {
+  formatTalkTime,
   participantSubline,
   roomStatus,
+  roomTalkTime,
   selectAlerts,
   selectDirectList,
   selectDisplayNames,
@@ -12,6 +14,7 @@ import {
   selectPeople,
   selectPeopleFilterCounts,
   selectPluginSubtitles,
+  selectPollResults,
   selectRaisedHands,
   selectRooms,
   selectSlideLabel,
@@ -63,9 +66,12 @@ describe('people selectors', () => {
     expect(participantSubline(bruno, FIXTURE_NOW)).toBe('Raised · 3 min');
     const me = s.participants.find((p) => p.isSelf)!;
     expect(participantSubline(me, FIXTURE_NOW)).toBe('Presenting');
-    expect(participantSubline({ ...bruno, handRaisedAt: null, hasWhiteboard: true, chatLocked: true }, FIXTURE_NOW)).toBe(
-      'Whiteboard · Chat locked',
-    );
+    expect(
+      participantSubline(
+        { ...bruno, handRaisedAt: null, hasWhiteboard: true, chatLocked: true },
+        FIXTURE_NOW,
+      ),
+    ).toBe('Whiteboard · Chat locked');
   });
 
   it('orders tiles: speakers, then hands by wait, then cameras', () => {
@@ -131,7 +137,10 @@ describe('alerts', () => {
     const twice = reduce(asked, { type: 'requestHelp', roomIndex: 3 });
     expect(selectAlerts(twice)[0].text).toBe('2 rooms asked for help');
     const back = reduce(twice, { type: 'bringEveryoneBack' });
-    expect(selectAlerts(back)[0]).toMatchObject({ kind: 'back', text: 'Breakouts ended · 4 rooms’ work saved' });
+    expect(selectAlerts(back)[0]).toMatchObject({
+      kind: 'back',
+      text: 'Breakouts ended · 4 rooms’ work saved',
+    });
   });
 });
 
@@ -149,6 +158,38 @@ describe('presentation and plugins', () => {
     const live = reduce(createRoom(), { type: 'openRooms' });
     expect(selectPluginSubtitles(live).breakouts).toBe('4 rooms live');
   });
+
+  it('turns the poll votes into keyed rows with shares, marking the most chosen; nothing is top before any answer', () => {
+    const s = createRoom();
+    const rows = selectPollResults(s);
+    expect(rows).toBe(selectPollResults(s));
+    expect(rows.map((r) => [r.key, r.votes, r.percent, r.isTop])).toEqual([
+      ['A', 6, 67, true],
+      ['B', 1, 11, false],
+      ['C', 0, 0, false],
+      ['D', 2, 22, false],
+    ]);
+    const fresh = reduce(s, { type: 'setupPoll' });
+    expect(selectPollResults(fresh).every((r) => r.percent === 0 && !r.isTop)).toBe(true);
+    const rate = reduce(fresh, { type: 'setPollType', pollType: 'rate' });
+    expect(selectPollResults(rate).map((r) => r.key)).toEqual(['★', '★', '★', '★', '★']);
+  });
+});
+
+describe('talk time', () => {
+  it('shares a room’s talking among its members, from the fixture’s seconds', () => {
+    const s = createRoom();
+    const room = selectRooms(s)[0];
+    const talk = roomTalkTime(room, s.breakouts.talkTime);
+    expect(talk.map((t) => t.participant.id)).toEqual(room.members.map((m) => m.id));
+    expect(talk.reduce((a, t) => a + t.share, 0)).toBeCloseTo(1);
+    expect(talk[0].seconds).toBe(9 * 60);
+    expect(roomTalkTime({ ...room, members: [] }, s.breakouts.talkTime)).toEqual([]);
+    expect(roomTalkTime(room, {}).every((t) => t.share === 0 && t.seconds === 0)).toBe(true);
+    expect(formatTalkTime(0)).toBe('Quiet so far');
+    expect(formatTalkTime(40)).toBe('40 s');
+    expect(formatTalkTime(9 * 60)).toBe('9 min');
+  });
 });
 
 describe('roomStatus', () => {
@@ -162,16 +203,28 @@ describe('roomStatus', () => {
     expect(roomStatus(rooms[3], 'live', FIXTURE_NOW, names)).toBe('Drawing on the board');
     expect(roomStatus({ ...rooms[1], members: [] }, 'live', FIXTURE_NOW, names)).toBe('Empty');
     const asked = reduce(s, { type: 'requestHelp', roomIndex: 1 });
-    expect(roomStatus(selectRooms(asked)[1], 'live', FIXTURE_NOW + MINUTE, names)).toBe('Asked for help · 1 min');
+    expect(roomStatus(selectRooms(asked)[1], 'live', FIXTURE_NOW + MINUTE, names)).toBe(
+      'Asked for help · 1 min',
+    );
     expect(roomStatus(rooms[1], 'back', FIXTURE_NOW, names)).toBe('Shared notes saved');
   });
 
   it('tells two Anas apart in a talking room (B9)', () => {
     let s = createRoom({ participants: 'duplicateNames' });
-    for (const id of ['ana', 'ana-ferreira']) s = reduce(s, { type: 'moveParticipant', participantId: id, roomIndex: 1 });
+    for (const id of ['ana', 'ana-ferreira'])
+      s = reduce(s, { type: 'moveParticipant', participantId: id, roomIndex: 1 });
     s = reduce(s, { type: 'openRooms' });
-    s = reduce(s, { type: 'setRoomActivity', roomIndex: 1, activity: { kind: 'talking', since: FIXTURE_NOW } });
-    const room = { ...selectRooms(s)[1], members: selectRooms(s)[1].members.filter((m) => m.name.startsWith('Ana')) };
-    expect(roomStatus(room, 'live', FIXTURE_NOW, selectDisplayNames(s))).toBe('Ana S. and Ana F. are talking');
+    s = reduce(s, {
+      type: 'setRoomActivity',
+      roomIndex: 1,
+      activity: { kind: 'talking', since: FIXTURE_NOW },
+    });
+    const room = {
+      ...selectRooms(s)[1],
+      members: selectRooms(s)[1].members.filter((m) => m.name.startsWith('Ana')),
+    };
+    expect(roomStatus(room, 'live', FIXTURE_NOW, selectDisplayNames(s))).toBe(
+      'Ana S. and Ana F. are talking',
+    );
   });
 });

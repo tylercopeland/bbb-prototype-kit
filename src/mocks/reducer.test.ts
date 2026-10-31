@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { CLOSING_SECONDS, MAX_ROOMS, MIN_ROOMS } from './breakouts';
 import { createRoom, FIXTURE_NOW } from './fixtures';
-import { roomReducer as reduce, type RoomAction } from './reducer';
+import { REACTION_LIFETIME } from './reactions';
+import { canMessagePrivately, roomReducer as reduce, type RoomAction } from './reducer';
 import {
   selectBreakoutTimeLeft,
+  selectCanMessage,
   selectClosingLeft,
+  selectJoinedRoom,
   selectOpenHelp,
+  selectReactions,
+  selectRoomMessages,
   selectRooms,
   selectRoomsUneven,
   selectTimerLeft,
@@ -37,7 +42,11 @@ describe('tick', () => {
   it('brings everyone back when the time is up and auto return is on', () => {
     const s = reduce(live(), { type: 'tick', now: FIXTURE_NOW + 10 * MINUTE });
     expect(s.breakouts.phase).toBe('back');
-    const manual = run(createRoom(), { type: 'setBreakoutOption', option: 'autoReturn', value: false }, { type: 'openRooms' });
+    const manual = run(
+      createRoom(),
+      { type: 'setBreakoutOption', option: 'autoReturn', value: false },
+      { type: 'openRooms' },
+    );
     expect(reduce(manual, { type: 'tick', now: FIXTURE_NOW + 10 * MINUTE }).breakouts.phase).toBe('live');
   });
 });
@@ -93,9 +102,16 @@ describe('presenter, flags and removal', () => {
   });
 
   it('sets the ⋯ menu flags', () => {
-    const s = reduce(createRoom(), { type: 'setParticipantFlag', participantId: 'ana', flag: 'hasWhiteboard', value: true });
+    const s = reduce(createRoom(), {
+      type: 'setParticipantFlag',
+      participantId: 'ana',
+      flag: 'hasWhiteboard',
+      value: true,
+    });
     expect(find(s, 'ana').hasWhiteboard).toBe(true);
-    expect(reduce(s, { type: 'setParticipantFlag', participantId: 'ana', flag: 'hasWhiteboard', value: true })).toBe(s);
+    expect(
+      reduce(s, { type: 'setParticipantFlag', participantId: 'ana', flag: 'hasWhiteboard', value: true }),
+    ).toBe(s);
   });
 
   it('removes a person and everything that pointed at them', () => {
@@ -114,7 +130,11 @@ describe('presenter, flags and removal', () => {
     expect(gone.breakouts.moves).not.toHaveProperty('ana');
     expect(gone.breakouts.assignments).not.toHaveProperty('ana');
     expect(gone.breakouts.moving).toBeNull();
-    expect(selectRooms(gone).flatMap((r) => r.members).some((m) => m.id === 'ana')).toBe(false);
+    expect(
+      selectRooms(gone)
+        .flatMap((r) => r.members)
+        .some((m) => m.id === 'ana'),
+    ).toBe(false);
     expect(reduce(gone, { type: 'removeParticipant', participantId: 'ana' })).toBe(gone);
   });
 
@@ -149,7 +169,11 @@ describe('chat', () => {
   });
 
   it('numbers messages from a counter in the state, so the reducer is pure', () => {
-    const a = run(createRoom(), { type: 'sendMessage', from: 'bruno', text: 'One' }, { type: 'sendMessage', from: 'helena', to: 'bruno', text: 'Two' });
+    const a = run(
+      createRoom(),
+      { type: 'sendMessage', from: 'bruno', text: 'One' },
+      { type: 'sendMessage', from: 'helena', to: 'bruno', text: 'Two' },
+    );
     expect(a.chat.everyone.at(-1)?.id).toBe('m-1');
     expect(a.chat.direct.find((t) => t.with === 'bruno')?.messages.at(-1)?.id).toBe('m-2');
     expect(a.chat.seq).toBe(2);
@@ -181,7 +205,12 @@ describe('chat', () => {
   });
 
   it('files a direct message under the other person', () => {
-    const s = reduce(createRoom(), { type: 'sendMessage', from: 'helena', to: 'frederick', text: 'Go ahead' });
+    const s = reduce(createRoom(), {
+      type: 'sendMessage',
+      from: 'helena',
+      to: 'frederick',
+      text: 'Go ahead',
+    });
     expect(s.chat.direct.find((t) => t.with === 'frederick')?.messages[0].text).toBe('Go ahead');
     const reply = reduce(s, { type: 'sendMessage', from: 'frederick', to: 'helena', text: 'Thanks' });
     expect(reply.chat.direct.find((t) => t.with === 'frederick')?.messages).toHaveLength(2);
@@ -200,7 +229,11 @@ describe('panel, scope and pickers', () => {
   });
 
   it('switches scope, closing any open thread', () => {
-    const s = run(createRoom(), { type: 'openDm', participantId: 'bruno' }, { type: 'setScope', scope: 'everyone' });
+    const s = run(
+      createRoom(),
+      { type: 'openDm', participantId: 'bruno' },
+      { type: 'setScope', scope: 'everyone' },
+    );
     expect(s.ui).toMatchObject({ scope: 'everyone', dm: null });
   });
 
@@ -239,8 +272,13 @@ describe('presentation', () => {
     expect(s.presentation).toMatchObject({ share: 'screen', screenShared: true, screenKind: 'A window' });
     const deck = reduce(s, { type: 'setShare', share: 'deck' });
     expect(deck.presentation).toMatchObject({ share: 'deck', screenShared: true });
-    expect(reduce(deck, { type: 'stopShare' }).presentation).toMatchObject({ share: 'none', screenShared: false });
-    expect(reduce(s, { type: 'setPresentationMinimized', minimized: true }).presentation.minimized).toBe(true);
+    expect(reduce(deck, { type: 'stopShare' }).presentation).toMatchObject({
+      share: 'none',
+      screenShared: false,
+    });
+    expect(reduce(s, { type: 'setPresentationMinimized', minimized: true }).presentation.minimized).toBe(
+      true,
+    );
     expect(reduce(s, { type: 'setTool', tool: 'eraser' }).presentation.tool).toBe('eraser');
   });
 });
@@ -262,6 +300,46 @@ describe('poll', () => {
     expect(reduce(ended, { type: 'answerPoll', option: 0 })).toBe(ended);
     expect(reduce(ended, { type: 'closePoll' }).poll.phase).toBe('off');
   });
+
+  it('edits the question, answers and settings while in setup, within the bounds, and never live', () => {
+    const setup = reduce(createRoom(), { type: 'setupPoll' });
+    const asked = reduce(setup, { type: 'setPollQuestion', question: 'Ready for the quiz?' });
+    expect(asked.poll.question).toBe('Ready for the quiz?');
+    expect(reduce(asked, { type: 'setPollQuestion', question: 'Ready for the quiz?' })).toBe(asked);
+    const five = run(setup, { type: 'addPollOption' }, { type: 'addPollOption' });
+    expect(five.poll.options).toHaveLength(5);
+    expect(five.poll.votes).toHaveLength(5);
+    expect(reduce(five, { type: 'addPollOption' })).toBe(five);
+    const named = reduce(five, { type: 'setPollOption', index: 4, label: 'Something else' });
+    expect(named.poll.options[4]).toBe('Something else');
+    expect(reduce(named, { type: 'setPollOption', index: 9, label: 'x' })).toBe(named);
+    const two = run(
+      named,
+      { type: 'removePollOption', index: 4 },
+      { type: 'removePollOption', index: 3 },
+      { type: 'removePollOption', index: 2 },
+    );
+    expect(two.poll.options).toEqual(['Grey icons for muted', 'A red badge on everyone']);
+    expect(reduce(two, { type: 'removePollOption', index: 0 })).toBe(two);
+    // A blank answer cannot be asked.
+    const blank = reduce(two, { type: 'setPollOption', index: 1, label: ' ' });
+    expect(reduce(blank, { type: 'startPoll' })).toBe(blank);
+    expect(reduce(two, { type: 'startPoll' }).poll.phase).toBe('live');
+    // The fixed types replace the answers and cannot be edited; back to choice restores the defaults.
+    const yesno = reduce(two, { type: 'setPollType', pollType: 'yesno' });
+    expect(yesno.poll.options).toEqual(['Yes', 'No']);
+    expect(reduce(yesno, { type: 'addPollOption' })).toBe(yesno);
+    expect(reduce(yesno, { type: 'setPollOption', index: 0, label: 'Yep' })).toBe(yesno);
+    expect(reduce(yesno, { type: 'setPollType', pollType: 'rate' }).poll.options).toHaveLength(5);
+    expect(reduce(yesno, { type: 'setPollType', pollType: 'choice' }).poll.options).toHaveLength(4);
+    const open = reduce(setup, { type: 'setPollSetting', setting: 'anonymous', value: false });
+    expect(open.poll.anonymous).toBe(false);
+    expect(reduce(open, { type: 'setPollSetting', setting: 'anonymous', value: false })).toBe(open);
+    const liveP = reduce(setup, { type: 'startPoll' });
+    expect(reduce(liveP, { type: 'setPollQuestion', question: 'Later' })).toBe(liveP);
+    expect(reduce(liveP, { type: 'addPollOption' })).toBe(liveP);
+    expect(reduce(liveP, { type: 'setPollSetting', setting: 'liveResults', value: true })).toBe(liveP);
+  });
 });
 
 describe('timer', () => {
@@ -278,13 +356,23 @@ describe('timer', () => {
     expect(reduce(paused, { type: 'addTimerMinute' }).timer.leftSec).toBe(260);
     expect(reduce(later, { type: 'addTimerMinute' }).timer.endsAt).toBe(FIXTURE_NOW + 360 * SECOND);
     expect(reduce(paused, { type: 'resetTimer' }).timer.leftSec).toBe(300);
-    expect(reduce(paused, { type: 'setTimerDuration', durationSec: 60 }).timer).toMatchObject({ durationSec: 60, leftSec: 60 });
+    expect(reduce(paused, { type: 'setTimerDuration', durationSec: 60 }).timer).toMatchObject({
+      durationSec: 60,
+      leftSec: 60,
+    });
     expect(reduce(paused, { type: 'setTimerMinimized', minimized: true }).timer.minimized).toBe(true);
+    expect(reduce(paused, { type: 'setTimerCorner', corner: 'bottomLeft' }).timer.corner).toBe('bottomLeft');
+    expect(reduce(paused, { type: 'setTimerCorner', corner: 'topRight' })).toBe(paused);
     expect(reduce(paused, { type: 'removeTimer' }).timer.phase).toBe('off');
   });
 
   it('restarts from the full duration after it is done', () => {
-    const done = run(createRoom(), { type: 'addTimer' }, { type: 'startTimer' }, { type: 'tick', now: FIXTURE_NOW + 400 * SECOND });
+    const done = run(
+      createRoom(),
+      { type: 'addTimer' },
+      { type: 'startTimer' },
+      { type: 'tick', now: FIXTURE_NOW + 400 * SECOND },
+    );
     expect(done.timer.phase).toBe('done');
     expect(reduce(done, { type: 'startTimer' }).timer.leftSec).toBe(300);
     expect(reduce(done, { type: 'addTimerMinute' }).timer).toMatchObject({ phase: 'running', leftSec: 60 });
@@ -389,7 +477,8 @@ describe('breakout setup', () => {
   it('can empty a room without crashing anything that reads it (B1)', () => {
     let s = createRoom({ participants: 'four' });
     const rooms = selectRooms(s);
-    for (const m of rooms[0].members) s = reduce(s, { type: 'moveParticipant', participantId: m.id, roomIndex: 1 });
+    for (const m of rooms[0].members)
+      s = reduce(s, { type: 'moveParticipant', participantId: m.id, roomIndex: 1 });
     expect(selectRooms(s)[0].members).toEqual([]);
     s = run(s, { type: 'openRooms' }, { type: 'peekRoom', roomIndex: 0 });
     expect(s.breakouts.peek).toBe(0);
@@ -412,8 +501,14 @@ describe('breakouts live', () => {
     expect(reduce(s, { type: 'peekRoom', roomIndex: 2 }).breakouts.peek).toBe(2);
     expect(reduce(s, { type: 'peekRoom', roomIndex: 9 })).toBe(s);
     const peeked = run(s, { type: 'peekRoom', roomIndex: 1 }, { type: 'setListening', listening: true });
-    expect(reduce(peeked, { type: 'peekRoom', roomIndex: null }).breakouts).toMatchObject({ peek: null, listening: false });
-    expect(reduce(peeked, { type: 'setBreakoutView', view: 'main' }).breakouts).toMatchObject({ view: 'main', peek: null });
+    expect(reduce(peeked, { type: 'peekRoom', roomIndex: null }).breakouts).toMatchObject({
+      peek: null,
+      listening: false,
+    });
+    expect(reduce(peeked, { type: 'setBreakoutView', view: 'main' }).breakouts).toMatchObject({
+      view: 'main',
+      peek: null,
+    });
   });
 
   it('closes rooms with a countdown that can be kept open or cut short (B5)', () => {
@@ -425,6 +520,15 @@ describe('breakouts live', () => {
     expect(reduce(kept, { type: 'keepRoomsOpen' })).toBe(kept);
     const back = reduce(closing, { type: 'bringEveryoneBack' });
     expect(back.breakouts).toMatchObject({ phase: 'back', view: 'main', closingEndsAt: null });
+    // The dismissed dialog stays dismissed while this countdown runs, and comes back with the next one.
+    const dismissed = reduce(closing, { type: 'dismissClosingNotice' });
+    expect(dismissed.ui.closingNoticeDismissed).toBe(true);
+    expect(reduce(dismissed, { type: 'dismissClosingNotice' })).toBe(dismissed);
+    const open = live();
+    expect(reduce(open, { type: 'dismissClosingNotice' })).toBe(open);
+    expect(reduce(dismissed, { type: 'keepRoomsOpen' }).ui.closingNoticeDismissed).toBe(false);
+    expect(reduce(dismissed, { type: 'bringEveryoneBack' }).ui.closingNoticeDismissed).toBe(false);
+    expect(run(dismissed, { type: 'keepRoomsOpen' }, { type: 'closeRooms' }).ui.closingNoticeDismissed).toBe(false);
     const setup = createRoom();
     expect(reduce(setup, { type: 'closeRooms' })).toBe(setup);
   });
@@ -452,11 +556,50 @@ describe('breakouts live', () => {
     const [first] = selectOpenHelp(s);
     const acknowledged = reduce(s, { type: 'acknowledgeHelp', id: first.id });
     expect(selectOpenHelp(acknowledged).map((h) => h.roomIndex)).toEqual([0]);
-    expect(acknowledged.breakouts.helpQueue.find((h) => h.id === first.id)?.acknowledgedAt).toBe(FIXTURE_NOW + MINUTE);
+    expect(acknowledged.breakouts.helpQueue.find((h) => h.id === first.id)?.acknowledgedAt).toBe(
+      FIXTURE_NOW + MINUTE,
+    );
     const cleared = reduce(acknowledged, { type: 'clearHelp', id: first.id });
     expect(cleared.breakouts.helpQueue).toHaveLength(1);
     const setup = createRoom();
     expect(reduce(setup, { type: 'requestHelp', roomIndex: 1 })).toBe(setup);
+  });
+
+  it('joins a room from a preview and leaves it; closing the rooms brings the teacher back (B8)', () => {
+    const s = run(live(), { type: 'peekRoom', roomIndex: 1 }, { type: 'setListening', listening: true });
+    const joined = reduce(s, { type: 'joinRoom', roomIndex: 1 });
+    expect(joined.breakouts).toMatchObject({ joined: 1, peek: null, listening: false });
+    expect(selectJoinedRoom(joined)?.name).toBe('Room 2');
+    expect(reduce(s, { type: 'joinRoom', roomIndex: 7 })).toBe(s);
+    expect(reduce(joined, { type: 'leaveRoom' }).breakouts.joined).toBeNull();
+    expect(reduce(s, { type: 'leaveRoom' })).toBe(s);
+    expect(reduce(joined, { type: 'bringEveryoneBack' }).breakouts.joined).toBeNull();
+    const setup = createRoom();
+    expect(reduce(setup, { type: 'joinRoom', roomIndex: 0 })).toBe(setup);
+  });
+
+  it('keeps room chat as data, per room or to every room (B8), and clears it for new rooms', () => {
+    const s = run(
+      live(),
+      { type: 'sendRoomMessage', roomIndex: 1, from: 'bruno', text: ' Stuck on question 2 ' },
+      { type: 'sendRoomMessage', roomIndex: null, from: 'helena', text: '5 minutes left' },
+      { type: 'sendRoomMessage', roomIndex: 0, from: 'ana', text: 'Done here' },
+    );
+    expect(s.breakouts.messages.map((m) => [m.id, m.roomIndex, m.text])).toEqual([
+      ['rm-1', 1, 'Stuck on question 2'],
+      ['rm-2', null, '5 minutes left'],
+      ['rm-3', 0, 'Done here'],
+    ]);
+    expect(selectRoomMessages(1)(s).map((m) => m.id)).toEqual(['rm-1', 'rm-2']);
+    expect(selectRoomMessages(2)(s).map((m) => m.id)).toEqual(['rm-2']);
+    expect(reduce(s, { type: 'sendRoomMessage', roomIndex: 1, from: 'bruno', text: '   ' })).toBe(s);
+    expect(reduce(s, { type: 'sendRoomMessage', roomIndex: 9, from: 'bruno', text: 'x' })).toBe(s);
+    expect(reduce(s, { type: 'sendRoomMessage', roomIndex: 1, from: 'nobody', text: 'x' })).toBe(s);
+    const setup = createRoom();
+    expect(reduce(setup, { type: 'sendRoomMessage', roomIndex: 0, from: 'bruno', text: 'x' })).toBe(setup);
+    const fresh = run(s, { type: 'bringEveryoneBack' }, { type: 'setUpNewRooms' }, { type: 'openRooms' });
+    expect(fresh.breakouts.messages).toEqual([]);
+    expect(fresh.breakouts.messageSeq).toBe(3);
   });
 
   it('numbers help requests from the state and refuses a room that does not exist (S3)', () => {
@@ -467,7 +610,9 @@ describe('breakouts live', () => {
     const asked = run(s, { type: 'requestHelp', roomIndex: 0 }, { type: 'requestHelp', roomIndex: 3 });
     expect(asked.breakouts.helpQueue.map((h) => h.id)).toEqual(['help-1', 'help-2']);
     expect(asked.breakouts.helpSeq).toBe(2);
-    const solo = live(reduce(createRoom({ participants: 'four' }), { type: 'setBreakoutMode', mode: 'solo' }));
+    const solo = live(
+      reduce(createRoom({ participants: 'four' }), { type: 'setBreakoutMode', mode: 'solo' }),
+    );
     expect(reduce(solo, { type: 'requestHelp', roomIndex: 2 }).breakouts.helpQueue).toHaveLength(1);
     expect(reduce(solo, { type: 'requestHelp', roomIndex: 3 })).toBe(solo);
   });
@@ -478,9 +623,15 @@ describe('breakouts live', () => {
   });
 
   it('records what a room is doing', () => {
-    const s = reduce(live(), { type: 'setRoomActivity', roomIndex: 1, activity: { kind: 'drawing', since: FIXTURE_NOW } });
+    const s = reduce(live(), {
+      type: 'setRoomActivity',
+      roomIndex: 1,
+      activity: { kind: 'drawing', since: FIXTURE_NOW },
+    });
     expect(selectRooms(s)[1].activity?.kind).toBe('drawing');
-    expect(reduce(s, { type: 'setRoomActivity', roomIndex: 1, activity: null }).breakouts.activity).not.toHaveProperty('1');
+    expect(
+      reduce(s, { type: 'setRoomActivity', roomIndex: 1, activity: null }).breakouts.activity,
+    ).not.toHaveProperty('1');
   });
 });
 
@@ -495,6 +646,114 @@ describe('mobile', () => {
     const people = reduce(s, { type: 'setSheet', sheet: 'people' });
     expect(people.ui).toMatchObject({ sheet: 'people', sheetStudent: null, panel: 'people' });
     expect(reduce(s, { type: 'setAnnotating', annotating: true }).ui.annotating).toBe(true);
-    expect(reduce(s, { type: 'setReacting', reacting: true }).ui).toMatchObject({ reacting: true, sheet: 'react' });
+    expect(reduce(s, { type: 'setReacting', reacting: true }).ui).toMatchObject({
+      reacting: true,
+      sheet: 'react',
+    });
+  });
+});
+
+describe('private chat (owner decision 2026-10-30)', () => {
+  /** The same room seen by a student: Anton is the local person, Helena a moderator. */
+  const asStudent = (state = createRoom()): RoomState => ({
+    ...state,
+    participants: state.participants.map((p) => ({ ...p, isSelf: p.id === 'anton' })),
+  });
+  const off = (state: RoomState) => reduce(state, { type: 'setPrivateChat', on: false });
+
+  it('is on by default and the switch flips it without touching anything else', () => {
+    const s = createRoom();
+    expect(s.session.privateChat).toBe(true);
+    expect(reduce(s, { type: 'setPrivateChat', on: true })).toBe(s);
+    const s2 = off(s);
+    expect(s2.session.privateChat).toBe(false);
+    expect(s2.chat).toBe(s.chat);
+    expect(reduce(s2, { type: 'setPrivateChat', on: true }).session.privateChat).toBe(true);
+  });
+
+  it('off: a student can neither open nor write a private thread to another student', () => {
+    const s = off(asStudent());
+    expect(canMessagePrivately(s, 'anton', 'bruno')).toBe(false);
+    expect(reduce(s, { type: 'openDm', participantId: 'bruno' })).toBe(s);
+    expect(reduce(s, { type: 'sendMessage', from: 'anton', text: 'psst', to: 'bruno' })).toBe(s);
+    expect(selectCanMessage('bruno')(s)).toBe(false);
+    expect(selectCanMessage('helena')(s)).toBe(true);
+  });
+
+  it('off: teacher-to-student messages keep working, and the student can reply', () => {
+    const s = off(createRoom());
+    expect(canMessagePrivately(s, 'helena', 'anton')).toBe(true);
+    const opened = reduce(s, { type: 'openDm', participantId: 'anton' });
+    expect(opened.ui.dm).toBe('anton');
+    const sent = reduce(opened, { type: 'sendMessage', from: 'helena', text: 'All good?', to: 'anton' });
+    expect(sent.chat.direct.find((t) => t.with === 'anton')?.messages.map((m) => m.text)).toEqual([
+      'All good?',
+    ]);
+    const reply = reduce(sent, { type: 'sendMessage', from: 'anton', text: 'Yes', to: 'helena' });
+    expect(reply.chat.direct.find((t) => t.with === 'anton')?.messages).toHaveLength(2);
+    expect(selectCanMessage('anton')(s)).toBe(true);
+  });
+
+  it('on: students can message each other', () => {
+    const s = asStudent();
+    expect(canMessagePrivately(s, 'anton', 'bruno')).toBe(true);
+    expect(reduce(s, { type: 'openDm', participantId: 'bruno' }).ui.dm).toBe('bruno');
+    expect(selectCanMessage('bruno')(s)).toBe(true);
+    expect(selectCanMessage('anton')(s)).toBe(false);
+  });
+});
+
+describe('reactions (D5)', () => {
+  it('records a reaction at the room time and shows it on the sender for its lifetime', () => {
+    const s = reduce(createRoom(), { type: 'sendReaction', from: 'anton', kind: 'clap' });
+    expect(s.reactions.items).toEqual([{ id: 'r-1', from: 'anton', kind: 'clap', sentAt: FIXTURE_NOW }]);
+    expect(selectReactions(s)).toEqual({ anton: 'clap' });
+    const later = reduce(s, { type: 'sendReaction', from: 'anton', kind: 'love' });
+    expect(selectReactions(later)).toEqual({ anton: 'love' });
+    const gone = reduce(later, { type: 'tick', now: FIXTURE_NOW + REACTION_LIFETIME });
+    expect(selectReactions(gone)).toEqual({});
+    expect(reduce(s, { type: 'sendReaction', from: 'nobody', kind: 'clap' })).toBe(s);
+  });
+
+  it('drops a removed person’s reactions', () => {
+    const s = run(
+      createRoom(),
+      { type: 'sendReaction', from: 'anton', kind: 'clap' },
+      { type: 'removeParticipant', participantId: 'anton' },
+    );
+    expect(s.reactions.items).toEqual([]);
+  });
+});
+
+describe('decks and the whiteboard', () => {
+  it('presents another deck from its first slide, and ignores a bad or current index', () => {
+    const s = run(createRoom(), { type: 'setOverview', open: true });
+    const next = reduce(s, { type: 'selectDeck', index: 1 });
+    expect(next.presentation).toMatchObject({ deckIndex: 1, slideIndex: 0, overviewOpen: false });
+    expect(reduce(s, { type: 'selectDeck', index: 0 })).toBe(s);
+    expect(reduce(s, { type: 'selectDeck', index: 9 })).toBe(s);
+    expect(reduce(s, { type: 'selectDeck', index: -1 })).toBe(s);
+  });
+
+  it('adds a deck with placeholder slides and presents it', () => {
+    const s = reduce(createRoom(), { type: 'addDeck', file: 'lesson-2.pdf', slideCount: 3 });
+    expect(s.presentation.decks).toHaveLength(4);
+    expect(s.presentation.decks[3]).toEqual({
+      file: 'lesson-2.pdf',
+      slides: ['Slide 1', 'Slide 2', 'Slide 3'],
+    });
+    expect(s.presentation).toMatchObject({ deckIndex: 3, slideIndex: 0 });
+    expect(reduce(s, { type: 'addDeck', file: '  ' })).toBe(s);
+    expect(reduce(s, { type: 'addDeck', file: 'one.pdf' }).presentation.decks.at(-1)?.slides).toEqual([
+      'Slide 1',
+    ]);
+  });
+
+  it('switches the tool and the ink, returning the same state for no change', () => {
+    const s = createRoom();
+    expect(reduce(s, { type: 'setTool', tool: 'pen' })).toBe(s);
+    expect(reduce(s, { type: 'setTool', tool: 'eraser' }).presentation.tool).toBe('eraser');
+    expect(reduce(s, { type: 'setInkColor', color: 'amber' })).toBe(s);
+    expect(reduce(s, { type: 'setInkColor', color: 'blue' }).presentation.color).toBe('blue');
   });
 });

@@ -6,6 +6,9 @@
  */
 import { buildRooms, helpFirst, isUneven, sortedHelpQueue, type Room } from './breakouts';
 import { firstName, firstNameWithInitial } from './names';
+import { canStartPoll, pollResults } from './poll';
+import { REACTION_LIFETIME } from './reactions';
+import { canMessagePrivately } from './reducer';
 import { formatAgo, formatElapsed, MINUTE, SECOND } from './time';
 import type {
   ChatMessage,
@@ -14,6 +17,8 @@ import type {
   Participant,
   ParticipantId,
   PeopleFilter,
+  ReactionKind,
+  RoomMessage,
   RoomState,
 } from './types';
 
@@ -169,12 +174,36 @@ export const selectDirectList = memo((s): DirectSummary[] => {
         preview: last ? `${last.from === me ? 'You: ' : ''}${last.text}` : '',
       };
     })
-    .sort((a, b) => (b.last?.sentAt ?? Number.POSITIVE_INFINITY) - (a.last?.sentAt ?? Number.POSITIVE_INFINITY));
+    .sort(
+      (a, b) => (b.last?.sentAt ?? Number.POSITIVE_INFINITY) - (a.last?.sentAt ?? Number.POSITIVE_INFINITY),
+    );
 });
 
 export const selectOpenThread = memo((s): DirectThread | null =>
   s.ui.dm === null ? null : (s.chat.direct.find((t) => t.with === s.ui.dm) ?? null),
 );
+
+/**
+ * Whether the local person may start a private conversation with `id`
+ * (owner decision 2026-10-30): always while private chat is on; with it
+ * off, only when one of the two is a moderator. The People row hides
+ * "Message privately" when this is false, so a student sees none.
+ */
+export const selectCanMessage = (id: ParticipantId) => (s: RoomState) => {
+  const me = selectSelf(s);
+  return me !== null && me.id !== id && canMessagePrivately(s, me.id, id);
+};
+
+// ---------- reactions ----------
+
+/** Each person's latest reaction that is still alive at the room time (`REACTION_LIFETIME`). */
+export const selectReactions = memo((s): Record<ParticipantId, ReactionKind> => {
+  const out: Record<ParticipantId, ReactionKind> = {};
+  for (const r of s.reactions.items) {
+    if (s.clock.now - r.sentAt < REACTION_LIFETIME) out[r.from] = r.kind;
+  }
+  return out;
+});
 
 // ---------- alerts ----------
 
@@ -203,7 +232,10 @@ export const selectAlerts = memo((s): Alert[] => {
         kind: 'help',
         count: open.length,
         request: open[0],
-        text: open.length === 1 ? `Room ${open[0].roomIndex + 1} asked for help` : `${open.length} rooms asked for help`,
+        text:
+          open.length === 1
+            ? `Room ${open[0].roomIndex + 1} asked for help`
+            : `${open.length} rooms asked for help`,
       });
     }
   }
@@ -218,17 +250,30 @@ export const selectAlerts = memo((s): Alert[] => {
   }
   const hands = selectRaisedHands(s).filter((p) => !p.isSelf);
   if (hands.length > 0) {
-    alerts.push({ id: 'hands', kind: 'hands', count: hands.length, text: `${hands.length} raised`, longest: hands[0] });
+    alerts.push({
+      id: 'hands',
+      kind: 'hands',
+      count: hands.length,
+      text: `${hands.length} raised`,
+      longest: hands[0],
+    });
   }
   const names = selectDisplayNames(s);
   for (const a of s.alerts) {
     const from = s.participants.find((p) => p.id === a.from) ?? null;
     const message = s.chat.everyone.find((m) => m.id === a.messageId);
     if (message && message.read) continue;
-    alerts.push({ id: a.id, kind: 'question', from, messageId: a.messageId, text: `${from ? names[from.id] : 'Someone'} asked` });
+    alerts.push({
+      id: a.id,
+      kind: 'question',
+      from,
+      messageId: a.messageId,
+      text: `${from ? names[from.id] : 'Someone'} asked`,
+    });
   }
   const low = selectLowEngagement(s);
-  if (low.length > 0) alerts.push({ id: 'insight', kind: 'insight', count: low.length, text: `${low.length} low engagement` });
+  if (low.length > 0)
+    alerts.push({ id: 'insight', kind: 'insight', count: low.length, text: `${low.length} low engagement` });
   return alerts;
 });
 
@@ -245,13 +290,18 @@ export const selectSlideLabel = (s: RoomState) =>
 export const selectPollAnswered = (s: RoomState) => s.poll.votes.reduce((a, b) => a + b, 0);
 /** Everyone who can answer: the students. */
 export const selectPollEligible = (s: RoomState) => s.participants.filter((p) => p.role === 'student').length;
+/** One row per answer with its count and share (`pollResults`), for the panel and the stage card. */
+export const selectPollResults = memo((s) => pollResults(s.poll));
+/** Whether "Ask the class" can go ahead: a question and at least two answers, none blank. */
+export const selectCanStartPoll = (s: RoomState) => canStartPoll(s.poll);
 
 // ---------- timer ----------
 
 /** Seconds left on the class timer at the current room time. */
 export const selectTimerLeft = (s: RoomState): number => {
   const { timer, clock } = s;
-  if (timer.phase === 'running' && timer.endsAt !== null) return Math.max(0, (timer.endsAt - clock.now) / SECOND);
+  if (timer.phase === 'running' && timer.endsAt !== null)
+    return Math.max(0, (timer.endsAt - clock.now) / SECOND);
   return timer.leftSec;
 };
 
@@ -267,6 +317,46 @@ export const selectPeekedRoom = (s: RoomState): Room | null =>
 export const selectRoomOnStage = (s: RoomState): Room | null =>
   s.breakouts.onStage === null ? null : (selectRooms(s)[s.breakouts.onStage] ?? null);
 export const selectMovingStudent = (s: RoomState) => selectParticipant(s.breakouts.moving)(s);
+
+/** The room the teacher joined from a preview (B8), or `null` in the main room. */
+export const selectJoinedRoom = (s: RoomState): Room | null =>
+  s.breakouts.joined === null ? null : (selectRooms(s)[s.breakouts.joined] ?? null);
+
+/**
+ * A room's chat (B8): its own messages plus what the teacher sent to every
+ * room, oldest first. A factory, so memoize the selector per room with
+ * `useMemo` as the People list does with `selectPeople`.
+ */
+export const selectRoomMessages = (roomIndex: number) =>
+  memo((s): RoomMessage[] =>
+    s.breakouts.messages.filter((m) => m.roomIndex === roomIndex || m.roomIndex === null),
+  );
+
+export interface TalkTime {
+  participant: Participant;
+  /** Seconds talked in the room. */
+  seconds: number;
+  /** This person's share of the room's talking, 0–1, for the bar. */
+  share: number;
+}
+
+/** "Talk time" in the preview: each member's seconds and share of the room's total, in member order. */
+export function roomTalkTime(room: Room, talkTime: Record<ParticipantId, number>): TalkTime[] {
+  const seconds = room.members.map((m) => talkTime[m.id] ?? 0);
+  const total = seconds.reduce((a, b) => a + b, 0);
+  return room.members.map((participant, i) => ({
+    participant,
+    seconds: seconds[i],
+    share: total === 0 ? 0 : seconds[i] / total,
+  }));
+}
+
+/** "9 min", "40 s", "Quiet so far". */
+export function formatTalkTime(seconds: number): string {
+  if (seconds <= 0) return 'Quiet so far';
+  if (seconds < 60) return `${Math.round(seconds)} s`;
+  return `${Math.round(seconds / 60)} min`;
+}
 
 /** Seconds left in the rooms, or `null` when they are not open. */
 export const selectBreakoutTimeLeft = (s: RoomState): number | null => {
@@ -294,7 +384,12 @@ export function roomStatus(
   names: Record<ParticipantId, string>,
 ): string {
   if (phase === 'back') {
-    const label = { board: 'Shared whiteboard', doc: 'Shared notes', quiz: 'Practice quiz', slide: 'Your slides' }[room.work];
+    const label = {
+      board: 'Shared whiteboard',
+      doc: 'Shared notes',
+      quiz: 'Practice quiz',
+      slide: 'Your slides',
+    }[room.work];
     return `${label} saved`;
   }
   if (room.members.length === 0) return 'Empty';
@@ -330,7 +425,12 @@ export const selectPluginSubtitles = memo((s): Record<string, string> => {
         : s.breakouts.phase === 'back'
           ? `${rooms} rooms closed`
           : `${rooms} rooms set up`,
-    poll: s.poll.phase === 'live' ? `${answered} answered` : s.poll.phase === 'off' ? 'Not started' : '1 draft ready',
+    poll:
+      s.poll.phase === 'live'
+        ? `${answered} answered`
+        : s.poll.phase === 'off'
+          ? 'Not started'
+          : '1 draft ready',
     timer: s.timer.phase === 'running' ? 'Running' : 'Not running',
   };
 });

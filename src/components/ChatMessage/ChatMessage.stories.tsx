@@ -38,7 +38,14 @@ export const Bubbles: Story = {
       <ChatMessage {...args} variant="bubble" name="Bruno" participantId="bruno" time="8:51">
         Do you have the link to the notes?
       </ChatMessage>
-      <ChatMessage {...args} variant="bubble" isSelf name="Prof. Helena Costa" participantId="helena" time="8:52">
+      <ChatMessage
+        {...args}
+        variant="bubble"
+        isSelf
+        name="Prof. Helena Costa"
+        participantId="helena"
+        time="8:52"
+      >
         It’s in the Notes panel, right next to Chat
       </ChatMessage>
     </>
@@ -60,7 +67,13 @@ function Everyone({ people, chat }: { people: ParticipantFixture; chat?: 'defaul
   return (
     <>
       {state.chat.everyone.map((m) => (
-        <ChatMessage key={m.id} name={nameOf(m.from)} participantId={m.from} time={formatTimeOfDay(m.sentAt)} isSelf={m.from === me}>
+        <ChatMessage
+          key={m.id}
+          name={nameOf(m.from)}
+          participantId={m.from}
+          time={formatTimeOfDay(m.sentAt)}
+          isSelf={m.from === me}
+        >
           {m.text}
         </ChatMessage>
       ))}
@@ -87,7 +100,8 @@ export const LongBubble: Story = {
   args: {
     variant: 'bubble',
     isSelf: true,
-    children: 'A long private reply that needs more than one line to show that bubbles wrap and keep their side.',
+    children:
+      'A long private reply that needs more than one line to show that bubbles wrap and keep their side.',
   },
 };
 
@@ -96,7 +110,14 @@ export const Stage: Story = {
   render: (args) => (
     <>
       <ChatMessage {...args} />
-      <ChatMessage {...args} variant="bubble" isSelf name="Prof. Helena Costa" participantId="helena" time="9:04">
+      <ChatMessage
+        {...args}
+        variant="bubble"
+        isSelf
+        name="Prof. Helena Costa"
+        participantId="helena"
+        time="9:04"
+      >
         Yes! Hold that thought.
       </ChatMessage>
     </>

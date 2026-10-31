@@ -14,6 +14,7 @@ import {
   roundRobin,
   seededOrder,
 } from './breakouts';
+import { canStartPoll, MAX_POLL_OPTIONS, MIN_POLL_OPTIONS, POLL_TYPES } from './poll';
 import { MINUTE, SECOND } from './time';
 import type {
   AudioState,
@@ -23,6 +24,7 @@ import type {
   BreakoutView,
   ChatMessage,
   ChatScope,
+  InkColor,
   MediaType,
   MobileSheet,
   Orientation,
@@ -30,11 +32,15 @@ import type {
   Participant,
   ParticipantId,
   PeopleFilter,
+  PollSetting,
+  PollType,
   PresentationState,
+  ReactionKind,
   RoomActivity,
   RoomState,
   ScreenKind,
   ShareKind,
+  StageCorner,
 } from './types';
 
 export type RoomAction =
@@ -62,6 +68,10 @@ export type RoomAction =
   | { type: 'sendMessage'; from: ParticipantId; text: string; to?: ParticipantId }
   | { type: 'openDm'; participantId: ParticipantId }
   | { type: 'closeDm' }
+  /** The "Private chat" switch in Room settings (owner decision 2026-10-30). */
+  | { type: 'setPrivateChat'; on: boolean }
+  /** A reaction from the tray (D5); it shows on the sender's tile for `REACTION_LIFETIME`. */
+  | { type: 'sendReaction'; from: ParticipantId; kind: ReactionKind }
   // panel and scope
   | { type: 'setPanel'; panel: Panel }
   | { type: 'togglePanel'; panel: Exclude<Panel, 'none'> }
@@ -82,8 +92,19 @@ export type RoomAction =
   | { type: 'setShare'; share: ShareKind }
   | { type: 'stopShare' }
   | { type: 'setTool'; tool: PresentationState['tool'] }
+  | { type: 'setInkColor'; color: InkColor }
+  /** Present another deck from the Share media picker: its first slide goes on stage. */
+  | { type: 'selectDeck'; index: number }
+  /** "Add slides": a new deck with placeholder slides, presented at once. */
+  | { type: 'addDeck'; file: string; slideCount?: number }
   // poll
   | { type: 'setupPoll' }
+  | { type: 'setPollQuestion'; question: string }
+  | { type: 'setPollType'; pollType: PollType }
+  | { type: 'setPollOption'; index: number; label: string }
+  | { type: 'addPollOption' }
+  | { type: 'removePollOption'; index: number }
+  | { type: 'setPollSetting'; setting: PollSetting; value: boolean }
   | { type: 'startPoll' }
   | { type: 'answerPoll'; option: number }
   | { type: 'showPollResults'; shown: boolean }
@@ -97,6 +118,7 @@ export type RoomAction =
   | { type: 'resetTimer' }
   | { type: 'addTimerMinute' }
   | { type: 'setTimerMinimized'; minimized: boolean }
+  | { type: 'setTimerCorner'; corner: StageCorner }
   | { type: 'removeTimer' }
   // breakouts
   | { type: 'setBreakoutsOpen'; open: boolean }
@@ -116,6 +138,8 @@ export type RoomAction =
   | { type: 'setBreakoutView'; view: BreakoutView }
   | { type: 'closeRooms' }
   | { type: 'keepRoomsOpen' }
+  /** Dismiss the "Closing rooms" dialog (Escape or its close button); the countdown keeps running in the panel. */
+  | { type: 'dismissClosingNotice' }
   | { type: 'bringEveryoneBack' }
   | { type: 'showRoomOnStage'; roomIndex: number | null }
   | { type: 'setUpNewRooms' }
@@ -124,6 +148,11 @@ export type RoomAction =
   | { type: 'clearHelp'; id: string }
   | { type: 'setListening'; listening: boolean }
   | { type: 'setRoomActivity'; roomIndex: number; activity: RoomActivity | null }
+  /** "Join Room N" from a preview (B8): the teacher moves into the room until they leave it or the rooms close. */
+  | { type: 'joinRoom'; roomIndex: number }
+  | { type: 'leaveRoom' }
+  /** A room chat message (B8); `roomIndex: null` sends it to every room. */
+  | { type: 'sendRoomMessage'; roomIndex: number | null; from: ParticipantId; text: string }
   // mobile
   | { type: 'setOrientation'; orientation: Orientation }
   | { type: 'setSheet'; sheet: MobileSheet; student?: ParticipantId | null }
@@ -151,7 +180,20 @@ export function selfId(state: RoomState): ParticipantId | null {
   return state.participants.find((p) => p.isSelf)?.id ?? null;
 }
 
-/** Ids come from a counter in the state (`chat.seq`, `breakouts.helpSeq`); fixtures use their own prefixes. */
+/**
+ * Whether `from` may write privately to `to`: always while private chat is
+ * on; with it off, only when one of them is a moderator (owner decision
+ * 2026-10-30: teacher-to-student messages keep working, students cannot
+ * message each other).
+ */
+export function canMessagePrivately(state: RoomState, from: ParticipantId, to: ParticipantId): boolean {
+  if (state.session.privateChat) return true;
+  const isModerator = (id: ParticipantId) =>
+    state.participants.find((p) => p.id === id)?.isModerator ?? false;
+  return isModerator(from) || isModerator(to);
+}
+
+/** Ids come from a counter in the state (`chat.seq`, `breakouts.helpSeq`, `reactions.seq`); fixtures use their own prefixes. */
 function nextId(prefix: string, seq: number): string {
   return `${prefix}-${seq}`;
 }
@@ -174,7 +216,9 @@ function readVisibleChat(state: RoomState): RoomState {
     const messages = markRead(t.messages);
     return messages === t.messages ? t : { ...t, messages };
   });
-  return direct.every((t, i) => t === state.chat.direct[i]) ? state : { ...state, chat: { ...state.chat, direct } };
+  return direct.every((t, i) => t === state.chat.direct[i])
+    ? state
+    : { ...state, chat: { ...state.chat, direct } };
 }
 
 function withUi(state: RoomState, ui: Partial<RoomState['ui']>): RoomState {
@@ -198,7 +242,8 @@ function reassign(state: RoomState, seed: number): RoomState {
 
 function timerLeft(state: RoomState): number {
   const { timer, clock } = state;
-  if (timer.phase === 'running' && timer.endsAt !== null) return Math.max(0, (timer.endsAt - clock.now) / SECOND);
+  if (timer.phase === 'running' && timer.endsAt !== null)
+    return Math.max(0, (timer.endsAt - clock.now) / SECOND);
   return timer.leftSec;
 }
 
@@ -209,7 +254,11 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       if (action.now <= state.clock.now) return state;
       let next: RoomState = { ...state, clock: { now: action.now } };
       const { breakouts, timer } = next;
-      if (breakouts.phase === 'live' && breakouts.closingEndsAt !== null && action.now >= breakouts.closingEndsAt) {
+      if (
+        breakouts.phase === 'live' &&
+        breakouts.closingEndsAt !== null &&
+        action.now >= breakouts.closingEndsAt
+      ) {
         next = roomReducer(next, { type: 'bringEveryoneBack' });
       }
       if (
@@ -242,7 +291,9 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       );
     case 'joinAudio':
       return updateParticipant(state, action.participantId, (p) =>
-        p.audio === 'notJoined' || p.audio === 'listening' ? { ...p, audio: 'muted', unmuteRequested: false } : p,
+        p.audio === 'notJoined' || p.audio === 'listening'
+          ? { ...p, audio: 'muted', unmuteRequested: false }
+          : p,
       );
     case 'mute':
       return updateParticipant(state, action.participantId, (p) =>
@@ -265,7 +316,9 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       return {
         ...state,
         participants: state.participants.map((p) =>
-          p.isPresenter === (p.id === action.participantId) ? p : { ...p, isPresenter: p.id === action.participantId },
+          p.isPresenter === (p.id === action.participantId)
+            ? p
+            : { ...p, isPresenter: p.id === action.participantId },
         ),
       };
     }
@@ -282,8 +335,11 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       let participants = state.participants.filter((p) => p.id !== id);
       if (removed.isPresenter) {
         // The presenter role goes back to the teacher (you first, then any teacher).
-        const teacher = participants.find((p) => p.role === 'teacher' && p.isSelf) ?? participants.find((p) => p.role === 'teacher');
-        if (teacher) participants = participants.map((p) => (p === teacher ? { ...p, isPresenter: true } : p));
+        const teacher =
+          participants.find((p) => p.role === 'teacher' && p.isSelf) ??
+          participants.find((p) => p.role === 'teacher');
+        if (teacher)
+          participants = participants.map((p) => (p === teacher ? { ...p, isPresenter: true } : p));
       }
       const ui = { ...state.ui };
       if (ui.peopleMenu === id) ui.peopleMenu = null;
@@ -295,7 +351,9 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       const chat = state.chat.direct.some((t) => t.with === id)
         ? { ...state.chat, direct: state.chat.direct.filter((t) => t.with !== id) }
         : state.chat;
-      const alerts = state.alerts.some((a) => a.from === id) ? state.alerts.filter((a) => a.from !== id) : state.alerts;
+      const alerts = state.alerts.some((a) => a.from === id)
+        ? state.alerts.filter((a) => a.from !== id)
+        : state.alerts;
       const { moves, assignments, helpQueue } = state.breakouts;
       const breakouts = { ...state.breakouts };
       if (id in moves) {
@@ -307,16 +365,26 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
         delete breakouts.assignments[id];
       }
       if (breakouts.moving === id) breakouts.moving = null;
+      if (id in breakouts.talkTime) {
+        breakouts.talkTime = { ...breakouts.talkTime };
+        delete breakouts.talkTime[id];
+      }
       if (helpQueue.some((h) => h.from === id)) {
         breakouts.helpQueue = helpQueue.map((h) => (h.from === id ? { ...h, from: null } : h));
       }
-      return { ...state, participants, chat, alerts, ui, breakouts };
+      const reactions = state.reactions.items.some((r) => r.from === id)
+        ? { ...state.reactions, items: state.reactions.items.filter((r) => r.from !== id) }
+        : state.reactions;
+      return { ...state, participants, chat, alerts, ui, breakouts, reactions };
     }
 
     // ---------- chat ----------
     case 'sendMessage': {
       const text = action.text.trim();
       if (text.length === 0) return state;
+      // With private chat off, a private message needs a moderator at one end:
+      // a teacher can still write to a student and the student can reply (owner decision 2026-10-30).
+      if (action.to !== undefined && !canMessagePrivately(state, action.from, action.to)) return state;
       const me = selfId(state);
       const seq = state.chat.seq + 1;
       const message: ChatMessage = {
@@ -327,7 +395,10 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
         read: action.from === me,
       };
       if (action.to === undefined) {
-        return readVisibleChat({ ...state, chat: { ...state.chat, everyone: [...state.chat.everyone, message], seq } });
+        return readVisibleChat({
+          ...state,
+          chat: { ...state.chat, everyone: [...state.chat.everyone, message], seq },
+        });
       }
       const other = action.from === me ? action.to : action.from;
       const exists = state.chat.direct.some((t) => t.with === other);
@@ -338,8 +409,12 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     }
     case 'openDm': {
       if (!state.participants.some((p) => p.id === action.participantId && !p.isSelf)) return state;
+      const me = selfId(state);
+      if (me !== null && !canMessagePrivately(state, me, action.participantId)) return state;
       const exists = state.chat.direct.some((t) => t.with === action.participantId);
-      const direct = exists ? state.chat.direct : [...state.chat.direct, { with: action.participantId, messages: [] }];
+      const direct = exists
+        ? state.chat.direct
+        : [...state.chat.direct, { with: action.participantId, messages: [] }];
       return readVisibleChat(
         withUi(
           { ...state, chat: { ...state.chat, direct } },
@@ -349,12 +424,30 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     }
     case 'closeDm':
       return state.ui.dm === null ? state : withUi(state, { dm: null });
+    case 'setPrivateChat':
+      return state.session.privateChat === action.on
+        ? state
+        : { ...state, session: { ...state.session, privateChat: action.on } };
+    case 'sendReaction': {
+      if (!state.participants.some((p) => p.id === action.from)) return state;
+      const seq = state.reactions.seq + 1;
+      const reaction = {
+        id: nextId('r', seq),
+        from: action.from,
+        kind: action.kind,
+        sentAt: state.clock.now,
+      };
+      return { ...state, reactions: { items: [...state.reactions.items, reaction], seq } };
+    }
 
     // ---------- panel and scope ----------
     case 'setPanel':
       return readVisibleChat(withUi(state, { panel: action.panel, peopleMenu: null }));
     case 'togglePanel':
-      return roomReducer(state, { type: 'setPanel', panel: state.ui.panel === action.panel ? 'none' : action.panel });
+      return roomReducer(state, {
+        type: 'setPanel',
+        panel: state.ui.panel === action.panel ? 'none' : action.panel,
+      });
     case 'setScope':
       return readVisibleChat(withUi(state, { scope: action.scope, dm: null }));
     case 'setPeopleFilter':
@@ -409,24 +502,133 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
         { mediaOpen: false },
       );
     case 'setShare': {
-      const screenShared = action.share === 'none' ? false : state.presentation.screenShared || action.share === 'screen';
+      const screenShared =
+        action.share === 'none' ? false : state.presentation.screenShared || action.share === 'screen';
       return { ...state, presentation: { ...state.presentation, share: action.share, screenShared } };
     }
     case 'stopShare':
       return { ...state, presentation: { ...state.presentation, share: 'none', screenShared: false } };
     case 'setTool':
-      return { ...state, presentation: { ...state.presentation, tool: action.tool } };
+      return state.presentation.tool === action.tool
+        ? state
+        : { ...state, presentation: { ...state.presentation, tool: action.tool } };
+    case 'setInkColor':
+      return state.presentation.color === action.color
+        ? state
+        : { ...state, presentation: { ...state.presentation, color: action.color } };
+    case 'selectDeck': {
+      const { decks, deckIndex } = state.presentation;
+      if (
+        !Number.isInteger(action.index) ||
+        action.index < 0 ||
+        action.index >= decks.length ||
+        action.index === deckIndex
+      ) {
+        return state;
+      }
+      return {
+        ...state,
+        presentation: { ...state.presentation, deckIndex: action.index, slideIndex: 0, overviewOpen: false },
+      };
+    }
+    case 'addDeck': {
+      const file = action.file.trim();
+      if (file.length === 0) return state;
+      const count = Math.max(1, Math.trunc(action.slideCount ?? 1));
+      const deck = { file, slides: Array.from({ length: count }, (_, i) => `Slide ${i + 1}`) };
+      const decks = [...state.presentation.decks, deck];
+      return {
+        ...state,
+        presentation: {
+          ...state.presentation,
+          decks,
+          deckIndex: decks.length - 1,
+          slideIndex: 0,
+          overviewOpen: false,
+        },
+      };
+    }
 
     // ---------- poll ----------
     case 'setupPoll':
       return withUi(
-        { ...state, poll: { ...state.poll, phase: 'setup', shown: false, votes: state.poll.options.map(() => 0) } },
+        {
+          ...state,
+          poll: { ...state.poll, phase: 'setup', shown: false, votes: state.poll.options.map(() => 0) },
+        },
         { panel: 'poll' },
       );
+    // The builder's edits apply while the poll is being set up, never to a live one.
+    case 'setPollQuestion':
+      return state.poll.phase !== 'setup' || state.poll.question === action.question
+        ? state
+        : { ...state, poll: { ...state.poll, question: action.question } };
+    case 'setPollType': {
+      if (state.poll.phase !== 'setup' || state.poll.type === action.pollType) return state;
+      // Multiple choice keeps the teacher's own answers; the fixed types reset to theirs.
+      const options =
+        action.pollType === 'choice' && state.poll.type !== 'choice'
+          ? POLL_TYPES.choice.options
+          : POLL_TYPES[action.pollType].options;
+      return {
+        ...state,
+        poll: { ...state.poll, type: action.pollType, options, votes: options.map(() => 0) },
+      };
+    }
+    case 'setPollOption': {
+      const { options } = state.poll;
+      if (
+        state.poll.phase !== 'setup' ||
+        !POLL_TYPES[state.poll.type].editable ||
+        action.index < 0 ||
+        action.index >= options.length ||
+        options[action.index] === action.label
+      )
+        return state;
+      return {
+        ...state,
+        poll: { ...state.poll, options: options.map((o, i) => (i === action.index ? action.label : o)) },
+      };
+    }
+    case 'addPollOption':
+      if (
+        state.poll.phase !== 'setup' ||
+        !POLL_TYPES[state.poll.type].editable ||
+        state.poll.options.length >= MAX_POLL_OPTIONS
+      )
+        return state;
+      return {
+        ...state,
+        poll: { ...state.poll, options: [...state.poll.options, ''], votes: [...state.poll.votes, 0] },
+      };
+    case 'removePollOption':
+      if (
+        state.poll.phase !== 'setup' ||
+        !POLL_TYPES[state.poll.type].editable ||
+        state.poll.options.length <= MIN_POLL_OPTIONS ||
+        action.index < 0 ||
+        action.index >= state.poll.options.length
+      )
+        return state;
+      return {
+        ...state,
+        poll: {
+          ...state.poll,
+          options: state.poll.options.filter((_, i) => i !== action.index),
+          votes: state.poll.votes.filter((_, i) => i !== action.index),
+        },
+      };
+    case 'setPollSetting':
+      return state.poll.phase !== 'setup' || state.poll[action.setting] === action.value
+        ? state
+        : { ...state, poll: { ...state.poll, [action.setting]: action.value } };
     case 'startPoll':
-      return { ...state, poll: { ...state.poll, phase: 'live', shown: false } };
+      return state.poll.phase !== 'setup' || !canStartPoll(state.poll)
+        ? state
+        : { ...state, poll: { ...state.poll, phase: 'live', shown: false } };
     case 'answerPoll': {
-      if (state.poll.phase !== 'live' || action.option < 0 || action.option >= state.poll.options.length) return state;
+      if (state.poll.phase !== 'live' || action.option < 0 || action.option >= state.poll.options.length)
+        return state;
       const votes = state.poll.votes.map((v, i) => (i === action.option ? v + 1 : v));
       return { ...state, poll: { ...state.poll, votes } };
     }
@@ -455,18 +657,30 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     case 'setTimerDuration':
       return {
         ...state,
-        timer: { ...state.timer, phase: 'ready', durationSec: action.durationSec, leftSec: action.durationSec, endsAt: null },
+        timer: {
+          ...state.timer,
+          phase: 'ready',
+          durationSec: action.durationSec,
+          leftSec: action.durationSec,
+          endsAt: null,
+        },
       };
     case 'startTimer': {
       const left = state.timer.phase === 'done' ? state.timer.durationSec : timerLeft(state);
-      return { ...state, timer: { ...state.timer, phase: 'running', leftSec: left, endsAt: state.clock.now + left * SECOND } };
+      return {
+        ...state,
+        timer: { ...state.timer, phase: 'running', leftSec: left, endsAt: state.clock.now + left * SECOND },
+      };
     }
     case 'pauseTimer':
       return state.timer.phase !== 'running'
         ? state
         : { ...state, timer: { ...state.timer, phase: 'paused', leftSec: timerLeft(state), endsAt: null } };
     case 'resetTimer':
-      return { ...state, timer: { ...state.timer, phase: 'ready', leftSec: state.timer.durationSec, endsAt: null } };
+      return {
+        ...state,
+        timer: { ...state.timer, phase: 'ready', leftSec: state.timer.durationSec, endsAt: null },
+      };
     case 'addTimerMinute': {
       const base = state.timer.phase === 'done' ? 0 : timerLeft(state);
       const left = base + 60;
@@ -484,6 +698,10 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     }
     case 'setTimerMinimized':
       return { ...state, timer: { ...state.timer, minimized: action.minimized } };
+    case 'setTimerCorner':
+      return state.timer.corner === action.corner
+        ? state
+        : { ...state, timer: { ...state.timer, corner: action.corner } };
     case 'removeTimer':
       return { ...state, timer: { ...state.timer, phase: 'off', endsAt: null, minimized: false } };
 
@@ -495,7 +713,9 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       };
     // The setup actions change nothing once the rooms are open or closed (S3).
     case 'setBreakoutMode':
-      return state.breakouts.phase !== 'setup' ? state : withBreakouts(state, { mode: action.mode, moving: null });
+      return state.breakouts.phase !== 'setup'
+        ? state
+        : withBreakouts(state, { mode: action.mode, moving: null });
     case 'setRoomCount': {
       if (state.breakouts.phase !== 'setup') return state;
       const roomCount = clampRoomCount(action.roomCount);
@@ -558,6 +778,8 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
             onStage: null,
             helpQueue: [],
             view: 'rooms',
+            joined: null,
+            messages: [],
           });
     case 'addRoomTime':
       return state.breakouts.phase !== 'live'
@@ -581,23 +803,33 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     case 'closeRooms':
       return state.breakouts.phase !== 'live' || state.breakouts.closingEndsAt !== null
         ? state
-        : withBreakouts(state, { closingEndsAt: state.clock.now + CLOSING_SECONDS * SECOND, peek: null });
+        : withUi(
+            withBreakouts(state, { closingEndsAt: state.clock.now + CLOSING_SECONDS * SECOND, peek: null }),
+            { closingNoticeDismissed: false },
+          );
     case 'keepRoomsOpen':
-      return state.breakouts.closingEndsAt === null ? state : withBreakouts(state, { closingEndsAt: null });
+      return state.breakouts.closingEndsAt === null
+        ? state
+        : withUi(withBreakouts(state, { closingEndsAt: null }), { closingNoticeDismissed: false });
+    case 'dismissClosingNotice':
+      return state.breakouts.closingEndsAt === null || state.ui.closingNoticeDismissed
+        ? state
+        : withUi(state, { closingNoticeDismissed: true });
     case 'bringEveryoneBack':
       return state.breakouts.phase !== 'live'
         ? state
-        : withBreakouts(state, {
+        : withUi(withBreakouts(state, {
             phase: 'back',
             closingEndsAt: null,
             view: 'main',
             peek: null,
             onStage: null,
             listening: false,
+            joined: null,
             helpQueue: state.breakouts.helpQueue.map((h) =>
               h.acknowledgedAt === null ? { ...h, acknowledgedAt: state.clock.now } : h,
             ),
-          });
+          }), { closingNoticeDismissed: false });
     case 'showRoomOnStage':
       return state.breakouts.phase !== 'back'
         ? state
@@ -612,6 +844,8 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
         closingEndsAt: null,
         peek: null,
         helpQueue: [],
+        joined: null,
+        messages: [],
       });
     case 'requestHelp': {
       if (state.breakouts.phase !== 'live') return state;
@@ -620,7 +854,8 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
         state.breakouts.roomCount,
         breakoutStudents(state.participants).length,
       );
-      if (!Number.isInteger(action.roomIndex) || action.roomIndex < 0 || action.roomIndex >= count) return state;
+      if (!Number.isInteger(action.roomIndex) || action.roomIndex < 0 || action.roomIndex >= count)
+        return state;
       const helpSeq = state.breakouts.helpSeq + 1;
       const request = {
         id: nextId('help', helpSeq),
@@ -646,6 +881,40 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       if (action.activity === null) delete activity[action.roomIndex];
       else activity[action.roomIndex] = action.activity;
       return withBreakouts(state, { activity });
+    }
+    case 'joinRoom': {
+      if (state.breakouts.phase !== 'live') return state;
+      const count = roomCountFor(
+        state.breakouts.mode,
+        state.breakouts.roomCount,
+        breakoutStudents(state.participants).length,
+      );
+      if (!Number.isInteger(action.roomIndex) || action.roomIndex < 0 || action.roomIndex >= count)
+        return state;
+      // Joining a room closes its preview: you are in the room now, not looking in.
+      return withBreakouts(state, { joined: action.roomIndex, peek: null, listening: false });
+    }
+    case 'leaveRoom':
+      return state.breakouts.joined === null ? state : withBreakouts(state, { joined: null });
+    case 'sendRoomMessage': {
+      const text = action.text.trim();
+      if (state.breakouts.phase !== 'live' || text.length === 0) return state;
+      if (!state.participants.some((p) => p.id === action.from)) return state;
+      const count = roomCountFor(
+        state.breakouts.mode,
+        state.breakouts.roomCount,
+        breakoutStudents(state.participants).length,
+      );
+      if (action.roomIndex !== null && (action.roomIndex < 0 || action.roomIndex >= count)) return state;
+      const messageSeq = state.breakouts.messageSeq + 1;
+      const message = {
+        id: nextId('rm', messageSeq),
+        roomIndex: action.roomIndex,
+        from: action.from,
+        sentAt: state.clock.now,
+        text,
+      };
+      return withBreakouts(state, { messages: [...state.breakouts.messages, message], messageSeq });
     }
 
     // ---------- mobile ----------

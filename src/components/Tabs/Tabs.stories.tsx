@@ -72,6 +72,27 @@ export const ChatScope: Story = {
   ),
 };
 
+/** The breakout surface's tabs (BO5): the live tab carries the time left as a visual `detail`, so its name stays "4 rooms live". */
+export const WithDetail: Story = {
+  args: { defaultSelectedKey: 'rooms' },
+  render: (args) => (
+    <Tabs {...args}>
+      <TabList label="What you’re looking at" className="w-96">
+        <Tab id="main">Presentation 3 / 12</Tab>
+        <Tab id="rooms" detail="8:42">
+          4 rooms live
+        </Tab>
+      </TabList>
+      <TabPanel id="main">
+        <p className="text-md text-text-secondary">The slide and the webcams.</p>
+      </TabPanel>
+      <TabPanel id="rooms">
+        <p className="text-md text-text-secondary">The board of rooms.</p>
+      </TabPanel>
+    </Tabs>
+  ),
+};
+
 /** A panel with a focusable child: Tab moves from the tab to it, not to the panel. */
 export const PanelWithControl: Story = {
   args: { defaultSelectedKey: 'chat' },

@@ -19,13 +19,9 @@ describe('WebcamStrip', () => {
     const more = screen.getByRole('button', { name: '+9 more, show all 14 people' });
     expect(more).toHaveTextContent('+9 more');
     // Speakers first, then the hands by longest wait.
-    expect(screen.getAllByRole('figure').map((f) => f.querySelector('figcaption span')?.textContent)).toEqual([
-      'Frederick',
-      'Bruno',
-      'Rafaela',
-      'Cibelle',
-      'Octavio',
-    ]);
+    expect(screen.getAllByRole('figure').map((f) => f.querySelector('figcaption span')?.textContent)).toEqual(
+      ['Frederick', 'Bruno', 'Rafaela', 'Cibelle', 'Octavio'],
+    );
   });
 
   it('names the local person "You" and shows no more button when everyone fits', () => {
@@ -41,7 +37,9 @@ describe('WebcamStrip', () => {
     rerender(<WebcamStrip {...forFixture('one')} />);
     expect(screen.getAllByRole('figure')).toHaveLength(1);
     rerender(<WebcamStrip {...forFixture('thirty')} />);
-    expect(screen.getByRole('button', { name: '+25 more, show all 30 people' })).toHaveTextContent('+25 more');
+    expect(screen.getByRole('button', { name: '+25 more, show all 30 people' })).toHaveTextContent(
+      '+25 more',
+    );
   });
 
   it('tells two Anas apart on the plates (B9)', () => {

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Key } from 'react-aria-components';
-import type { Participant, ParticipantId, ScreenKind } from '../../mocks/types';
+import type { Participant, ParticipantId, ReactionKind, ScreenKind, StageCorner } from '../../mocks/types';
 import { tv, type VariantProps } from '../../styles/tv';
 import { IconButton } from '../IconButton';
 import { Surface } from '../Surface';
@@ -27,12 +27,15 @@ export const stageStyles = tv({
     /** The slide column: the chrome row, then the slide. */
     presentation: 'flex min-h-0 min-w-0 flex-col gap-3',
     chrome: 'flex min-h-control-md items-center justify-between gap-3',
-    /** The box the slide fits in. */
-    fit: 'flex min-h-0 min-w-0 items-center justify-center',
+    /** The right end of the chrome row: the share pill (M1, M2), then Minimize. */
+    chromeEnd: 'flex min-w-0 flex-1 items-center justify-end gap-3',
+    /** The box the slide fits in; the overlay layer is positioned against it. */
+    fit: 'relative flex min-h-0 min-w-0 items-center justify-center',
     /** The webcam strip. */
     strip: '',
     /** The shared screen's frame: fitted like the slide. */
-    screen: 'relative flex items-center justify-center overflow-hidden rounded-tile border border-border bg-surface-tile text-text shadow-overlay',
+    screen:
+      'relative flex items-center justify-center overflow-hidden rounded-tile border border-border bg-surface-tile text-text shadow-overlay',
     screenNote: 'flex items-center gap-2 text-md font-semibold',
     screenDot: 'size-2 rounded-full bg-danger-text',
     /** The "What everyone sees" tabs in the chrome row. */
@@ -62,10 +65,16 @@ export const stageStyles = tv({
   defaultVariants: { webcams: 'side' },
 });
 
-/** The slide placeholder: white paper in every mode (`slide` / `on-slide`), 16:9, fitted like the stage says. */
+/**
+ * The slide placeholder: white paper in every mode (`slide` / `on-slide`),
+ * 16:9, fitted like the stage says. It is the hover `group` for the
+ * presentation controls drawn over its bottom edge (X13).
+ */
 export const slideStyles = tv({
   slots: {
-    root: 'relative flex flex-col justify-between overflow-hidden rounded-tile bg-slide p-6 text-on-slide shadow-overlay',
+    root: 'group relative flex flex-col justify-between overflow-hidden rounded-tile bg-slide p-6 text-on-slide shadow-overlay',
+    /** The deck name and the title keep clear of the reserved top-right corner (D1): room for the widest card (the poll results, panel width) and its inset. */
+    header: 'flex flex-col pr-96',
     deck: 'text-sm font-semibold tracking-label uppercase',
     title: 'text-xl font-bold text-balance',
     number: 'self-end text-sm font-semibold tabular-nums',
@@ -113,13 +122,45 @@ export const stageGridStyles = tv({
 export const presentationTileStyles = tv({
   slots: {
     root: 'relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-tile border border-border-strong bg-surface-sunken',
-    thumb: 'absolute inset-x-4 top-3 bottom-12 flex items-center justify-center overflow-hidden rounded-xs bg-slide p-2 text-center text-xs leading-4 font-semibold text-on-slide',
+    thumb:
+      'absolute inset-x-4 top-3 bottom-12 flex items-center justify-center overflow-hidden rounded-xs bg-slide p-2 text-center text-xs leading-4 font-semibold text-on-slide',
     thumbTitle: 'line-clamp-2 break-words',
     bottom: 'absolute inset-x-2 bottom-2 flex items-center justify-between gap-2',
-    plate: 'min-w-0 truncate rounded-xs bg-surface-overlay px-2 text-xs leading-5 font-semibold text-text-on-stage',
+    plate:
+      'min-w-0 truncate rounded-xs bg-surface-overlay px-2 text-xs leading-5 font-semibold text-text-on-stage',
     restore: 'shrink-0',
   },
 });
+
+/**
+ * The overlay layer (D1): four corner slots over the slide (or over the
+ * whole stage in the grid layouts), each a column of cards. The layer lets
+ * pointer events through to the slide; the cards take them back. The top
+ * right is the reserved corner: the timer defaults there and the poll
+ * results always sit there, and the slide's title block keeps clear of it.
+ * Alert pills live in the session header and the webcam strip is outside
+ * the slide column, so neither overlaps a card.
+ */
+export const stageOverlayStyles = tv({
+  slots: {
+    layer: 'pointer-events-none absolute inset-0 grid grid-cols-2 grid-rows-2 gap-3 p-3',
+    corner: 'flex min-w-0 flex-col gap-3 *:pointer-events-auto',
+  },
+  variants: {
+    corner: {
+      topLeft: { corner: 'items-start justify-start' },
+      topRight: { corner: 'items-end justify-start' },
+      bottomLeft: { corner: 'items-start justify-end' },
+      bottomRight: { corner: 'items-end justify-end' },
+    },
+  },
+});
+
+/** The corners in grid order: top row, then bottom row. */
+export const STAGE_CORNER_ORDER: StageCorner[] = ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
+
+/** Cards per corner. */
+export type StageOverlays = Partial<Record<StageCorner, ReactNode>>;
 
 export type StageWebcams = NonNullable<VariantProps<typeof stageStyles>['webcams']>;
 export type StageColumns = NonNullable<VariantProps<typeof stageGridStyles>['columns']>;
@@ -172,12 +213,18 @@ export interface StageProps {
   presentation?: StagePresentation;
   /** The shared screen, for the `presenter` layout. */
   share?: StageShare;
+  /** Current reactions by person (`selectReactions`), shown on the tiles. */
+  reactions?: Record<ParticipantId, ReactionKind>;
+  /** The `PresentationControls`, drawn over the bottom of the slide while the slide is on stage. */
+  controls?: ReactNode;
+  /** The `SharePill`, in the chrome row before Minimize while a screen is shared. */
+  sharePill?: ReactNode;
   onShowAll?: () => void;
   onMinimize?: () => void;
   onRestore?: () => void;
   onShowingChange?: (showing: StageTab) => void;
-  /** Overlays drawn over the stage (poll results, the timer) in later milestones. */
-  children?: ReactNode;
+  /** Floating cards (the timer, poll results) by corner, drawn over the slide in the overlay layer (D1). */
+  overlays?: StageOverlays;
   className?: string;
 }
 
@@ -195,21 +242,27 @@ export function Stage({
   maxTiles = DEFAULT_MAX_TILES,
   presentation,
   share,
+  reactions,
+  controls,
+  sharePill,
   onShowAll,
   onMinimize,
   onRestore,
   onShowingChange,
-  children,
+  overlays,
   className,
 }: StageProps) {
   const styles = stageStyles({ webcams });
   const showGrid = layout === 'grid' || layout === 'minimized' || !presentation;
+  const layer =
+    overlays && STAGE_CORNER_ORDER.some((c) => overlays[c]) ? <OverlayLayer overlays={overlays} /> : null;
   const strip = (
     <WebcamStrip
       participants={participants}
       names={names}
       max={maxTiles}
       direction={webcams === 'top' ? 'row' : 'column'}
+      reactions={reactions}
       onShowAll={onShowAll}
       className={styles.strip()}
     />
@@ -217,12 +270,16 @@ export function Stage({
   return (
     <Surface kind="stage" className={styles.root({ className })}>
       {showGrid ? (
-        <StageGrid
-          participants={participants}
-          names={names}
-          presentation={layout === 'minimized' ? presentation : undefined}
-          onRestore={onRestore}
-        />
+        <>
+          <StageGrid
+            participants={participants}
+            names={names}
+            reactions={reactions}
+            presentation={layout === 'minimized' ? presentation : undefined}
+            onRestore={onRestore}
+          />
+          {layer}
+        </>
       ) : (
         <>
           {webcams === 'top' && strip}
@@ -233,46 +290,80 @@ export function Stage({
               ) : (
                 <span />
               )}
-              <IconButton label="Minimize presentation" icon="minimize" variant="soft" onPress={onMinimize} />
+              <div className={styles.chromeEnd()}>
+                {layout === 'presenter' && share ? sharePill : null}
+                <IconButton
+                  label="Minimize presentation"
+                  icon="minimize"
+                  variant="soft"
+                  onPress={onMinimize}
+                />
+              </div>
             </div>
             <div className={styles.fit()}>
               {layout === 'presenter' && share?.showing === 'screen' ? (
                 <ScreenFrame kind={share.kind} webcams={webcams} />
               ) : (
-                <Slide {...presentation} webcams={webcams} />
+                <Slide {...presentation} webcams={webcams}>
+                  {controls}
+                </Slide>
               )}
+              {layer}
             </div>
           </section>
           {webcams === 'side' && strip}
         </>
       )}
-      {children}
     </Surface>
   );
 }
 
-function Slide({ deckName, slideTitle, slideNumber, slideCount, webcams }: StagePresentation & { webcams: StageWebcams }) {
-  const styles = slideStyles({ webcams });
+/** The four corner slots; an empty corner renders nothing but keeps its cell. */
+function OverlayLayer({ overlays }: { overlays: StageOverlays }) {
+  const styles = stageOverlayStyles();
   return (
-    <div className={styles.root()}>
-      <p className={styles.deck()}>{deckName}</p>
-      <h2 className={styles.title()}>{slideTitle}</h2>
-      <p className={styles.number()}>
-        <span className={styles.numberLabel()}>Slide </span>
-        {slideNumber} / {slideCount}
-      </p>
+    <div className={styles.layer()}>
+      {STAGE_CORNER_ORDER.map((corner) => (
+        <div key={corner} className={stageOverlayStyles({ corner }).corner()}>
+          {overlays[corner]}
+        </div>
+      ))}
     </div>
   );
 }
 
-/** What everyone sees while the screen is on stage: a dark frame with the live note. */
+function Slide({
+  deckName,
+  slideTitle,
+  slideNumber,
+  slideCount,
+  webcams,
+  children,
+}: StagePresentation & { webcams: StageWebcams; children?: ReactNode }) {
+  const styles = slideStyles({ webcams });
+  return (
+    <div className={styles.root()}>
+      <div className={styles.header()}>
+        <p className={styles.deck()}>{deckName}</p>
+        <h2 className={styles.title()}>{slideTitle}</h2>
+      </div>
+      <p className={styles.number()}>
+        <span className={styles.numberLabel()}>Slide </span>
+        {slideNumber} / {slideCount}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+/** What everyone sees while the screen is on stage: a dark frame naming the share (the pill in the chrome row says who sees it). */
 function ScreenFrame({ kind, webcams }: { kind: ScreenKind; webcams: StageWebcams }) {
   const styles = stageStyles({ webcams });
   return (
     <div className={styles.screen()}>
       <p className={styles.screenNote()}>
         <span aria-hidden="true" className={styles.screenDot()} />
-        Everyone sees your {kind.toLowerCase()}
+        Your {kind.toLowerCase()}
       </p>
     </div>
   );
@@ -309,9 +400,10 @@ function ShareTabs({
 function StageGrid({
   participants,
   names,
+  reactions,
   presentation,
   onRestore,
-}: Pick<StageProps, 'participants' | 'names' | 'presentation' | 'onRestore'>) {
+}: Pick<StageProps, 'participants' | 'names' | 'reactions' | 'presentation' | 'onRestore'>) {
   const count = participants.length + (presentation ? 1 : 0);
   const styles = stageStyles();
   const tile = presentationTileStyles();
@@ -322,7 +414,12 @@ function StageGrid({
     >
       {participants.map((p) => (
         <li key={p.id} className={styles.cell()}>
-          <VideoTile participant={p} shortName={p.isSelf ? 'You' : (names[p.id] ?? p.name)} size="grid" />
+          <VideoTile
+            participant={p}
+            shortName={p.isSelf ? 'You' : (names[p.id] ?? p.name)}
+            size="grid"
+            reaction={reactions?.[p.id]}
+          />
         </li>
       ))}
       {presentation && (

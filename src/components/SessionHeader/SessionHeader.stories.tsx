@@ -39,7 +39,10 @@ export const ThirtyParticipants: Story = {
 
 /** A long title truncates; the count and clock never wrap. */
 export const LongTitle: Story = {
-  args: { title: 'Hack Week: Brazil 2026 · Introduction to accessible video classrooms, part two of the afternoon session' },
+  args: {
+    title:
+      'Hack Week: Brazil 2026 · Introduction to accessible video classrooms, part two of the afternoon session',
+  },
   decorators: [
     (Story) => (
       <div className="w-120 max-w-full p-6">

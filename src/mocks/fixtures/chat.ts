@@ -7,7 +7,13 @@
 import { timeOfDay } from '../time';
 import type { ChatMessage, ChatState, Participant, QuestionAlert } from '../types';
 
-const message = (id: string, from: string, time: [number, number], text: string, read = true): ChatMessage => ({
+const message = (
+  id: string,
+  from: string,
+  time: [number, number],
+  text: string,
+  read = true,
+): ChatMessage => ({
   id,
   from,
   sentAt: timeOfDay(time[0], time[1]),
@@ -29,11 +35,16 @@ const direct: ChatState['direct'] = [
       message('d2', 'helena', [8, 52], 'It’s in the Notes panel, right next to Chat'),
     ],
   },
-  { with: 'rafaela', messages: [message('d3', 'rafaela', [9, 6], 'Can I share my screen right after Frederick?', false)] },
+  {
+    with: 'rafaela',
+    messages: [message('d3', 'rafaela', [9, 6], 'Can I share my screen right after Frederick?', false)],
+  },
 ];
 
 /** The "Rafaela asked" pill in the session header. */
-export const questionAlerts: QuestionAlert[] = [{ id: 'q1', kind: 'question', from: 'rafaela', messageId: 'e2' }];
+export const questionAlerts: QuestionAlert[] = [
+  { id: 'q1', kind: 'question', from: 'rafaela', messageId: 'e2' },
+];
 
 export function chatFor(participants: Participant[]): ChatState {
   const present = new Set(participants.map((p) => p.id));

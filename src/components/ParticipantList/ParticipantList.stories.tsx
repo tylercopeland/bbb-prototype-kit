@@ -78,7 +78,13 @@ export const MenuOpen: Story = {
 /** Nobody in the room at all: the chips at zero and "No one is here yet." */
 export const NoParticipants: Story = {
   render: () => (
-    <ParticipantList hands={[]} others={[]} counts={{ all: 0, hands: 0, low: 0 }} filter="all" now={FIXTURE_NOW} />
+    <ParticipantList
+      hands={[]}
+      others={[]}
+      counts={{ all: 0, hands: 0, low: 0 }}
+      filter="all"
+      now={FIXTURE_NOW}
+    />
   ),
 };
 

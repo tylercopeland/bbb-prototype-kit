@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router';
 import { App } from './App';
 import { artboards } from './routes/artboards';
 import { createTestRouter } from './routes/router';
+import { screenFor } from './routes/screens';
 
 function renderAt(path: string) {
   return render(<RouterProvider router={createTestRouter(path)} />);
@@ -22,10 +23,20 @@ describe('routes', () => {
     renderAt('/');
     const desktop = screen.getByRole('region', { name: /Desktop/ });
     const mobile = screen.getByRole('region', { name: /Mobile/ });
-    expect(within(desktop).getAllByRole('listitem')).toHaveLength(artboards.filter((a) => a.group === 'desktop').length);
-    expect(within(mobile).getAllByRole('listitem')).toHaveLength(artboards.filter((a) => a.group === 'mobile').length);
-    expect(screen.getByRole('link', { name: 'A · Action bar' })).toHaveAttribute('href', '/desktop/F1Bar-4roh-l8ju');
-    expect(screen.getByRole('link', { name: 'Phone · room (teacher presenting)' })).toHaveAttribute('href', '/mobile/MB1Room');
+    expect(within(desktop).getAllByRole('listitem')).toHaveLength(
+      artboards.filter((a) => a.group === 'desktop').length,
+    );
+    expect(within(mobile).getAllByRole('listitem')).toHaveLength(
+      artboards.filter((a) => a.group === 'mobile').length,
+    );
+    expect(screen.getByRole('link', { name: 'A · Action bar' })).toHaveAttribute(
+      'href',
+      '/desktop/F1Bar-4roh-l8ju',
+    );
+    expect(screen.getByRole('link', { name: 'Phone · room (teacher presenting)' })).toHaveAttribute(
+      'href',
+      '/mobile/MB1Room',
+    );
     expect(screen.getByRole('link', { name: 'Design tokens' })).toHaveAttribute('href', '/tokens');
   });
 
@@ -42,17 +53,17 @@ describe('routes', () => {
   });
 
   it('renders an accessible placeholder for an unbuilt artboard, with its state', () => {
-    renderAt('/desktop/H1MediaSlides-2x0x');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Share media · Slides (action bar)');
-    expect(screen.getByText('Not built yet (milestone 5)')).toBeInTheDocument();
+    renderAt('/mobile/MB5Chat');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Phone · Chat tab');
+    expect(screen.getByText('Not built yet (milestone 6)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to the artboards' })).toHaveAttribute('href', '/');
     expect(screen.getByText('People')).toBeInTheDocument();
     expect(screen.getByText('14 · 4 hands raised')).toBeInTheDocument();
-    expect(screen.getByText('none · filter all')).toBeInTheDocument();
+    expect(screen.getByText('chat · filter all')).toBeInTheDocument();
   });
 
   it('lets query parameters override the artboard props', () => {
-    renderAt('/desktop/H1MediaSlides-2x0x?panel=people&pfilter=low&people=thirty');
+    renderAt('/mobile/MB1Room?panel=people&pfilter=low&people=thirty');
     expect(screen.getByText('30 · 5 hands raised')).toBeInTheDocument();
     expect(screen.getByText('people · filter low')).toBeInTheDocument();
   });
@@ -64,12 +75,12 @@ describe('routes', () => {
     expect(screen.getByRole('complementary', { name: 'People' })).toBeInTheDocument();
   });
 
-  it('marks mobile and milestone 5 artboards with their milestone', () => {
+  it('marks mobile artboards with their milestone, and renders every desktop artboard as a screen', () => {
     renderAt('/mobile/MB1Room');
     expect(screen.getByText('Not built yet (milestone 6)')).toBeInTheDocument();
-    renderAt('/desktop/BO5LiveGroups-desk');
-    expect(screen.getByText('Not built yet (milestone 5)')).toBeInTheDocument();
-    expect(screen.getByText('live · 4 rooms')).toBeInTheDocument();
+    const desktop = artboards.filter((a) => a.group === 'desktop');
+    expect(desktop.length).toBeGreaterThan(0);
+    for (const a of desktop) expect(screenFor(a).Screen, a.stem).toBeDefined();
   });
 
   it('shows the not-found page for an unknown artboard or group', () => {
@@ -82,9 +93,11 @@ describe('routes', () => {
   it('navigates from the index to an artboard and back by link', async () => {
     const user = userEvent.setup();
     renderAt('/');
-    await user.click(screen.getByRole('link', { name: 'Share media · Slides (action bar)' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Share media · Slides (action bar)' })).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Phone · Chat tab' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Phone · Chat tab' })).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Back to the artboards' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'BigBlueButton 4.0 prototype' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'BigBlueButton 4.0 prototype' }),
+    ).toBeInTheDocument();
   });
 });

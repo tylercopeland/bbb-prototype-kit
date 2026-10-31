@@ -48,7 +48,9 @@ describe('VideoTile', () => {
 
   it('describes every audio state in words', () => {
     expect(tileStatus({ audio: 'live', camera: true, handRaisedAt: null })).toBe('microphone on, camera on');
-    expect(tileStatus({ audio: 'notJoined', camera: false, handRaisedAt: 1 })).toBe('audio not joined, hand raised, camera off');
+    expect(tileStatus({ audio: 'notJoined', camera: false, handRaisedAt: 1 })).toBe(
+      'audio not joined, hand raised, camera off',
+    );
   });
 
   it('merges a className', () => {

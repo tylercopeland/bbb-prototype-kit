@@ -36,8 +36,16 @@ export const chatMessageStyles = tv({
     },
   },
   compoundVariants: [
-    { variant: 'bubble', isSelf: true, class: { root: 'items-end self-end', body: 'items-end', text: 'bg-accent text-on-accent' } },
-    { variant: 'bubble', isSelf: false, class: { root: 'items-start self-start', body: 'items-start', text: 'bg-surface-sunken text-text' } },
+    {
+      variant: 'bubble',
+      isSelf: true,
+      class: { root: 'items-end self-end', body: 'items-end', text: 'bg-accent text-on-accent' },
+    },
+    {
+      variant: 'bubble',
+      isSelf: false,
+      class: { root: 'items-start self-start', body: 'items-start', text: 'bg-surface-sunken text-text' },
+    },
   ],
   defaultVariants: { variant: 'public', isSelf: false },
 });

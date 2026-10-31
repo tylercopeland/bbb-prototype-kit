@@ -1,7 +1,16 @@
-import type { ReactElement, ReactNode, Ref } from 'react';
+import {
+  useEffect,
+  useMemo,
+  type ContextType,
+  type ReactElement,
+  type ReactNode,
+  type Ref,
+  type RefObject,
+} from 'react';
 import {
   DialogTrigger,
   Heading,
+  OverlayTriggerStateContext,
   Dialog as RacDialog,
   Popover as RacPopover,
   composeRenderProps,
@@ -82,12 +91,52 @@ export function OverlayHeader({
 /** Two steps of the spacing scale between the trigger and the card (the canvas draws 10px). */
 const POPOVER_OFFSET = 8;
 
+/**
+ * Focus is never lost to <body> (WCAG 2.4.3). React Aria returns focus to
+ * the element that was focused when the popover opened; a popover that
+ * was open on load (a deep link to H1, N1 or BO1) had none, so when this
+ * unmounts with the popover and nothing holds focus, `target` takes it.
+ * It runs at the real unmount, after any exit animation, a tick later so
+ * React Aria's own restore goes first when it has somewhere to go.
+ */
+export function FocusFallback({ target }: { target?: RefObject<Element | null> }) {
+  useEffect(() => {
+    // The trigger is mounted before its popover opens, so it is known here and kept for the cleanup.
+    const element = target?.current;
+    return () => {
+      if (!(element instanceof HTMLElement)) return;
+      setTimeout(() => {
+        if (document.activeElement === null || document.activeElement === document.body) element.focus();
+      }, 0);
+    };
+  }, [target]);
+  return null;
+}
+
 export interface PopoverProps extends Pick<
   RacPopoverProps,
   'placement' | 'offset' | 'shouldFlip' | 'isOpen' | 'defaultOpen' | 'onOpenChange'
 > {
-  /** A React Aria pressable: IconButton, ToggleButton or Button. It gets `aria-expanded` and `aria-controls`. */
-  trigger: ReactElement;
+  /**
+   * A React Aria pressable: IconButton or Button. It gets `aria-expanded`
+   * and `aria-controls`, and opens and closes the popover itself. Leave it
+   * out and pass `triggerRef` for a control that keeps its own open state
+   * in the store (the action bar's Plugins and Share media toggles): the
+   * popover is then controlled through `isOpen` / `onOpenChange`, is
+   * anchored to that element, and the control sets `aria-expanded`,
+   * `aria-haspopup="dialog"` and `aria-controls={id}` itself.
+   */
+  trigger?: ReactElement;
+  /** Without `trigger`: the element the card is positioned against. */
+  triggerRef?: RefObject<Element | null>;
+  /** The dialog element's id, for a standalone trigger's `aria-controls`. */
+  id?: string;
+  /**
+   * Where focus goes when the popover closes and nothing else holds it (it
+   * was open on load, so there was no trigger press to return to). Defaults
+   * to `triggerRef`; with a `trigger` element, pass its ref.
+   */
+  restoreFocusTo?: RefObject<Element | null>;
   /** The dialog's accessible name and, unless `titleHidden`, its visible heading. */
   title: string;
   /** Share media has no visible title; the close button still shows. */
@@ -114,6 +163,9 @@ export interface PopoverProps extends Pick<
  */
 export function Popover({
   trigger,
+  triggerRef,
+  id,
+  restoreFocusTo,
   title,
   titleHidden = false,
   children,
@@ -124,26 +176,58 @@ export function Popover({
   ref,
   ...state
 }: PopoverProps) {
+  // With a trigger, DialogTrigger owns the open state and the trigger's aria
+  // attributes. Standalone, the popover takes the state props and the anchor
+  // itself, and the dialog's `close` (the close button) reads the same state
+  // from this context, which React Aria's Popover provides only through
+  // DialogTrigger.
+  const isOpen = state.isOpen ?? false;
+  const onOpenChange = state.onOpenChange;
+  const standaloneState = useMemo<NonNullable<ContextType<typeof OverlayTriggerStateContext>>>(
+    () => ({
+      isOpen,
+      setOpen: (open) => onOpenChange?.(open),
+      open: () => onOpenChange?.(true),
+      close: () => onOpenChange?.(false),
+      toggle: () => onOpenChange?.(!isOpen),
+      // The anchor point of a context-menu overlay; not used by an anchored popover.
+      point: null,
+      setPoint: () => undefined,
+    }),
+    [isOpen, onOpenChange],
+  );
+  const popover = (
+    <RacPopover
+      {...(trigger ? undefined : state)}
+      triggerRef={trigger ? undefined : triggerRef}
+      placement={placement}
+      offset={offset}
+      shouldFlip={shouldFlip}
+      className={composeRenderProps(className, (cls) => popoverStyles({ className: cls }))}
+    >
+      <SurfaceProvider kind="panel">
+        <RacDialog id={id} ref={ref} className={popoverDialogStyles()}>
+          {({ close }) => (
+            <>
+              <FocusFallback target={restoreFocusTo ?? (trigger ? undefined : triggerRef)} />
+              <OverlayHeader title={title} titleHidden={titleHidden} onClose={close} />
+              {children}
+            </>
+          )}
+        </RacDialog>
+      </SurfaceProvider>
+    </RacPopover>
+  );
+  if (!trigger)
+    return (
+      <OverlayTriggerStateContext.Provider value={standaloneState}>
+        {popover}
+      </OverlayTriggerStateContext.Provider>
+    );
   return (
     <DialogTrigger {...state}>
       {trigger}
-      <RacPopover
-        placement={placement}
-        offset={offset}
-        shouldFlip={shouldFlip}
-        className={composeRenderProps(className, (cls) => popoverStyles({ className: cls }))}
-      >
-        <SurfaceProvider kind="panel">
-          <RacDialog ref={ref} className={popoverDialogStyles()}>
-            {({ close }) => (
-              <>
-                <OverlayHeader title={title} titleHidden={titleHidden} onClose={close} />
-                {children}
-              </>
-            )}
-          </RacDialog>
-        </SurfaceProvider>
-      </RacPopover>
+      {popover}
     </DialogTrigger>
   );
 }

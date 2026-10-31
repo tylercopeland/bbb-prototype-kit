@@ -99,9 +99,77 @@ const entries: Record<IconName, Entry> = {
     note: 'A different meaning from lockChat (a moderator locking public chat), so a different glyph',
   },
   question: { meaning: 'Question asked in chat', used: 'AlertPill (session header)' },
-  help: { meaning: 'Help requested by a breakout room', used: 'AlertPill (session header), room cards (milestone 5)' },
+  help: {
+    meaning: 'Help requested by a breakout room',
+    used: 'AlertPill (session header), room cards (milestone 5)',
+  },
   minimize: { meaning: 'Minimize presentation', used: 'Stage (presentation controls)' },
   restore: { meaning: 'Restore presentation', used: 'Stage (minimized presentation tile)' },
+  highlighter: {
+    meaning: 'Highlighter tool',
+    used: 'Whiteboard tools (ToggleGroup)',
+    note: 'The pen tool is `annotate`: drawing on the slide is one meaning, so one pencil',
+  },
+  mediaSlides: {
+    meaning: 'Slides (media type)',
+    used: 'Share media picker tabs',
+    note: 'A projector, not the presenter glyph',
+  },
+  mediaVideo: { meaning: 'Video (media type)', used: 'Share media picker tabs' },
+  mediaAudio: { meaning: 'Computer audio (media type)', used: 'Share media picker tabs' },
+  mediaUrl: { meaning: 'Web page link (media type)', used: 'Share media picker tabs' },
+  screenEntire: { meaning: 'Entire screen', used: 'Share media picker, Screen tab' },
+  screenWindow: { meaning: 'A window', used: 'Share media picker, Screen tab' },
+  screenTab: { meaning: 'A browser tab', used: 'Share media picker, Screen tab' },
+  upload: { meaning: 'Add from the computer', used: 'Share media picker ("Add slides", "Upload a file")' },
+  check: { meaning: 'Selected', used: 'Share media picker (the presented deck)' },
+  whiteboard: {
+    meaning: 'Blank whiteboard',
+    used: 'Share media picker, More tab',
+    note: 'Different from whiteboardAccess (the permission) and from the pen tools',
+  },
+  previousSlide: {
+    meaning: 'Previous slide',
+    used: 'Presentation controls',
+    note: 'An arrow; the chevron (`back`) leaves a thread',
+  },
+  nextSlide: { meaning: 'Next slide', used: 'Presentation controls' },
+  qaBoard: {
+    meaning: 'Q&A board plugin',
+    used: 'Plugins menu',
+    note: 'Distinct from `question`, the alert about one question in chat',
+  },
+  quiz: { meaning: 'Quiz plugin', used: 'Plugins menu' },
+  wordCloud: { meaning: 'Word cloud plugin', used: 'Plugins menu' },
+  randomPicker: { meaning: 'Random picker plugin', used: 'Plugins menu' },
+  start: { meaning: 'Start / restart the timer', used: 'Timer card' },
+  pause: { meaning: 'Pause the timer', used: 'Timer card' },
+  reset: { meaning: 'Reset the timer', used: 'Timer card' },
+  moveToCorner: {
+    meaning: 'Move to a corner of the stage',
+    used: 'Timer card (D1: the keyboard way to place a floating card)',
+  },
+  delete: {
+    meaning: 'Remove an answer',
+    used: 'Poll builder',
+    note: 'A bin: `close` dismisses, `removeFromSession` removes a person',
+  },
+  shuffle: { meaning: 'Shuffle students into rooms', used: 'Breakout setup' },
+  evenOut: {
+    meaning: 'Even out the rooms',
+    used: 'Breakout setup (B4: rebalances around the manual moves)',
+  },
+  preview: { meaning: 'Preview a breakout room', used: 'Room cards, the live room list' },
+  listenIn: {
+    meaning: 'Listen in on a room',
+    used: 'Room preview',
+    note: 'An ear: `listenOnly` (headphones) is a person’s own audio state',
+  },
+  joinRoom: {
+    meaning: 'Join a breakout room',
+    used: 'Room preview (B8)',
+    note: 'An arrow into a door: `leave` (an arrow out) leaves the session',
+  },
 };
 
 const names = Object.keys(icons) as IconName[];

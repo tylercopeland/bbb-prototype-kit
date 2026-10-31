@@ -17,7 +17,12 @@ import {
 import { breakoutsFor, createRoom } from './fixtures';
 import type { HelpRequest } from './types';
 
-const help = (id: string, roomIndex: number, askedAt: number, acknowledgedAt: number | null = null): HelpRequest => ({
+const help = (
+  id: string,
+  roomIndex: number,
+  askedAt: number,
+  acknowledgedAt: number | null = null,
+): HelpRequest => ({
   id,
   roomIndex,
   from: null,

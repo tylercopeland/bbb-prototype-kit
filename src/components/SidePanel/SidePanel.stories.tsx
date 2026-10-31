@@ -16,7 +16,13 @@ import { ParticipantList } from '../ParticipantList';
 import { SidePanel, type SidePanelTab } from './SidePanel';
 
 /** The panel over a fixture, with the tab in local state and the lists as its content. */
-function Demo({ people = 'class', panel: initial = 'people' }: { people?: ParticipantFixture; panel?: Exclude<Panel, 'none'> }) {
+function Demo({
+  people = 'class',
+  panel: initial = 'people',
+}: {
+  people?: ParticipantFixture;
+  panel?: Exclude<Panel, 'none'>;
+}) {
   const [state] = useState(() => createRoom({ participants: people }));
   const [panel, setPanel] = useState<Exclude<Panel, 'none'>>(initial);
   const [closed, setClosed] = useState(false);
@@ -30,7 +36,13 @@ function Demo({ people = 'class', panel: initial = 'people' }: { people?: Partic
       onPanelChange={(p: SidePanelTab) => setPanel(p)}
       onClose={() => setClosed(true)}
       people={
-        <ParticipantList hands={hands} others={others} counts={selectPeopleFilterCounts(state)} filter="all" now={FIXTURE_NOW} />
+        <ParticipantList
+          hands={hands}
+          others={others}
+          counts={selectPeopleFilterCounts(state)}
+          filter="all"
+          now={FIXTURE_NOW}
+        />
       }
       chat={<DMList threads={selectDirectList(state)} />}
     >

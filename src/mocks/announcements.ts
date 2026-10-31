@@ -3,14 +3,23 @@
  * two states (CLAUDE.md › Accessibility):
  *
  * - polite: a new chat message from someone else, a raised hand, a help
- *   request from a room, a student moved to a room (B2), rooms opening
+ *   request from a room, a student moved to a room (B2), rooms opening, a
+ *   poll answer arriving (as the running count), the timer moved to a corner
  * - assertive: the closing countdown starting (B5), the rooms closing and
  *   the class timer finishing
  * - nothing for `tick`: a ticking clock is never in a live region (X10)
  */
 import type { Politeness } from '../components/Announcer';
 import { roomName } from './breakouts';
-import { selectDisplayNames, selectRooms, selectSelf } from './selectors';
+import { reactions } from './reactions';
+import {
+  selectDisplayNames,
+  selectPollAnswered,
+  selectPollEligible,
+  selectRooms,
+  selectSelf,
+} from './selectors';
+import { cornerLabels } from './timer';
 import type { RoomState } from './types';
 
 export interface Announcement {
@@ -37,14 +46,16 @@ export function announcementsFor(previous: RoomState, next: RoomState): Announce
   const stillHere = new Set(next.participants.map((p) => p.id));
   const previousNames = selectDisplayNames(previous);
   for (const p of previous.participants) {
-    if (!stillHere.has(p.id)) out.push({ message: `${previousNames[p.id] ?? p.name} removed`, politeness: 'polite' });
+    if (!stillHere.has(p.id))
+      out.push({ message: `${previousNames[p.id] ?? p.name} removed`, politeness: 'polite' });
   }
 
   // New chat messages from other people.
   const seen = new Set(previous.chat.everyone.map((m) => m.id));
   for (const t of previous.chat.direct) for (const m of t.messages) seen.add(m.id);
   for (const m of next.chat.everyone) {
-    if (!seen.has(m.id) && m.from !== me) out.push({ message: `${nameOf(m.from)}: ${m.text}`, politeness: 'polite' });
+    if (!seen.has(m.id) && m.from !== me)
+      out.push({ message: `${nameOf(m.from)}: ${m.text}`, politeness: 'polite' });
   }
   for (const t of next.chat.direct) {
     for (const m of t.messages) {
@@ -54,12 +65,28 @@ export function announcementsFor(previous: RoomState, next: RoomState): Announce
     }
   }
 
+  // Reactions from other people (D5), like a short chat message.
+  const seenReactions = new Set(previous.reactions.items.map((r) => r.id));
+  for (const r of next.reactions.items) {
+    if (!seenReactions.has(r.id) && r.from !== me) {
+      out.push({ message: `${nameOf(r.from)} reacted: ${reactions[r.kind].label}`, politeness: 'polite' });
+    }
+  }
+
   // Help requests.
   const known = new Set(previous.breakouts.helpQueue.map((h) => h.id));
   for (const h of next.breakouts.helpQueue) {
     if (!known.has(h.id)) {
       const who = h.from ? ` (${nameOf(h.from)})` : '';
       out.push({ message: `${roomName(h.roomIndex)}${who} asked for help`, politeness: 'polite' });
+    }
+  }
+
+  // Room chat from students (B8), like a public message; never your own, and never a broadcast of yours.
+  const knownRoomMessages = new Set(previous.breakouts.messages.map((m) => m.id));
+  for (const m of next.breakouts.messages) {
+    if (!knownRoomMessages.has(m.id) && m.from !== me && m.roomIndex !== null) {
+      out.push({ message: `${roomName(m.roomIndex)} · ${nameOf(m.from)}: ${m.text}`, politeness: 'polite' });
     }
   }
 
@@ -83,12 +110,35 @@ export function announcementsFor(previous: RoomState, next: RoomState): Announce
     out.push({ message: 'Rooms stay open', politeness: 'polite' });
   }
   if (b0.phase === 'live' && b1.phase === 'back') {
-    out.push({ message: 'Breakout rooms closed. Everyone is back in the main room', politeness: 'assertive' });
+    out.push({
+      message: 'Breakout rooms closed. Everyone is back in the main room',
+      politeness: 'assertive',
+    });
   }
 
-  // The class timer finishing.
+  // A poll answer arriving, as the running count (answers are anonymous): never the bars themselves.
+  if (next.poll.phase === 'live') {
+    const before = selectPollAnswered(previous);
+    const answered = selectPollAnswered(next);
+    if (answered > before) {
+      out.push({
+        message: `Poll: ${answered} of ${selectPollEligible(next)} answered`,
+        politeness: 'polite',
+      });
+    }
+  }
+
+  // The class timer finishing. Its ticking time is plain text, never announced (X10).
   if (previous.timer.phase !== 'done' && next.timer.phase === 'done') {
     out.push({ message: 'Time’s up', politeness: 'assertive' });
+  }
+
+  // The timer moved to another corner by keyboard (D1): say where it went.
+  if (next.timer.phase !== 'off' && previous.timer.corner !== next.timer.corner) {
+    out.push({
+      message: `Timer moved to ${cornerLabels[next.timer.corner].toLowerCase()}`,
+      politeness: 'polite',
+    });
   }
 
   return out;

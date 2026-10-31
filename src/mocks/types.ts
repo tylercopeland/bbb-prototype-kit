@@ -98,23 +98,54 @@ export interface PresentationState {
   screenKind: ScreenKind;
   /** A screen share is running even while the deck is on stage (M2). */
   screenShared: boolean;
-  tool: 'select' | 'pen' | 'highlighter' | 'shapes' | 'text' | 'eraser';
+  tool: WhiteboardTool;
+  /** The whiteboard ink. */
+  color: InkColor;
 }
+
+export type WhiteboardTool = 'select' | 'pen' | 'highlighter' | 'shapes' | 'text' | 'eraser';
+
+/**
+ * The whiteboard inks, named by the token each one draws with (`text`,
+ * `accent`, `danger-text`, `status-live-text`, `status-hand-text`,
+ * `insight-text`), so every swatch reads on the toolbar in every mode. The
+ * canvas's one orange swatch (Focus.dc.html 122) is `amber`.
+ */
+export type InkColor = 'ink' | 'blue' | 'red' | 'green' | 'amber' | 'purple';
 
 export type PollPhase = 'off' | 'setup' | 'live' | 'ended';
 
+/** The answer presets of the poll builder (Focus.dc.html 977; X8: a radio group, not toggles). `poll.ts` has their labels and options. */
+export type PollType = 'choice' | 'yesno' | 'tf' | 'rate';
+
+/** The switches under "More options" (Focus.dc.html 980). */
+export type PollSetting = 'anonymous' | 'liveResults' | 'multipleAnswers';
+
 export interface PollState {
   phase: PollPhase;
+  type: PollType;
   question: string;
+  /** Editable for `choice`; the other types have fixed options (`POLL_TYPES`). */
   options: string[];
   /** Votes per option, same length as `options`. */
   votes: number[];
   /** Results are on the stage for everyone. */
   shown: boolean;
   anonymous: boolean;
+  /** Students see results as they come in. */
+  liveResults: boolean;
+  /** Allow more than one answer. */
+  multipleAnswers: boolean;
 }
 
 export type TimerPhase = 'off' | 'ready' | 'running' | 'paused' | 'done';
+
+/**
+ * A corner of the stage's overlay layer (D1): where a floating card sits.
+ * The timer defaults to the top right, the reserved corner the slide's
+ * title block keeps clear of.
+ */
+export type StageCorner = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 
 export interface TimerState {
   phase: TimerPhase;
@@ -125,6 +156,8 @@ export interface TimerState {
   /** Room-clock time the timer reaches zero, while running. */
   endsAt: number | null;
   minimized: boolean;
+  /** Where the card or pill sits; moved by keyboard from "Move to corner" (D1). */
+  corner: StageCorner;
 }
 
 export interface PluginEntry {
@@ -183,6 +216,19 @@ export interface BreakoutOptions {
   record: boolean;
 }
 
+/**
+ * A message in a room's chat (B8: the preview's "Message Room 2" and the
+ * panel's "Message every room" are real inputs). `roomIndex` is `null` for
+ * a message the teacher sent to every room.
+ */
+export interface RoomMessage {
+  id: string;
+  roomIndex: number | null;
+  from: ParticipantId;
+  sentAt: number;
+  text: string;
+}
+
 export interface BreakoutState {
   phase: BreakoutPhase;
   mode: BreakoutMode;
@@ -219,19 +265,18 @@ export interface BreakoutState {
   work: Record<number, RoomWorkKind>;
   /** The teacher is listening in on the previewed room. */
   listening: boolean;
+  /** The room the teacher joined from a preview (B8), while live; `null` in the main room. */
+  joined: number | null;
+  /** Room chat, every room's messages in one list; ids are `rm-${messageSeq}`. */
+  messages: RoomMessage[];
+  messageSeq: number;
+  /** Seconds each student has talked in their room, for the preview's "Talk time". */
+  talkTime: Record<ParticipantId, number>;
 }
 
 export type Orientation = 'portrait' | 'landscape';
 export type MobileSheet =
-  | 'none'
-  | 'people'
-  | 'chat'
-  | 'student'
-  | 'more'
-  | 'react'
-  | 'alerts'
-  | 'cams'
-  | 'slides';
+  'none' | 'people' | 'chat' | 'student' | 'more' | 'react' | 'alerts' | 'cams' | 'slides';
 
 export interface UiState {
   layout: Layout;
@@ -248,6 +293,8 @@ export interface UiState {
   analyticsTipShown: boolean;
   /** The breakout surface replaces the Focus stage (BO2 onwards). */
   breakoutsOpen: boolean;
+  /** The "Closing rooms" dialog was dismissed; the panel's countdown banner stays (B5). Reset when the countdown starts, stops or ends. */
+  closingNoticeDismissed: boolean;
   /** Mobile. */
   orientation: Orientation;
   sheet: MobileSheet;
@@ -263,6 +310,30 @@ export interface SessionState {
   recording: boolean;
   /** Room-clock time the session started. */
   startedAt: number;
+  /**
+   * Students may start private conversations (owner decision 2026-10-30,
+   * the "Private chat" switch in Room settings). Off, students see no
+   * "Message privately" and cannot message each other, while a moderator
+   * can still message a student and the student can reply in that thread.
+   */
+  privateChat: boolean;
+}
+
+/** The reaction tray's set, shared with the phone (Mobile.dc.html 470; P8). */
+export type ReactionKind = 'thumbsUp' | 'clap' | 'laugh' | 'surprised' | 'love' | 'celebrate';
+
+export interface Reaction {
+  id: string;
+  from: ParticipantId;
+  kind: ReactionKind;
+  /** When it was sent, on the room clock; it shows for `REACTION_LIFETIME`. */
+  sentAt: number;
+}
+
+export interface ReactionsState {
+  items: Reaction[];
+  /** The last reaction number handed out; ids are `r-${seq}`. */
+  seq: number;
 }
 
 export interface ClockState {
@@ -281,5 +352,6 @@ export interface RoomState {
   plugins: PluginsState;
   alerts: StoredAlert[];
   breakouts: BreakoutState;
+  reactions: ReactionsState;
   ui: UiState;
 }

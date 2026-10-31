@@ -134,7 +134,8 @@ export interface ChipProps extends Omit<RacRadioProps, 'className' | 'children' 
  * the accessible name is always the full text.
  */
 export function Chip({ children, badge, density = 'default', className, ref, ...props }: ChipProps) {
-  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLLabelElement>(ref);
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } =
+    useTruncationTooltip<HTMLLabelElement>(ref);
   return (
     <RacRadio
       {...mergeProps(props, triggerProps)}

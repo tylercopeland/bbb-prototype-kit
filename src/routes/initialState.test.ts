@@ -103,6 +103,15 @@ describe('stateForArtboard', () => {
     expect(stateForArtboard(board('desktop', 'BO9MainView-desk')).breakouts.view).toBe('main');
     const closing = stateForArtboard(board('desktop', 'BO10Closing-desk'));
     expect(selectClosingLeft(closing)).toBe(60);
+    // The room chat is seeded from the canvas's lines (B8): two per group room, the help room's asking for the teacher.
+    const live = stateForArtboard(board('desktop', 'BO5LiveGroups-desk'));
+    expect(live.breakouts.messages).toHaveLength(8);
+    expect(live.breakouts.messages.filter((m) => m.roomIndex === 1).map((m) => m.text)).toEqual([
+      'Let’s each add two notes first',
+      'We’re stuck on what “live” means, can the teacher pop in?',
+    ]);
+    expect(live.breakouts.messages.every((m) => m.sentAt < live.clock.now)).toBe(true);
+    expect(solo.breakouts.messages).toHaveLength(13);
   });
 
   it('BO11–BO12: everyone back, with a room on stage', () => {

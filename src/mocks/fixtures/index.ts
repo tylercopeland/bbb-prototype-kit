@@ -4,6 +4,7 @@
  * stories and tests call it directly.
  */
 import { breakoutStudents, roundRobin } from '../breakouts';
+import { CHOICE_OPTIONS } from '../poll';
 import { MINUTE } from '../time';
 import type {
   BreakoutState,
@@ -16,7 +17,12 @@ import type {
   UiState,
 } from '../types';
 import { chatFor, emptyChat, questionAlerts } from './chat';
-import { FIXTURE_NOW, FIXTURE_STARTED_AT, participantFixtures, type ParticipantFixture } from './participants';
+import {
+  FIXTURE_NOW,
+  FIXTURE_STARTED_AT,
+  participantFixtures,
+  type ParticipantFixture,
+} from './participants';
 
 export { chatFor, emptyChat, questionAlerts } from './chat';
 export * from './participants';
@@ -54,24 +60,30 @@ export const defaultPresentation: PresentationState = {
   screenKind: 'Entire screen',
   screenShared: false,
   tool: 'pen',
+  color: 'amber',
 };
 
-/** The canvas poll (Focus.dc.html 970–972), multiple choice. */
+/** The canvas poll (Focus.dc.html 968–972), multiple choice, anonymous. */
 export const defaultPoll: PollState = {
   phase: 'off',
+  type: 'choice',
   question: 'Which change makes it easiest to see who is muted?',
-  options: ['Grey icons for muted', 'A red badge on everyone', 'Hide the mic icon', 'Text under each name'],
+  options: CHOICE_OPTIONS,
   votes: [6, 1, 0, 2],
   shown: false,
   anonymous: true,
+  liveResults: false,
+  multipleAnswers: false,
 };
 
+/** Five minutes, in the reserved corner (D1). */
 export const defaultTimer: TimerState = {
   phase: 'off',
   durationSec: 300,
   leftSec: 300,
   endsAt: null,
   minimized: false,
+  corner: 'topRight',
 };
 
 export const defaultPlugins: PluginsState = {
@@ -100,6 +112,7 @@ export const defaultUi: UiState = {
   mediaType: 'slides',
   analyticsTipShown: false,
   breakoutsOpen: false,
+  closingNoticeDismissed: false,
   orientation: 'portrait',
   sheet: 'none',
   sheetStudent: null,
@@ -119,7 +132,10 @@ export interface BreakoutFixtureOptions {
  * its members; a help request is data in `helpQueue` (B3), added by the
  * route props or an action.
  */
-export function breakoutsFor(state: Pick<RoomState, 'participants'>, options: BreakoutFixtureOptions = {}): BreakoutState {
+export function breakoutsFor(
+  state: Pick<RoomState, 'participants'>,
+  options: BreakoutFixtureOptions = {},
+): BreakoutState {
   const students = breakoutStudents(state.participants).map((s) => s.id);
   const roomCount = options.roomCount ?? 4;
   return {
@@ -150,7 +166,43 @@ export function breakoutsFor(state: Pick<RoomState, 'participants'>, options: Br
     },
     work: { 0: 'board', 1: 'doc', 2: 'quiz', 3: 'board', 4: 'slide', 5: 'doc' },
     listening: false,
+    joined: null,
+    messages: [],
+    messageSeq: 0,
+    talkTime: Object.fromEntries(students.map((id, i) => [id, TALK_MINUTES[i % TALK_MINUTES.length] * 60])),
   };
+}
+
+/** The canvas's talk times (Breakout.dc.html 442), in minutes, cycled over the students in joining order. */
+const TALK_MINUTES = [9, 6, 3, 2];
+
+/**
+ * The canvas's room chat (Breakout.dc.html 448–449): what the first two
+ * members of a room said, as texts the route seeds into `messages` through
+ * `sendRoomMessage` once the rooms are open. `agoSec` is how long before
+ * the fixture clock each one was sent.
+ */
+export function roomChatSeed(
+  mode: BreakoutState['mode'],
+  needsHelp: boolean,
+): Array<{ member: number; text: string; agoSec: number }> {
+  if (mode === 'solo') {
+    return [
+      {
+        member: 0,
+        text: needsHelp ? 'Can you check my answer to question 2?' : 'Starting on the reflection now',
+        agoSec: 60,
+      },
+    ];
+  }
+  return [
+    { member: 0, text: 'Let’s each add two notes first', agoSec: 3 * 60 },
+    {
+      member: 1,
+      text: needsHelp ? 'We’re stuck on what “live” means, can the teacher pop in?' : 'I’ll take the share-back',
+      agoSec: 60,
+    },
+  ];
 }
 
 export interface CreateRoomOptions {
@@ -167,7 +219,12 @@ export function createRoom(options: CreateRoomOptions = {}): RoomState {
   const present = new Set(participants.map((p) => p.id));
   const messageIds = new Set(chat.everyone.map((m) => m.id));
   return {
-    session: { title: 'Hack Week: Brazil 2026', recording: true, startedAt: FIXTURE_STARTED_AT },
+    session: {
+      title: 'Hack Week: Brazil 2026',
+      recording: true,
+      startedAt: FIXTURE_STARTED_AT,
+      privateChat: true,
+    },
     clock: { now: FIXTURE_NOW },
     participants,
     chat,
@@ -177,6 +234,7 @@ export function createRoom(options: CreateRoomOptions = {}): RoomState {
     plugins: defaultPlugins,
     alerts: questionAlerts.filter((a) => present.has(a.from) && messageIds.has(a.messageId)),
     breakouts: breakoutsFor({ participants }, options.breakouts),
+    reactions: { items: [], seq: 0 },
     ui: { ...defaultUi, ...options.ui },
   };
 }

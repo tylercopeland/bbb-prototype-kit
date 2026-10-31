@@ -13,6 +13,7 @@ import {
   defaultPoll,
   MINUTE,
   participantFixtures,
+  roomChatSeed,
   roomReducer,
   SECOND,
   selectRooms,
@@ -177,6 +178,26 @@ export function applyProps(initial: RoomState, props: Props, board: string): Roo
           breakouts: {
             ...state.breakouts,
             helpQueue: state.breakouts.helpQueue.map((h) => ({ ...h, askedAt: state.clock.now - HELP_ASKED_AGO })),
+          },
+        };
+      }
+      // The canvas's room chat (B8): what the first members of each room said, backdated to when they said it.
+      const sentAt = new Map<string, number>();
+      for (const r of selectRooms(state)) {
+        for (const seed of roomChatSeed(state.breakouts.mode, r.index === helpRoom)) {
+          const member = r.members[seed.member];
+          if (!member) continue;
+          run({ type: 'sendRoomMessage', roomIndex: r.index, from: member.id, text: seed.text });
+          const last = state.breakouts.messages[state.breakouts.messages.length - 1];
+          if (last) sentAt.set(last.id, state.clock.now - seed.agoSec * SECOND);
+        }
+      }
+      if (sentAt.size > 0) {
+        state = {
+          ...state,
+          breakouts: {
+            ...state.breakouts,
+            messages: state.breakouts.messages.map((m) => ({ ...m, sentAt: sentAt.get(m.id) ?? m.sentAt })),
           },
         };
       }

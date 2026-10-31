@@ -53,13 +53,19 @@ export interface ParticipantListProps extends Omit<ComponentProps<'div'>, 'child
   openMenu?: ParticipantId | null;
   onMenuOpenChange?: (participantId: ParticipantId, isOpen: boolean) => void;
   onMessage?: (participantId: ParticipantId) => void;
+  /** Whether a row may offer "Message privately" (`selectCanMessage`); students see none while private chat is off. @default always */
+  canMessage?: (participantId: ParticipantId) => boolean;
   onAction?: (participantId: ParticipantId, action: ParticipantAction) => void;
   /** "See full activity in Learning Analytics" in the insight note. */
   onAnalytics?: () => void;
   className?: string;
 }
 
-const filterLabels: Record<PeopleFilter, string> = { all: 'All', hands: 'Raised hands', low: 'Low engagement' };
+const filterLabels: Record<PeopleFilter, string> = {
+  all: 'All',
+  hands: 'Raised hands',
+  low: 'Low engagement',
+};
 
 /**
  * The filter is a radio group of chips (X8), each with its count, so the
@@ -84,6 +90,7 @@ export function ParticipantList({
   openMenu = null,
   onMenuOpenChange,
   onMessage,
+  canMessage,
   onAction,
   onAnalytics,
   className,
@@ -129,6 +136,7 @@ export function ParticipantList({
       isMenuOpen={openMenu === p.id}
       onMenuOpenChange={(open) => onMenuOpenChange?.(p.id, open)}
       onMessage={() => onMessage?.(p.id)}
+      canMessage={canMessage ? canMessage(p.id) : true}
       onAction={(action) => act(p, action)}
       moreRef={(el) => {
         if (el) moreButtons.current.set(p.id, el);
@@ -149,7 +157,12 @@ export function ParticipantList({
         className={styles.filters()}
       >
         {(['all', 'hands', 'low'] as const).map((f) => (
-          <Chip key={f} value={f} density="compact" badge={{ count: counts[f], label: `${counts[f]} people` }}>
+          <Chip
+            key={f}
+            value={f}
+            density="compact"
+            badge={{ count: counts[f], label: `${counts[f]} people` }}
+          >
             {filterLabels[f]}
           </Chip>
         ))}
@@ -157,9 +170,15 @@ export function ParticipantList({
       <div className={styles.scroll()}>
         {filter === 'low' && (
           <div className={styles.note()}>
-            Quiet for 15+ minutes: no chat, reactions, poll answers or speaking. Based only on activity in this
-            session, so a quick check-in is the right next step, not a judgement.
-            <Button variant="ghost" size="sm" iconEnd="externalLink" aria-describedby={analyticsHintId} onPress={onAnalytics}>
+            Quiet for 15+ minutes: no chat, reactions, poll answers or speaking. Based only on activity in
+            this session, so a quick check-in is the right next step, not a judgement.
+            <Button
+              variant="ghost"
+              size="sm"
+              iconEnd="externalLink"
+              aria-describedby={analyticsHintId}
+              onPress={onAnalytics}
+            >
               See full activity in Learning Analytics
             </Button>
             {/* The external-link glyph says it visually; this says it to assistive technology. */}
@@ -183,7 +202,9 @@ export function ParticipantList({
             </ul>
           </>
         )}
-        {filter === 'hands' && hands.length === 0 && <p className={styles.empty()}>No raised hands right now.</p>}
+        {filter === 'hands' && hands.length === 0 && (
+          <p className={styles.empty()}>No raised hands right now.</p>
+        )}
         {filter !== 'hands' && others.length > 0 && (
           <>
             <h3 id={othersId} ref={othersHeadingRef} tabIndex={-1} className={styles.kicker()}>
@@ -194,7 +215,9 @@ export function ParticipantList({
             </ul>
           </>
         )}
-        {filter === 'low' && others.length === 0 && <p className={styles.empty()}>Everyone has been active.</p>}
+        {filter === 'low' && others.length === 0 && (
+          <p className={styles.empty()}>Everyone has been active.</p>
+        )}
         {filter === 'all' && hands.length === 0 && others.length === 0 && (
           <p className={styles.empty()}>No one is here yet.</p>
         )}

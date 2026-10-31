@@ -38,9 +38,9 @@ export const switchTextStyles = tv({
 export const switchTrackStyles = tv({
   slots: {
     track:
-      'flex h-6 w-10 shrink-0 items-center rounded-full bg-border-control p-1 group-focus-ring transition-colors group-data-disabled:bg-border group-data-selected:bg-accent forced-colors-track group-data-selected:forced-colors-track-on',
+      'flex h-6 w-10 shrink-0 items-center rounded-full forced-colors-track bg-border-control p-1 group-focus-ring transition-colors group-data-disabled:bg-border group-data-selected:forced-colors-track-on group-data-selected:bg-accent',
     thumb:
-      'size-4 rounded-full bg-surface transition-transform group-data-selected:translate-x-4 group-data-selected:bg-on-accent forced-colors-thumb group-data-selected:forced-colors-thumb-on',
+      'size-4 rounded-full forced-colors-thumb bg-surface transition-transform group-data-selected:translate-x-4 group-data-selected:forced-colors-thumb-on group-data-selected:bg-on-accent',
   },
 });
 
