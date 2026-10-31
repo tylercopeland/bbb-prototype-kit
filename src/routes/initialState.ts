@@ -70,7 +70,8 @@ const TIMER_LEFT_SEC = 222;
 export const KNOWN_PROPS: Record<string, readonly string[]> = {
   Focus: ['layout', 'panel', 'scope', 'dm', 'pfilter', 'pmenu', 'share', 'overview', 'media', 'mtype', 'plugins', 'lxtip', 'poll', 'timer', 'presmin', 'presctl'],
   Breakout: ['phase', 'mode', 'rooms', 'moving', 'peek', 'view', 'closing', 'onstage'],
-  Mobile: ['orient', 'presmin', 'annot', 'sheet', 'pfilter'],
+  // role, confirm and keyboard are the P9 states added in milestone 6 (docs/artboards.md › rows 15–17).
+  Mobile: ['orient', 'presmin', 'annot', 'sheet', 'pfilter', 'role', 'confirm', 'keyboard'],
 };
 
 /** Splits the route query into fixture options and prop overrides. */

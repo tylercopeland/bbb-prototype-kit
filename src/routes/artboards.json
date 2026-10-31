@@ -740,5 +740,53 @@
       "sheet": "none",
       "presmin": "min"
     }
+  },
+  {
+    "stem": "MB15Attendee",
+    "group": "mobile",
+    "number": 15,
+    "title": "Phone · Student view (attendee)",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "none",
+      "role": "student"
+    }
+  },
+  {
+    "stem": "MB16Confirm",
+    "group": "mobile",
+    "number": 16,
+    "title": "Phone · Confirm Leave",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "none",
+      "confirm": "leave"
+    }
+  },
+  {
+    "stem": "MB17KeyboardChat",
+    "group": "mobile",
+    "number": 17,
+    "title": "Phone · Chat with the keyboard open",
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "board": "Mobile",
+    "props": {
+      "orient": "portrait",
+      "sheet": "chat",
+      "keyboard": "open"
+    }
   }
 ]
