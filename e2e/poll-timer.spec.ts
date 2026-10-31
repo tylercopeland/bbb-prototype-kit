@@ -87,7 +87,7 @@ test.describe('poll and timer, keyboard only', () => {
     // "End poll" unmounted: "New poll" took its place and its focus; Close is the next stop.
     await expect(panel.getByRole('button', { name: 'New poll' })).toBeFocused();
     await page.keyboard.press('Tab');
-    await expect(panel.getByRole('button', { name: 'Close' })).toBeFocused();
+    await expect(panel.getByRole('button', { name: 'Close', exact: true })).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.getByRole('complementary')).toHaveCount(0);
     await expect(card).toHaveCount(0);

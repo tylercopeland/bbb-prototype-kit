@@ -175,3 +175,21 @@ Built as planned. The deviations are also in `PLAN.md` › Decisions log.
 8. **The room list filter** has three chips (All, Need help, Quiet) and the list is always help-first (B6: "filter or sort"). Confirm, or add a sort control as well.
 9. **Timers in the rooms** (the time left, the countdown) move only with `?clock=live`, as the milestone 4 rule says; on the routes the countdown shows 1:00 and stays there. Same question as batch B, decision 1.
 10. **Baselines wait for CI.** None are committed yet: run the `update-snapshots` workflow on `m5-desktop` once the batch is reviewed, then approve the 33 PNGs against the canvas.
+
+## Review fixes (2026-10-31)
+
+The milestone 5 review findings, fixed on `m5-desktop` in three commits. Nothing here changes a canvas decision; the M5 boxes in `PLAN.md` stay unticked until the owner reviews.
+
+1. **"End poll" lost focus to `<body>`.** The footer swaps it for "New poll" and "Close", so `PollPanel` now moves focus to "New poll" (`focusAfter = 'ended'` in the phase effect). The PL2 unit test and the poll-timer walk assert it; the walk then Tabs to Close instead of restarting from `<body>`.
+2. **Keyboard walks** (`e2e/breakouts.spec.ts`, now nine): solo mode (BO4 → "One per student" is checked and described → Open 13 rooms → the compact cards → the panel row opens the solo preview → Escape returns to the row); "Message every room" → Send to all rooms (and Enter in the field), then Room 3's preview shows both, with a unit test on BO5; the closing dialog dismissed with Escape → the banner's "Keep rooms open" holds focus → Close all rooms; the filter chips on BO7 (arrow keys, the lists they show); Even out and Shuffle in setup. **Even out unmounted itself after a press and dropped focus** (found while writing the walk): `BreakoutScreen` now hands focus to "Shuffle evenly".
+3. **Room rows hid their status.** The panel's rows are named "Preview Room 2" (a hidden "Preview" before the visible name) and describe themselves with the status through `aria-describedby`, as the plugin cards do.
+4. **Member chips** are named with the short name they show (B9): "Move Ana to another room", "Move Ana S. to another room".
+5. **Truncation tooltips** (`useTruncationTooltip`, the M4 pattern) on the RoomCard chips and solo members, the HelpQueue titles, the RoomPreview talk-time names and the panel's room rows; `longNames` stories for RoomCard, HelpQueue and RoomPreview, with tooltip tests. Inside the modal preview the tooltip portal sits in the part of the page the modal hides from assistive technology, so it is a visual aid there; the full name is already the row's text.
+6. **The back-phase thumbnail** is a React Aria `ToggleButton` named "Show Room N on stage" with `isSelected` / `aria-pressed` and the inset ring when selected, so both controls on the card say whether the work is on stage.
+7. **The split-type cards and assignment rows** are named by their label alone; the line under it is their `aria-describedby` description.
+8. **Class strings outside `tv()`:** SlideOverview's popover width, PollBuilder's hidden answer name and RoomPreview's dialog width live in their `tv()` slots; RoomPreview merges a consumer's class with its width instead of dropping it.
+9. `contrast.json` checks accent on accent-soft (passes in light, dark and stage).
+10. **The live rooms tab** reads "4 rooms live"; the time left beside it is a visual-only `detail` (a new `Tab` prop, `aria-hidden`, kept out of the tooltip too), so the ticking clock never renames the tab (X10). Test and story.
+11. The four keyboard walks share `e2e/helpers.ts` (`SIZE`, `tabTo` with a key and `aria-hidden` left out of the text it reads, `tabUntilFocused`, `dispatch`).
+
+Checks: `npm run check` passes (66 files, 630 tests, 361 token checks); `npx playwright test e2e/breakouts.spec.ts e2e/poll-timer.spec.ts` 13 passed; the axe story and route specs for the touched components and the BO, PL and N1 routes, 72 passed. Baselines still wait for the `update-snapshots` workflow (batch C, decision 10); these fixes change the rendered rooms tab (the separator) and the thumbnail ring on BO12, so refresh them after this review.

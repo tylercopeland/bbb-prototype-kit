@@ -11,7 +11,8 @@
  * the board refocuses it by id; a preview opened on load (BO6, BO8) returns
  * focus to the room's preview button; "Back to slides" unmounts itself and
  * lands on that room's share-back row; "Bring everyone back now" lands on
- * the first share-back row.
+ * the first share-back row; "Even out" unmounts itself and lands on
+ * "Shuffle evenly".
  */
 import { useEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react';
 import { ToggleButton as RacToggleButton, type Key } from 'react-aria-components';
@@ -194,6 +195,15 @@ export function BreakoutScreen({ stage, keepOpenRef }: BreakoutScreenProps) {
       backToSlidesFrom.current = null;
     }
   }, [breakouts.onStage]);
+  // "Even out" unmounts itself once the rooms are even: "Shuffle evenly" beside it takes focus.
+  const shuffleButton = useRef<HTMLButtonElement>(null);
+  const evenedOut = useRef(false);
+  useEffect(() => {
+    if (!uneven && evenedOut.current) {
+      evenedOut.current = false;
+      shuffleButton.current?.focus();
+    }
+  }, [uneven]);
 
   const styles = breakoutScreenStyles({ columns: boardColumns(phase, mode, rooms.length) });
   const moveTargets: MoveTarget[] = rooms.map((r) => ({ index: r.index, name: r.name, count: r.members.length }));
@@ -258,11 +268,18 @@ export function BreakoutScreen({ stage, keepOpenRef }: BreakoutScreenProps) {
           {view === 'rooms' && phase === 'setup' && mode === 'groups' && (
             <>
               {uneven && (
-                <Button size="sm" icon="evenOut" onPress={() => dispatch({ type: 'evenOutRooms' })}>
+                <Button
+                  size="sm"
+                  icon="evenOut"
+                  onPress={() => {
+                    evenedOut.current = true;
+                    dispatch({ type: 'evenOutRooms' });
+                  }}
+                >
                   Rooms are uneven · Even out
                 </Button>
               )}
-              <Button size="sm" icon="shuffle" onPress={() => dispatch({ type: 'shuffleRooms' })}>
+              <Button ref={shuffleButton} size="sm" icon="shuffle" onPress={() => dispatch({ type: 'shuffleRooms' })}>
                 Shuffle evenly
               </Button>
             </>

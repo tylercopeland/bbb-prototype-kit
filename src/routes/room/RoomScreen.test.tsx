@@ -631,10 +631,11 @@ describe('RoomScreen breakouts (batch C)', () => {
     await waitFor(() => expect(chip).toHaveFocus());
     expect(screen.getByRole('status')).toHaveTextContent('Ana moved to Room 1');
     expect(screen.getByText('5 students')).toBeInTheDocument();
-    // Uneven now: Even out rebalances around the move (B4) and Ana stays put.
+    // Uneven now: Even out rebalances around the move (B4) and Ana stays put; the button unmounts, so Shuffle takes focus.
     await user.click(screen.getByRole('button', { name: 'Rooms are uneven · Even out' }));
     expect(within(screen.getByRole('list', { name: 'Room 1 students' })).getByText('Ana')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Even out/ })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Shuffle evenly' })).toHaveFocus());
     await user.click(screen.getByRole('button', { name: 'Shuffle evenly' }));
     expect(within(screen.getByRole('list', { name: 'Room 1 students' })).getByText('Ana')).toBeInTheDocument();
   });
@@ -720,6 +721,35 @@ describe('RoomScreen breakouts (batch C)', () => {
     expect(within(within(panel).getByRole('list', { name: 'Rooms that need help' })).getAllByRole('button')).toHaveLength(1);
     await user.click(within(panel).getByRole('radio', { name: /^Quiet/ }));
     expect(within(within(panel).getByRole('list', { name: 'Quiet rooms' })).getAllByRole('button').length).toBeGreaterThan(1);
+  });
+
+  it('BO5: "Message every room" sends to every room on Enter or Send to all rooms, clears, and the previews show it (B8)', async () => {
+    const user = userEvent.setup();
+    renderAt(BO5);
+    const panel = screen.getByRole('complementary', { name: 'Breakout rooms' });
+    const field = within(panel).getByRole('textbox', { name: 'Message every room' });
+    await user.click(field);
+    await user.keyboard('Pick one idea{Enter}');
+    expect(window.bbbRoom!.getState().breakouts.messages.at(-1)).toMatchObject({
+      roomIndex: null,
+      from: 'helena',
+      text: 'Pick one idea',
+    });
+    expect(field).toHaveValue('');
+    expect(field).toHaveFocus();
+    await user.keyboard('Two minutes left');
+    await user.click(within(panel).getByRole('button', { name: 'Send to all rooms' }));
+    expect(window.bbbRoom!.getState().breakouts.messages.at(-1)).toMatchObject({ roomIndex: null, text: 'Two minutes left' });
+    expect(field).toHaveValue('');
+    // Your own broadcast is not announced; a blank one is not sent.
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    const count = window.bbbRoom!.getState().breakouts.messages.length;
+    await user.click(within(panel).getByRole('button', { name: 'Send to all rooms' }));
+    expect(window.bbbRoom!.getState().breakouts.messages).toHaveLength(count);
+    await user.click(within(screen.getByRole('list', { name: 'Rooms' })).getByRole('button', { name: 'Preview Room 3' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Room 3' });
+    expect(within(dialog).getByRole('region', { name: 'Room chat' })).toHaveTextContent('Pick one idea');
+    expect(within(dialog).getByRole('region', { name: 'Room chat' })).toHaveTextContent('Two minutes left');
   });
 
   it('BO9: the main view keeps the stage and the Main room card; Back to rooms returns to the board and the panel', async () => {

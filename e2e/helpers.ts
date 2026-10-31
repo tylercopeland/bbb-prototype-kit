@@ -12,9 +12,9 @@ export const SIZE = { width: 1400, height: 900 };
 /**
  * Presses Tab (or `key`, such as Shift+Tab) until the focused element has
  * the accessible name, or fails after `max` presses. The name is read from
- * `aria-label`, then `aria-labelledby`, then the text; a radio input is
- * named by its label element, which this cannot see, so use
- * `tabUntilFocused` for one.
+ * `aria-label`, then `aria-labelledby`, then the text with `aria-hidden`
+ * parts left out; a radio input is named by its label element, which this
+ * cannot see, so use `tabUntilFocused` for one.
  */
 export async function tabTo(page: Page, name: string | RegExp, max = 60, key = 'Tab') {
   for (let i = 0; i < max; i++) {
@@ -22,13 +22,20 @@ export async function tabTo(page: Page, name: string | RegExp, max = 60, key = '
     const label = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement | null;
       if (!el) return '';
+      const visibleText = (node: Node): string => {
+        if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
+        if (!(node instanceof Element) || node.getAttribute('aria-hidden') === 'true') return '';
+        return Array.from(node.childNodes).map(visibleText).join('');
+      };
       const byIds = (attr: string) =>
         el
           .getAttribute(attr)
           ?.split(/\s+/)
           .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
           .join(' ');
-      return el.getAttribute('aria-label') ?? byIds('aria-labelledby') ?? el.textContent?.trim() ?? '';
+      return (
+        el.getAttribute('aria-label') ?? byIds('aria-labelledby') ?? visibleText(el).replace(/\s+/g, ' ').trim()
+      );
     });
     if (typeof name === 'string' ? label === name : name.test(label)) return;
   }
