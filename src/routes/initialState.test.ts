@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { selectAlerts, selectClosingLeft, selectOpenHelp, selectRooms, selectTimerLeft } from '../mocks';
 import { artboards, findArtboard } from './artboards';
-import { applyProps, KNOWN_PROPS, parseQuery, stateForArtboard } from './initialState';
+import { applyProps, KEYBOARD_INSET, KNOWN_PROPS, parseQuery, stateForArtboard } from './initialState';
 import { createRoom } from '../mocks';
 
 const board = (group: 'desktop' | 'mobile', stem: string) => {
@@ -140,6 +140,12 @@ describe('stateForArtboard', () => {
     const remove = stateForArtboard(board('mobile', 'MB16Confirm'), new URLSearchParams('confirm=remove'));
     expect(remove.ui).toMatchObject({ confirm: 'remove', sheet: 'student', sheetStudent: 'anton' });
     expect(stateForArtboard(board('mobile', 'MB1Room'), new URLSearchParams('confirm=nope')).ui.confirm).toBe('none');
+  });
+
+  it('MB17: the keyboard-open chat fakes a fixed keyboard height through the store action', () => {
+    const s = stateForArtboard(board('mobile', 'MB17KeyboardChat'));
+    expect(s.ui).toMatchObject({ sheet: 'chat', panel: 'chat', keyboardInset: KEYBOARD_INSET });
+    expect(stateForArtboard(board('mobile', 'MB5Chat')).ui.keyboardInset).toBe(0);
   });
 
   it('lets the query override props and pick the fixture', () => {

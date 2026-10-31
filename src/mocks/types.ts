@@ -307,6 +307,13 @@ export interface UiState {
   reacting: boolean;
   /** The open confirmation dialog (MB16); `remove` concerns `sheetStudent`. */
   confirm: MobileConfirm;
+  /**
+   * How much of the viewport the on-screen keyboard covers, in CSS pixels
+   * (MB17). The route measures it from `visualViewport`; a deep link with
+   * `keyboard=open` fakes a fixed height so a screenshot is deterministic.
+   * Sheets shrink by it so the chat composer stays above the keyboard.
+   */
+  keyboardInset: number;
 }
 
 export interface SessionState {

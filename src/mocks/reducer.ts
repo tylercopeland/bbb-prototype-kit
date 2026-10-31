@@ -161,6 +161,8 @@ export type RoomAction =
   | { type: 'setReacting'; reacting: boolean }
   /** Open or close the Leave or Remove confirmation (MB16). */
   | { type: 'setConfirm'; confirm: MobileConfirm }
+  /** The on-screen keyboard's height in CSS pixels, 0 when it is down (MB17). */
+  | { type: 'setKeyboardInset'; inset: number }
   /**
    * Make another participant the local person (the student view, MB15):
    * `isSelf` moves to them. Nothing else changes, so the same room is seen
@@ -944,6 +946,10 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       return withUi(state, { reacting: action.reacting, sheet: action.reacting ? 'react' : 'none' });
     case 'setConfirm':
       return state.ui.confirm === action.confirm ? state : withUi(state, { confirm: action.confirm });
+    case 'setKeyboardInset': {
+      const inset = Math.max(0, Math.round(action.inset));
+      return state.ui.keyboardInset === inset ? state : withUi(state, { keyboardInset: inset });
+    }
     case 'setViewer': {
       if (!state.participants.some((p) => p.id === action.participantId)) return state;
       if (selfId(state) === action.participantId) return state;

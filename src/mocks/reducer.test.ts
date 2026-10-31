@@ -659,6 +659,13 @@ describe('mobile', () => {
     expect(reduce(s, { type: 'setConfirm', confirm: 'none' }).ui.confirm).toBe('none');
   });
 
+  it('keeps the keyboard inset (MB17): rounded, never negative, unchanged state when equal', () => {
+    const s = reduce(createRoom(), { type: 'setKeyboardInset', inset: 335.6 });
+    expect(s.ui.keyboardInset).toBe(336);
+    expect(reduce(s, { type: 'setKeyboardInset', inset: 336 })).toBe(s);
+    expect(reduce(s, { type: 'setKeyboardInset', inset: -4 }).ui.keyboardInset).toBe(0);
+  });
+
   it('moves the viewer to a student for the student view (MB15), and ignores unknown or current ids', () => {
     const s = reduce(createRoom(), { type: 'setViewer', participantId: 'anton' });
     expect(s.participants.filter((p) => p.isSelf).map((p) => p.id)).toEqual(['anton']);

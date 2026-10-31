@@ -119,6 +119,7 @@ export const defaultUi: UiState = {
   annotating: false,
   reacting: false,
   confirm: 'none',
+  keyboardInset: 0,
 };
 
 export interface BreakoutFixtureOptions {

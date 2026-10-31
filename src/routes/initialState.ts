@@ -65,6 +65,9 @@ const confirms = oneOf<MobileConfirm>('none', 'leave', 'remove');
 /** The student the phone artboards act on (Mobile.dc.html 282: the student sheet's default subject), also the viewer of the student view (MB15). */
 export const MOBILE_STUDENT = 'anton';
 
+/** The fake on-screen keyboard height for `keyboard=open` (MB17): a 390×844 phone's keyboard in CSS pixels. */
+export const KEYBOARD_INSET = 336;
+
 /** The canvas's live breakout timings: rooms opened 1:18 ago, help asked 1 min ago. */
 const ROOMS_OPEN_FOR = MINUTE + 18 * SECOND;
 const HELP_ASKED_AGO = MINUTE;
@@ -238,7 +241,9 @@ export function applyProps(initial: RoomState, props: Props, board: string): Roo
       if (confirm === 'remove') run({ type: 'setSheet', sheet: 'student', student: MOBILE_STUDENT });
       run({ type: 'setConfirm', confirm });
     }
-    // `keyboard=open` (MB17) is batch B: the chat composer focused with the keyboard up.
+    // The keyboard-open chat (MB17, P9): the composer is focused with the keyboard up. The height is a fixed
+    // fake, so the route renders the same everywhere; in real use the screen measures `visualViewport`.
+    if (get('keyboard') === 'open') run({ type: 'setKeyboardInset', inset: KEYBOARD_INSET });
   }
 
   return state;
