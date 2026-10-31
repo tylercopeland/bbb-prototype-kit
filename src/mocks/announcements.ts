@@ -82,6 +82,14 @@ export function announcementsFor(previous: RoomState, next: RoomState): Announce
     }
   }
 
+  // Room chat from students (B8), like a public message; never your own, and never a broadcast of yours.
+  const knownRoomMessages = new Set(previous.breakouts.messages.map((m) => m.id));
+  for (const m of next.breakouts.messages) {
+    if (!knownRoomMessages.has(m.id) && m.from !== me && m.roomIndex !== null) {
+      out.push({ message: `${roomName(m.roomIndex)} · ${nameOf(m.from)}: ${m.text}`, politeness: 'polite' });
+    }
+  }
+
   // A manual move (B2): the student's new room.
   for (const [id, room] of Object.entries(next.breakouts.moves)) {
     if (previous.breakouts.moves[id] !== room) {

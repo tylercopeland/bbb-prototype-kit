@@ -165,7 +165,43 @@ export function breakoutsFor(
     },
     work: { 0: 'board', 1: 'doc', 2: 'quiz', 3: 'board', 4: 'slide', 5: 'doc' },
     listening: false,
+    joined: null,
+    messages: [],
+    messageSeq: 0,
+    talkTime: Object.fromEntries(students.map((id, i) => [id, TALK_MINUTES[i % TALK_MINUTES.length] * 60])),
   };
+}
+
+/** The canvas's talk times (Breakout.dc.html 442), in minutes, cycled over the students in joining order. */
+const TALK_MINUTES = [9, 6, 3, 2];
+
+/**
+ * The canvas's room chat (Breakout.dc.html 448–449): what the first two
+ * members of a room said, as texts the route seeds into `messages` through
+ * `sendRoomMessage` once the rooms are open. `agoSec` is how long before
+ * the fixture clock each one was sent.
+ */
+export function roomChatSeed(
+  mode: BreakoutState['mode'],
+  needsHelp: boolean,
+): Array<{ member: number; text: string; agoSec: number }> {
+  if (mode === 'solo') {
+    return [
+      {
+        member: 0,
+        text: needsHelp ? 'Can you check my answer to question 2?' : 'Starting on the reflection now',
+        agoSec: 60,
+      },
+    ];
+  }
+  return [
+    { member: 0, text: 'Let’s each add two notes first', agoSec: 3 * 60 },
+    {
+      member: 1,
+      text: needsHelp ? 'We’re stuck on what “live” means, can the teacher pop in?' : 'I’ll take the share-back',
+      agoSec: 60,
+    },
+  ];
 }
 
 export interface CreateRoomOptions {

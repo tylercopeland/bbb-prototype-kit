@@ -18,6 +18,7 @@ import type {
   ParticipantId,
   PeopleFilter,
   ReactionKind,
+  RoomMessage,
   RoomState,
 } from './types';
 
@@ -316,6 +317,46 @@ export const selectPeekedRoom = (s: RoomState): Room | null =>
 export const selectRoomOnStage = (s: RoomState): Room | null =>
   s.breakouts.onStage === null ? null : (selectRooms(s)[s.breakouts.onStage] ?? null);
 export const selectMovingStudent = (s: RoomState) => selectParticipant(s.breakouts.moving)(s);
+
+/** The room the teacher joined from a preview (B8), or `null` in the main room. */
+export const selectJoinedRoom = (s: RoomState): Room | null =>
+  s.breakouts.joined === null ? null : (selectRooms(s)[s.breakouts.joined] ?? null);
+
+/**
+ * A room's chat (B8): its own messages plus what the teacher sent to every
+ * room, oldest first. A factory, so memoize the selector per room with
+ * `useMemo` as the People list does with `selectPeople`.
+ */
+export const selectRoomMessages = (roomIndex: number) =>
+  memo((s): RoomMessage[] =>
+    s.breakouts.messages.filter((m) => m.roomIndex === roomIndex || m.roomIndex === null),
+  );
+
+export interface TalkTime {
+  participant: Participant;
+  /** Seconds talked in the room. */
+  seconds: number;
+  /** This person's share of the room's talking, 0–1, for the bar. */
+  share: number;
+}
+
+/** "Talk time" in the preview: each member's seconds and share of the room's total, in member order. */
+export function roomTalkTime(room: Room, talkTime: Record<ParticipantId, number>): TalkTime[] {
+  const seconds = room.members.map((m) => talkTime[m.id] ?? 0);
+  const total = seconds.reduce((a, b) => a + b, 0);
+  return room.members.map((participant, i) => ({
+    participant,
+    seconds: seconds[i],
+    share: total === 0 ? 0 : seconds[i] / total,
+  }));
+}
+
+/** "9 min", "40 s", "Quiet so far". */
+export function formatTalkTime(seconds: number): string {
+  if (seconds <= 0) return 'Quiet so far';
+  if (seconds < 60) return `${Math.round(seconds)} s`;
+  return `${Math.round(seconds / 60)} min`;
+}
 
 /** Seconds left in the rooms, or `null` when they are not open. */
 export const selectBreakoutTimeLeft = (s: RoomState): number | null => {

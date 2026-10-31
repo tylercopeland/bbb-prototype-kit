@@ -216,6 +216,19 @@ export interface BreakoutOptions {
   record: boolean;
 }
 
+/**
+ * A message in a room's chat (B8: the preview's "Message Room 2" and the
+ * panel's "Message every room" are real inputs). `roomIndex` is `null` for
+ * a message the teacher sent to every room.
+ */
+export interface RoomMessage {
+  id: string;
+  roomIndex: number | null;
+  from: ParticipantId;
+  sentAt: number;
+  text: string;
+}
+
 export interface BreakoutState {
   phase: BreakoutPhase;
   mode: BreakoutMode;
@@ -252,6 +265,13 @@ export interface BreakoutState {
   work: Record<number, RoomWorkKind>;
   /** The teacher is listening in on the previewed room. */
   listening: boolean;
+  /** The room the teacher joined from a preview (B8), while live; `null` in the main room. */
+  joined: number | null;
+  /** Room chat, every room's messages in one list; ids are `rm-${messageSeq}`. */
+  messages: RoomMessage[];
+  messageSeq: number;
+  /** Seconds each student has talked in their room, for the preview's "Talk time". */
+  talkTime: Record<ParticipantId, number>;
 }
 
 export type Orientation = 'portrait' | 'landscape';

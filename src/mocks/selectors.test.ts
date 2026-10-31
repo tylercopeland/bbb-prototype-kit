@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { createRoom, FIXTURE_NOW } from './fixtures';
 import { roomReducer as reduce } from './reducer';
 import {
+  formatTalkTime,
   participantSubline,
   roomStatus,
+  roomTalkTime,
   selectAlerts,
   selectDirectList,
   selectDisplayNames,
@@ -171,6 +173,22 @@ describe('presentation and plugins', () => {
     expect(selectPollResults(fresh).every((r) => r.percent === 0 && !r.isTop)).toBe(true);
     const rate = reduce(fresh, { type: 'setPollType', pollType: 'rate' });
     expect(selectPollResults(rate).map((r) => r.key)).toEqual(['★', '★', '★', '★', '★']);
+  });
+});
+
+describe('talk time', () => {
+  it('shares a room’s talking among its members, from the fixture’s seconds', () => {
+    const s = createRoom();
+    const room = selectRooms(s)[0];
+    const talk = roomTalkTime(room, s.breakouts.talkTime);
+    expect(talk.map((t) => t.participant.id)).toEqual(room.members.map((m) => m.id));
+    expect(talk.reduce((a, t) => a + t.share, 0)).toBeCloseTo(1);
+    expect(talk[0].seconds).toBe(9 * 60);
+    expect(roomTalkTime({ ...room, members: [] }, s.breakouts.talkTime)).toEqual([]);
+    expect(roomTalkTime(room, {}).every((t) => t.share === 0 && t.seconds === 0)).toBe(true);
+    expect(formatTalkTime(0)).toBe('Quiet so far');
+    expect(formatTalkTime(40)).toBe('40 s');
+    expect(formatTalkTime(9 * 60)).toBe('9 min');
   });
 });
 

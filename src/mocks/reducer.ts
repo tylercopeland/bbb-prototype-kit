@@ -146,6 +146,11 @@ export type RoomAction =
   | { type: 'clearHelp'; id: string }
   | { type: 'setListening'; listening: boolean }
   | { type: 'setRoomActivity'; roomIndex: number; activity: RoomActivity | null }
+  /** "Join Room N" from a preview (B8): the teacher moves into the room until they leave it or the rooms close. */
+  | { type: 'joinRoom'; roomIndex: number }
+  | { type: 'leaveRoom' }
+  /** A room chat message (B8); `roomIndex: null` sends it to every room. */
+  | { type: 'sendRoomMessage'; roomIndex: number | null; from: ParticipantId; text: string }
   // mobile
   | { type: 'setOrientation'; orientation: Orientation }
   | { type: 'setSheet'; sheet: MobileSheet; student?: ParticipantId | null }
@@ -358,6 +363,10 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
         delete breakouts.assignments[id];
       }
       if (breakouts.moving === id) breakouts.moving = null;
+      if (id in breakouts.talkTime) {
+        breakouts.talkTime = { ...breakouts.talkTime };
+        delete breakouts.talkTime[id];
+      }
       if (helpQueue.some((h) => h.from === id)) {
         breakouts.helpQueue = helpQueue.map((h) => (h.from === id ? { ...h, from: null } : h));
       }
@@ -767,6 +776,8 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
             onStage: null,
             helpQueue: [],
             view: 'rooms',
+            joined: null,
+            messages: [],
           });
     case 'addRoomTime':
       return state.breakouts.phase !== 'live'
@@ -803,6 +814,7 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
             peek: null,
             onStage: null,
             listening: false,
+            joined: null,
             helpQueue: state.breakouts.helpQueue.map((h) =>
               h.acknowledgedAt === null ? { ...h, acknowledgedAt: state.clock.now } : h,
             ),
@@ -821,6 +833,8 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
         closingEndsAt: null,
         peek: null,
         helpQueue: [],
+        joined: null,
+        messages: [],
       });
     case 'requestHelp': {
       if (state.breakouts.phase !== 'live') return state;
@@ -856,6 +870,40 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       if (action.activity === null) delete activity[action.roomIndex];
       else activity[action.roomIndex] = action.activity;
       return withBreakouts(state, { activity });
+    }
+    case 'joinRoom': {
+      if (state.breakouts.phase !== 'live') return state;
+      const count = roomCountFor(
+        state.breakouts.mode,
+        state.breakouts.roomCount,
+        breakoutStudents(state.participants).length,
+      );
+      if (!Number.isInteger(action.roomIndex) || action.roomIndex < 0 || action.roomIndex >= count)
+        return state;
+      // Joining a room closes its preview: you are in the room now, not looking in.
+      return withBreakouts(state, { joined: action.roomIndex, peek: null, listening: false });
+    }
+    case 'leaveRoom':
+      return state.breakouts.joined === null ? state : withBreakouts(state, { joined: null });
+    case 'sendRoomMessage': {
+      const text = action.text.trim();
+      if (state.breakouts.phase !== 'live' || text.length === 0) return state;
+      if (!state.participants.some((p) => p.id === action.from)) return state;
+      const count = roomCountFor(
+        state.breakouts.mode,
+        state.breakouts.roomCount,
+        breakoutStudents(state.participants).length,
+      );
+      if (action.roomIndex !== null && (action.roomIndex < 0 || action.roomIndex >= count)) return state;
+      const messageSeq = state.breakouts.messageSeq + 1;
+      const message = {
+        id: nextId('rm', messageSeq),
+        roomIndex: action.roomIndex,
+        from: action.from,
+        sentAt: state.clock.now,
+        text,
+      };
+      return withBreakouts(state, { messages: [...state.breakouts.messages, message], messageSeq });
     }
 
     // ---------- mobile ----------

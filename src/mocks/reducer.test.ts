@@ -7,8 +7,10 @@ import {
   selectBreakoutTimeLeft,
   selectCanMessage,
   selectClosingLeft,
+  selectJoinedRoom,
   selectOpenHelp,
   selectReactions,
+  selectRoomMessages,
   selectRooms,
   selectRoomsUneven,
   selectTimerLeft,
@@ -552,6 +554,43 @@ describe('breakouts live', () => {
     expect(cleared.breakouts.helpQueue).toHaveLength(1);
     const setup = createRoom();
     expect(reduce(setup, { type: 'requestHelp', roomIndex: 1 })).toBe(setup);
+  });
+
+  it('joins a room from a preview and leaves it; closing the rooms brings the teacher back (B8)', () => {
+    const s = run(live(), { type: 'peekRoom', roomIndex: 1 }, { type: 'setListening', listening: true });
+    const joined = reduce(s, { type: 'joinRoom', roomIndex: 1 });
+    expect(joined.breakouts).toMatchObject({ joined: 1, peek: null, listening: false });
+    expect(selectJoinedRoom(joined)?.name).toBe('Room 2');
+    expect(reduce(s, { type: 'joinRoom', roomIndex: 7 })).toBe(s);
+    expect(reduce(joined, { type: 'leaveRoom' }).breakouts.joined).toBeNull();
+    expect(reduce(s, { type: 'leaveRoom' })).toBe(s);
+    expect(reduce(joined, { type: 'bringEveryoneBack' }).breakouts.joined).toBeNull();
+    const setup = createRoom();
+    expect(reduce(setup, { type: 'joinRoom', roomIndex: 0 })).toBe(setup);
+  });
+
+  it('keeps room chat as data, per room or to every room (B8), and clears it for new rooms', () => {
+    const s = run(
+      live(),
+      { type: 'sendRoomMessage', roomIndex: 1, from: 'bruno', text: ' Stuck on question 2 ' },
+      { type: 'sendRoomMessage', roomIndex: null, from: 'helena', text: '5 minutes left' },
+      { type: 'sendRoomMessage', roomIndex: 0, from: 'ana', text: 'Done here' },
+    );
+    expect(s.breakouts.messages.map((m) => [m.id, m.roomIndex, m.text])).toEqual([
+      ['rm-1', 1, 'Stuck on question 2'],
+      ['rm-2', null, '5 minutes left'],
+      ['rm-3', 0, 'Done here'],
+    ]);
+    expect(selectRoomMessages(1)(s).map((m) => m.id)).toEqual(['rm-1', 'rm-2']);
+    expect(selectRoomMessages(2)(s).map((m) => m.id)).toEqual(['rm-2']);
+    expect(reduce(s, { type: 'sendRoomMessage', roomIndex: 1, from: 'bruno', text: '   ' })).toBe(s);
+    expect(reduce(s, { type: 'sendRoomMessage', roomIndex: 9, from: 'bruno', text: 'x' })).toBe(s);
+    expect(reduce(s, { type: 'sendRoomMessage', roomIndex: 1, from: 'nobody', text: 'x' })).toBe(s);
+    const setup = createRoom();
+    expect(reduce(setup, { type: 'sendRoomMessage', roomIndex: 0, from: 'bruno', text: 'x' })).toBe(setup);
+    const fresh = run(s, { type: 'bringEveryoneBack' }, { type: 'setUpNewRooms' }, { type: 'openRooms' });
+    expect(fresh.breakouts.messages).toEqual([]);
+    expect(fresh.breakouts.messageSeq).toBe(3);
   });
 
   it('numbers help requests from the state and refuses a room that does not exist (S3)', () => {
