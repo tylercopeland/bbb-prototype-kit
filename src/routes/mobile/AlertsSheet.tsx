@@ -67,7 +67,8 @@ function alertLines(alert: Alert, names: Record<string, string>, now: number, qu
       };
     case 'insight':
       return {
-        title: alert.count === 1 ? '1 student with low engagement' : `${alert.count} students with low engagement`,
+        title:
+          alert.count === 1 ? '1 student with low engagement' : `${alert.count} students with low engagement`,
         sub: 'Quiet for 15+ minutes in this session',
       };
     case 'help':
@@ -94,7 +95,10 @@ function AlertRow({ alert, onPress }: { alert: Alert; onPress: () => void }) {
         onPress={onPress}
         className={styles.row()}
       >
-        <span aria-hidden="true" className={alertPillIconStyles({ kind: alert.kind, className: styles.disc() })}>
+        <span
+          aria-hidden="true"
+          className={alertPillIconStyles({ kind: alert.kind, className: styles.disc() })}
+        >
           <Icon name={alertPillKindIcon[alert.kind]} size="sm" />
         </span>
         <span className={styles.body()}>
