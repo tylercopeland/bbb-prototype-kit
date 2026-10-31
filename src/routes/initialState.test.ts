@@ -131,6 +131,17 @@ describe('stateForArtboard', () => {
     expect(stateForArtboard(board('mobile', 'MB3People')).ui).toMatchObject({ sheet: 'people', panel: 'people' });
   });
 
+  it('MB15–MB16: the student view and the confirmations (P9) go through store actions', () => {
+    const student = stateForArtboard(board('mobile', 'MB15Attendee'));
+    expect(student.participants.find((p) => p.isSelf)?.id).toBe('anton');
+    expect(student.participants.find((p) => p.id === 'helena')?.isSelf).toBe(false);
+    const leave = stateForArtboard(board('mobile', 'MB16Confirm'));
+    expect(leave.ui).toMatchObject({ confirm: 'leave', sheet: 'none' });
+    const remove = stateForArtboard(board('mobile', 'MB16Confirm'), new URLSearchParams('confirm=remove'));
+    expect(remove.ui).toMatchObject({ confirm: 'remove', sheet: 'student', sheetStudent: 'anton' });
+    expect(stateForArtboard(board('mobile', 'MB1Room'), new URLSearchParams('confirm=nope')).ui.confirm).toBe('none');
+  });
+
   it('lets the query override props and pick the fixture', () => {
     const s = stateForArtboard(board('desktop', 'F1Bar-4roh-l8ju'), new URLSearchParams('panel=chat&people=one&chat=empty'));
     expect(s.ui.panel).toBe('chat');

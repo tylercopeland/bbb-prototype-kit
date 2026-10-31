@@ -15,7 +15,7 @@
  * lands on the index page's heading. The pickers are popovers anchored to
  * their action-bar toggles, so closing one returns focus to its toggle.
  */
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ActionBar,
@@ -64,7 +64,7 @@ import { tv } from '../../styles/tv';
 import { BreakoutPanel } from './BreakoutPanel';
 import { BreakoutScreen } from './BreakoutScreen';
 import { ChatPanel } from './ChatPanel';
-import { RoomFocusContext, type FocusRequest, type FocusRequestKind, type RoomFocus } from './focus';
+import { RoomFocusContext, useRoomFocusState } from './focus';
 import { PeoplePanel } from './PeoplePanel';
 import { PollPanel } from './PollPanel';
 import { useRoomShortcuts } from './useRoomShortcuts';
@@ -134,17 +134,8 @@ export function RoomScreen() {
   const timerLeft = useRoom(selectTimerLeft);
 
   // One pending focus request, written by a handler and taken by the target's mount effect.
-  const pendingFocus = useRef<FocusRequest | null>(null);
-  const requestFocus = useCallback((request: FocusRequest) => {
-    pendingFocus.current = request;
-  }, []);
-  const takeFocus = useCallback(<K extends FocusRequestKind>(kind: K) => {
-    const pending = pendingFocus.current;
-    if (pending?.kind !== kind) return null;
-    pendingFocus.current = null;
-    return pending as Extract<FocusRequest, { kind: K }>;
-  }, []);
-  const focus = useMemo<RoomFocus>(() => ({ requestFocus, takeFocus }), [requestFocus, takeFocus]);
+  const focus = useRoomFocusState();
+  const { requestFocus } = focus;
 
   // The action-bar toggles, so closing a panel can hand focus back to the one that opened it.
   const peopleButton = useRef<HTMLButtonElement>(null);

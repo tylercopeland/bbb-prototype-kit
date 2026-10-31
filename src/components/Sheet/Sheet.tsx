@@ -34,14 +34,19 @@ export const sheetOverlayStyles = tv({
   defaultVariants: { position: 'bottom', backdrop: true },
 });
 
-/** The sheet itself: rounded on the edge away from the screen edge, sliding in from its side. */
+/**
+ * The sheet itself: rounded on the edge away from the screen edge, sliding
+ * in from its side. It carries the safe-area inset of that edge (P2): the
+ * bottom sheet clears the home indicator, the side sheet the notch or the
+ * rounded corner in landscape.
+ */
 export const sheetModalStyles = tv({
   base: 'flex max-h-full flex-col bg-surface text-text shadow-overlay outline-none',
   variants: {
     position: {
       bottom:
-        'w-full rounded-t-xl data-entering:animate-sheet-in-bottom data-exiting:animate-sheet-out-bottom',
-      end: 'h-full w-panel max-w-full rounded-l-xl data-entering:animate-sheet-in-end data-exiting:animate-sheet-out-end',
+        'w-full rounded-t-xl pb-safe-0 data-entering:animate-sheet-in-bottom data-exiting:animate-sheet-out-bottom',
+      end: 'h-full w-panel max-w-full rounded-l-xl pr-safe-0 data-entering:animate-sheet-in-end data-exiting:animate-sheet-out-end',
     },
   },
   defaultVariants: { position: 'bottom' },
@@ -80,6 +85,12 @@ export interface SheetProps extends Pick<
   children?: DialogRenderable;
   /** Pinned under the scrolling body. */
   footer?: DialogRenderable;
+  /**
+   * Wraps the header, body and footer together, inside the dialog. The
+   * People & chat sheet passes a `Tabs` here, so its `TabList` can sit in
+   * the header (`headerExtra`) with the `TabPanel`s in the body (D3).
+   */
+  frame?: (content: ReactNode) => ReactNode;
   /** Merged onto the sheet. */
   className?: string;
   /** The dialog element. */
@@ -95,9 +106,8 @@ export interface SheetProps extends Pick<
  * closing it returns to the parent. Swipe-to-dismiss is not built (owner
  * decision: decided in milestone 6); the handle is decoration.
  *
- * Milestone 6 (P2): the sheet has no safe-area padding yet. The bottom
- * sheet's footer and the side sheet's edge must add
- * `env(safe-area-inset-*)` so they clear the home indicator and the notch.
+ * The bottom sheet pads its bottom and the side sheet its end by the
+ * device's safe-area inset (P2), through the `p*-safe-*` utilities.
  *
  * It always draws as a panel, white over the dark stage too (owner
  * decision 2026-10-24). Its content sits in a `SurfaceProvider`, so a
@@ -111,6 +121,7 @@ export function Sheet({
   position = 'bottom',
   children,
   footer,
+  frame = (content) => content,
   isDismissable = true,
   isKeyboardDismissDisabled,
   className,
@@ -138,16 +149,20 @@ export function Sheet({
             {({ close }) => (
               <SheetDepthContext.Provider value={depth + 1}>
                 {position === 'bottom' && <span aria-hidden="true" className={styles.handle()} />}
-                <OverlayHeader
-                  title={title}
-                  titleHidden={titleHidden}
-                  onClose={close}
-                  className={styles.header()}
-                >
-                  {headerExtra}
-                </OverlayHeader>
-                <div className={styles.body()}>{renderWith(children, close)}</div>
-                {footer && <div className={styles.footer()}>{renderWith(footer, close)}</div>}
+                {frame(
+                  <>
+                    <OverlayHeader
+                      title={title}
+                      titleHidden={titleHidden}
+                      onClose={close}
+                      className={styles.header()}
+                    >
+                      {headerExtra}
+                    </OverlayHeader>
+                    <div className={styles.body()}>{renderWith(children, close)}</div>
+                    {footer && <div className={styles.footer()}>{renderWith(footer, close)}</div>}
+                  </>,
+                )}
               </SheetDepthContext.Provider>
             )}
           </RacDialog>

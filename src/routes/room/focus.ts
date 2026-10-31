@@ -8,7 +8,7 @@
  * nothing takes is overwritten by the next one. Nothing here touches the
  * store, and nothing reads the request during render.
  */
-import { createContext, useContext } from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
 import type { ParticipantId } from '../../mocks/types';
 
 export type FocusRequest =
@@ -43,4 +43,23 @@ export const RoomFocusContext = createContext<RoomFocus>({ requestFocus: () => {
 /** The screen's focus requests. Outside a `RoomScreen` requests are dropped and nothing is ever pending. */
 export function useRoomFocus(): RoomFocus {
   return useContext(RoomFocusContext);
+}
+
+/**
+ * The one pending request a screen holds, as the context value for
+ * `RoomFocusContext.Provider`. Written by a handler, taken by the target's
+ * mount effect; the desktop room and the phone room share it.
+ */
+export function useRoomFocusState(): RoomFocus {
+  const pendingFocus = useRef<FocusRequest | null>(null);
+  const requestFocus = useCallback((request: FocusRequest) => {
+    pendingFocus.current = request;
+  }, []);
+  const takeFocus = useCallback(<K extends FocusRequestKind>(kind: K) => {
+    const pending = pendingFocus.current;
+    if (pending?.kind !== kind) return null;
+    pendingFocus.current = null;
+    return pending as Extract<FocusRequest, { kind: K }>;
+  }, []);
+  return useMemo<RoomFocus>(() => ({ requestFocus, takeFocus }), [requestFocus, takeFocus]);
 }

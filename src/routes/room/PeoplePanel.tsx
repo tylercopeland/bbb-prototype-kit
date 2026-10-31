@@ -7,17 +7,19 @@
  * is moved by `ParticipantList` itself.
  */
 import { useMemo } from 'react';
-import { ParticipantList, type ParticipantAction } from '../../components';
+import { ParticipantList } from '../../components';
 import { useRoom, useRoomDispatch, useRoomStore } from '../../mocks/context';
 import { canMessagePrivately } from '../../mocks/reducer';
 import { selectPeople, selectPeopleFilterCounts, selectSelf } from '../../mocks/selectors';
 import type { ParticipantId } from '../../mocks/types';
 import { useRoomFocus } from './focus';
+import { useParticipantActions } from './participantActions';
 
 export function PeoplePanel() {
   const store = useRoomStore();
   const dispatch = useRoomDispatch();
   const { requestFocus } = useRoomFocus();
+  const onAction = useParticipantActions();
   const filter = useRoom((s) => s.ui.peopleFilter);
   const people = useMemo(() => selectPeople(filter), [filter]);
   const { hands, others } = useRoom(people);
@@ -30,31 +32,6 @@ export function PeoplePanel() {
   const me = useRoom(selectSelf);
   const canMessage = (participantId: ParticipantId) =>
     me !== null && canMessagePrivately(store.getState(), me.id, participantId);
-
-  const onAction = (participantId: ParticipantId, action: ParticipantAction) => {
-    switch (action.type) {
-      case 'makePresenter':
-        return dispatch({ type: 'makePresenter', participantId });
-      case 'setCamera':
-        return dispatch({ type: 'setCamera', participantId, on: action.on });
-      case 'microphone': {
-        // The switch is checked only while the mic is on: "on" for a muted person asks
-        // them to unmute, or cancels the request already pending (S1); "off" mutes.
-        if (!action.on) return dispatch({ type: 'mute', participantId });
-        const pending = store.getState().participants.find((p) => p.id === participantId)?.unmuteRequested;
-        return dispatch({ type: pending ? 'cancelUnmuteRequest' : 'requestUnmute', participantId });
-      }
-      case 'flag':
-        return dispatch({
-          type: 'setParticipantFlag',
-          participantId,
-          flag: action.flag,
-          value: action.value,
-        });
-      case 'remove':
-        return dispatch({ type: 'removeParticipant', participantId });
-    }
-  };
 
   const onMessage = (participantId: ParticipantId) => {
     requestFocus({ kind: 'composer' });

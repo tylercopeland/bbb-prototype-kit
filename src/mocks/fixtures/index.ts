@@ -118,6 +118,7 @@ export const defaultUi: UiState = {
   sheetStudent: null,
   annotating: false,
   reacting: false,
+  confirm: 'none',
 };
 
 export interface BreakoutFixtureOptions {

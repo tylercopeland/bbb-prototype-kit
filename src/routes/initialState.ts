@@ -22,6 +22,7 @@ import {
   type ChatScope,
   type Layout,
   type MediaType,
+  type MobileConfirm,
   type MobileSheet,
   type Orientation,
   type Panel,
@@ -59,6 +60,10 @@ const modes = oneOf<BreakoutMode>('groups', 'solo');
 const views = oneOf<BreakoutView>('rooms', 'main');
 const orientations = oneOf<Orientation>('portrait', 'landscape');
 const sheets = oneOf<MobileSheet>('none', 'people', 'chat', 'student', 'more', 'react', 'alerts', 'cams', 'slides');
+const confirms = oneOf<MobileConfirm>('none', 'leave', 'remove');
+
+/** The student the phone artboards act on (Mobile.dc.html 282: the student sheet's default subject), also the viewer of the student view (MB15). */
+export const MOBILE_STUDENT = 'anton';
 
 /** The canvas's live breakout timings: rooms opened 1:18 ago, help asked 1 min ago. */
 const ROOMS_OPEN_FOR = MINUTE + 18 * SECOND;
@@ -219,12 +224,21 @@ export function applyProps(initial: RoomState, props: Props, board: string): Roo
   if (board === 'Mobile') {
     const orient = get('orient');
     if (orient !== undefined && orientations(orient)) run({ type: 'setOrientation', orientation: orient });
+    // The student view (MB15, P9): the same room from Anton's seat.
+    if (get('role') === 'student') run({ type: 'setViewer', participantId: MOBILE_STUDENT });
     const sheet = get('sheet');
     if (sheet !== undefined && sheets(sheet)) {
-      run({ type: 'setSheet', sheet, student: sheet === 'student' ? 'anton' : null });
+      run({ type: 'setSheet', sheet, student: sheet === 'student' ? MOBILE_STUDENT : null });
       if (sheet === 'react') run({ type: 'setReacting', reacting: true });
     }
     if (get('annot') === 'on') run({ type: 'setAnnotating', annotating: true });
+    // The confirmations (MB16, P9): Remove concerns the student sheet's subject, so it opens that sheet first.
+    const confirm = get('confirm');
+    if (confirm !== undefined && confirms(confirm) && confirm !== 'none') {
+      if (confirm === 'remove') run({ type: 'setSheet', sheet: 'student', student: MOBILE_STUDENT });
+      run({ type: 'setConfirm', confirm });
+    }
+    // `keyboard=open` (MB17) is batch B: the chat composer focused with the keyboard up.
   }
 
   return state;

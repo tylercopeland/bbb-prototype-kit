@@ -8,25 +8,29 @@ import { VideoTile } from '../VideoTile';
  * The webcam strip (Focus.dc.html 129–139): a row above the slide when the
  * panel is open, a column beside it when not, 8px apart. The last cell is
  * the "+N more" button when more people are in the room than tiles fit.
+ * `grid` is the phone's two-column band of 16:9 tiles (Mobile.dc.html 70:
+ * two columns in portrait and in landscape alike).
  */
 export const webcamStripStyles = tv({
-  base: 'flex list-none gap-2 p-0',
+  base: 'list-none gap-2 p-0',
   variants: {
     direction: {
-      row: 'flex-row',
-      column: 'flex-col',
+      row: 'flex flex-row',
+      column: 'flex flex-col',
+      grid: 'grid grid-cols-2',
     },
   },
   defaultVariants: { direction: 'column' },
 });
 
-/** The dashed "+N more" cell: a full tile in a row, a 36px bar under the column. */
+/** The dashed "+N more" cell: a full tile in a row, a 36px bar under the column, a 16:9 cell in the grid. */
 export const webcamStripMoreStyles = tv({
   base: 'border-dashed bg-transparent text-text data-hovered:bg-surface-raised data-pressed:bg-surface-raised',
   variants: {
     direction: {
       row: 'h-24 w-24 rounded-tile',
       column: 'h-control-md w-42',
+      grid: 'aspect-video h-auto w-full rounded-tile',
     },
   },
   defaultVariants: { direction: 'column' },
@@ -83,6 +87,7 @@ export function WebcamStrip({
           <VideoTile
             participant={p}
             shortName={p.isSelf ? 'You' : (names[p.id] ?? p.name)}
+            size={direction === 'grid' ? 'grid' : 'strip'}
             reaction={reactions?.[p.id]}
           />
         </li>

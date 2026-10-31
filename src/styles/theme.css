@@ -200,6 +200,29 @@
   }
 }
 
+/* Safe areas (P2): the phone's notch, rounded corners and home indicator.
+   Each utility adds the device inset to a spacing step, so `pb-safe-3` is
+   12px plus the home indicator's inset and `px-safe-4` is 16px plus the
+   notch in landscape. The canvas fixed these as 47px, 59px and 34px, which
+   assumed one phone with the notch on the left. The bottom bar, the header
+   and the sheets use them; nothing else hard-codes an inset. */
+@utility pt-safe-* {
+  padding-top: calc(--value(integer) * var(--spacing) + env(safe-area-inset-top, 0px));
+}
+@utility pb-safe-* {
+  padding-bottom: calc(--value(integer) * var(--spacing) + env(safe-area-inset-bottom, 0px));
+}
+@utility pl-safe-* {
+  padding-left: calc(--value(integer) * var(--spacing) + env(safe-area-inset-left, 0px));
+}
+@utility pr-safe-* {
+  padding-right: calc(--value(integer) * var(--spacing) + env(safe-area-inset-right, 0px));
+}
+@utility px-safe-* {
+  padding-left: calc(--value(integer) * var(--spacing) + env(safe-area-inset-left, 0px));
+  padding-right: calc(--value(integer) * var(--spacing) + env(safe-area-inset-right, 0px));
+}
+
 /* Speaking ring for avatars and tiles. Always pair it with an icon or badge.
    The ring is kept in a variable so focus-ring can layer its own ring outside it. */
 @utility ring-speaking {

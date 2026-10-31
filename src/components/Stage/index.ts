@@ -4,6 +4,7 @@ export {
   presentationTileStyles,
   slideStyles,
   Stage,
+  StageSlide,
   STAGE_CORNER_ORDER,
   stageGridStyles,
   stageOverlayStyles,
@@ -16,6 +17,8 @@ export type {
   StagePresentation,
   StageProps,
   StageShare,
+  StageSlideProps,
   StageTab,
   StageWebcams,
+  SlideWebcams,
 } from './Stage';

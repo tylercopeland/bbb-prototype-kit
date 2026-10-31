@@ -68,7 +68,10 @@ export const stageStyles = tv({
 /**
  * The slide placeholder: white paper in every mode (`slide` / `on-slide`),
  * 16:9, fitted like the stage says. It is the hover `group` for the
- * presentation controls drawn over its bottom edge (X13).
+ * presentation controls drawn over its bottom edge (X13). `webcams="none"`
+ * is the phone's slide (Mobile.dc.html 38): it fills its column's width,
+ * with tighter padding and no reserved corner, because the pager sits
+ * below it and the alerts in the header.
  */
 export const slideStyles = tv({
   slots: {
@@ -85,10 +88,13 @@ export const slideStyles = tv({
     webcams: {
       side: { root: 'slide-fit' },
       top: { root: 'slide-fit-stacked' },
+      none: { root: 'aspect-video w-full p-4', header: 'pr-12', title: 'text-lg' },
     },
   },
   defaultVariants: { webcams: 'side' },
 });
+
+export type SlideWebcams = NonNullable<VariantProps<typeof slideStyles>['webcams']>;
 
 /**
  * The grid of everyone (Focus.dc.html 141–155): the column count comes
@@ -332,6 +338,19 @@ function OverlayLayer({ overlays }: { overlays: StageOverlays }) {
   );
 }
 
+export interface StageSlideProps extends StagePresentation {
+  /** How the slide fits: beside the strip, under it, or alone at full width (the phone). */
+  webcams: SlideWebcams;
+  /** Drawn over the slide: the presentation controls, or the phone's Minimize button. */
+  children?: ReactNode;
+  className?: string;
+}
+
+/** The slide alone, for a stage that lays it out itself (the phone). The `Stage` renders it in its layouts. */
+export function StageSlide(props: StageSlideProps) {
+  return <Slide {...props} />;
+}
+
 function Slide({
   deckName,
   slideTitle,
@@ -339,10 +358,11 @@ function Slide({
   slideCount,
   webcams,
   children,
-}: StagePresentation & { webcams: StageWebcams; children?: ReactNode }) {
+  className,
+}: StageSlideProps) {
   const styles = slideStyles({ webcams });
   return (
-    <div className={styles.root()}>
+    <div className={styles.root({ className })}>
       <div className={styles.header()}>
         <p className={styles.deck()}>{deckName}</p>
         <h2 className={styles.title()}>{slideTitle}</h2>

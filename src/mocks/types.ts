@@ -277,6 +277,8 @@ export interface BreakoutState {
 export type Orientation = 'portrait' | 'landscape';
 export type MobileSheet =
   'none' | 'people' | 'chat' | 'student' | 'more' | 'react' | 'alerts' | 'cams' | 'slides';
+/** The confirmation that is open (MB16, P9): Leave from the action bar, Remove from the student sheet. */
+export type MobileConfirm = 'none' | 'leave' | 'remove';
 
 export interface UiState {
   layout: Layout;
@@ -303,6 +305,8 @@ export interface UiState {
   annotating: boolean;
   /** Reactions bar open (MB6). */
   reacting: boolean;
+  /** The open confirmation dialog (MB16); `remove` concerns `sheetStudent`. */
+  confirm: MobileConfirm;
 }
 
 export interface SessionState {

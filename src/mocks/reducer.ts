@@ -26,6 +26,7 @@ import type {
   ChatScope,
   InkColor,
   MediaType,
+  MobileConfirm,
   MobileSheet,
   Orientation,
   Panel,
@@ -157,7 +158,15 @@ export type RoomAction =
   | { type: 'setOrientation'; orientation: Orientation }
   | { type: 'setSheet'; sheet: MobileSheet; student?: ParticipantId | null }
   | { type: 'setAnnotating'; annotating: boolean }
-  | { type: 'setReacting'; reacting: boolean };
+  | { type: 'setReacting'; reacting: boolean }
+  /** Open or close the Leave or Remove confirmation (MB16). */
+  | { type: 'setConfirm'; confirm: MobileConfirm }
+  /**
+   * Make another participant the local person (the student view, MB15):
+   * `isSelf` moves to them. Nothing else changes, so the same room is seen
+   * from a student's seat.
+   */
+  | { type: 'setViewer'; participantId: ParticipantId };
 
 export type RoomActionType = RoomAction['type'];
 
@@ -932,5 +941,17 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       return withUi(state, { annotating: action.annotating });
     case 'setReacting':
       return withUi(state, { reacting: action.reacting, sheet: action.reacting ? 'react' : 'none' });
+    case 'setConfirm':
+      return state.ui.confirm === action.confirm ? state : withUi(state, { confirm: action.confirm });
+    case 'setViewer': {
+      if (!state.participants.some((p) => p.id === action.participantId)) return state;
+      if (selfId(state) === action.participantId) return state;
+      return {
+        ...state,
+        participants: state.participants.map((p) =>
+          p.isSelf === (p.id === action.participantId) ? p : { ...p, isSelf: p.id === action.participantId },
+        ),
+      };
+    }
   }
 }

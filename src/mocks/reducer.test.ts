@@ -651,6 +651,22 @@ describe('mobile', () => {
       sheet: 'react',
     });
   });
+
+  it('opens and closes the Leave and Remove confirmations (MB16)', () => {
+    const s = reduce(createRoom(), { type: 'setConfirm', confirm: 'leave' });
+    expect(s.ui.confirm).toBe('leave');
+    expect(reduce(s, { type: 'setConfirm', confirm: 'leave' })).toBe(s);
+    expect(reduce(s, { type: 'setConfirm', confirm: 'none' }).ui.confirm).toBe('none');
+  });
+
+  it('moves the viewer to a student for the student view (MB15), and ignores unknown or current ids', () => {
+    const s = reduce(createRoom(), { type: 'setViewer', participantId: 'anton' });
+    expect(s.participants.filter((p) => p.isSelf).map((p) => p.id)).toEqual(['anton']);
+    expect(s.participants.find((p) => p.isSelf)?.role).toBe('student');
+    expect(s.participants.find((p) => p.id === 'helena')?.isPresenter).toBe(true);
+    expect(reduce(s, { type: 'setViewer', participantId: 'anton' })).toBe(s);
+    expect(reduce(s, { type: 'setViewer', participantId: 'nobody' })).toBe(s);
+  });
 });
 
 describe('private chat (owner decision 2026-10-30)', () => {
