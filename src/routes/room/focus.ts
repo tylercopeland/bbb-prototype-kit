@@ -63,3 +63,21 @@ export function useRoomFocusState(): RoomFocus {
   }, []);
   return useMemo<RoomFocus>(() => ({ requestFocus, takeFocus }), [requestFocus, takeFocus]);
 }
+
+/**
+ * Moves focus to `element` after an overlay inside another one has closed,
+ * and keeps it there (WCAG 2.4.3). React Aria's focus containment on the
+ * outer dialog re-focuses its own scope a frame after focus left it, so a
+ * single move can lose the race: this one runs a tick later and checks
+ * again over the next frames, until the element holds focus or is gone.
+ */
+export function focusAfterOverlay(element: HTMLElement | null | undefined): void {
+  if (!element) return;
+  let tries = 0;
+  const settle = () => {
+    if (!element.isConnected) return;
+    if (document.activeElement !== element) element.focus();
+    if (++tries < 4) setTimeout(settle, 20);
+  };
+  setTimeout(settle, 0);
+}

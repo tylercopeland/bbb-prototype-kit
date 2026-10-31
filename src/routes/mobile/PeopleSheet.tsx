@@ -40,7 +40,7 @@ import {
 } from '../../mocks/selectors';
 import { tv } from '../../styles/tv';
 import { ChatPanel } from '../room/ChatPanel';
-import { useRoomFocus } from '../room/focus';
+import { focusAfterOverlay, useRoomFocus } from '../room/focus';
 import { notInPrototype } from '../room/notInPrototype';
 import { useParticipantActions } from '../room/participantActions';
 import { PeoplePanel } from '../room/PeoplePanel';
@@ -194,8 +194,7 @@ function StudentSheet({ participantId, position, openerRef, fallbackRef }: Stude
       const reason = leaving.current;
       if (!reason) return;
       const button = openerRef.current;
-      const target = reason === 'close' && button?.isConnected ? button : fallbackRef.current;
-      setTimeout(() => target?.focus(), 0);
+      focusAfterOverlay(reason === 'close' && button?.isConnected ? button : fallbackRef.current);
     },
     [openerRef, fallbackRef],
   );
@@ -293,6 +292,8 @@ function StudentSheet({ participantId, position, openerRef, fallbackRef }: Stude
         <ConfirmDialog
           isOpen={confirm === 'remove'}
           onOpenChange={(open) => !open && dispatch({ type: 'setConfirm', confirm: 'none' })}
+          // Cancelled (Cancel, the close button, Escape): back to the button that asks, also from a deep link.
+          onCancel={() => focusAfterOverlay(removeButton.current)}
           title={`Remove ${p.name}?`}
           description="They leave the session now and can only come back with a new invitation."
           confirmLabel="Remove"
@@ -301,9 +302,7 @@ function StudentSheet({ participantId, position, openerRef, fallbackRef }: Stude
             leaving.current = 'remove';
             act(p.id, { type: 'remove' });
           }}
-        >
-          <FocusFallback target={removeButton} />
-        </ConfirmDialog>
+        />
       </StackedOverlay>
     </Sheet>
   );
