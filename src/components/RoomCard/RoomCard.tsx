@@ -1,14 +1,16 @@
 import type { ComponentProps, Ref } from 'react';
+import { mergeProps, useHover } from 'react-aria';
 import { Button as RacButton, ToggleButton as RacToggleButton, type Key } from 'react-aria-components';
 import { Icon } from '../../icons';
 import type { Room } from '../../mocks/breakouts';
-import type { ParticipantId } from '../../mocks/types';
+import type { Participant, ParticipantId } from '../../mocks/types';
 import { tv, type VariantProps } from '../../styles/tv';
 import { Avatar } from '../Avatar';
 import { Button, buttonStyles } from '../Button';
 import { IconButton } from '../IconButton';
 import { Menu, MenuItem, MenuSection } from '../Menu';
 import { RoomWork } from '../RoomWork';
+import { Tooltip, useTruncationTooltip } from '../Tooltip';
 
 /**
  * One breakout room on the board (Breakout.dc.html 56–72 in setup, 119–139
@@ -75,9 +77,13 @@ export const roomCardStyles = tv({
   defaultVariants: { color: 1, density: 'default', statusTone: 'neutral' },
 });
 
-/** The thumbnail is the preview button (live) or the show-on-stage button (back): the whole picture is the target. */
+/**
+ * The thumbnail is the preview button (live) or the show-on-stage toggle
+ * (back): the whole picture is the target. Selected (the work is on stage)
+ * it takes the inset ring, as the toggle beside it does.
+ */
 export const roomThumbStyles = tv({
-  base: 'relative block w-full overflow-hidden rounded-lg focus-ring outline-none',
+  base: 'relative block w-full overflow-hidden rounded-lg focus-ring outline-none data-selected:selected-ring',
 });
 
 /**
@@ -165,15 +171,93 @@ export interface RoomCardProps extends Omit<ComponentProps<'li'>, 'children'> {
   className?: string;
 }
 
+interface MemberProps {
+  member: Participant;
+  /** The short name shown (B9); the chip's label contains it. */
+  name: string;
+}
+
+interface MemberChipProps extends MemberProps {
+  room: Room;
+  moveTargets: MoveTarget[];
+  isOpen: boolean;
+  onOpenChange?: (participantId: ParticipantId, isOpen: boolean) => void;
+  onMove?: (participantId: ParticipantId, roomIndex: number) => void;
+  memberRef?: (participantId: ParticipantId, element: HTMLButtonElement | null) => void;
+}
+
+/**
+ * A member chip in setup: the "Move to…" menu trigger, named "Move Ana to
+ * another room" with the same short name it shows (B9). A cut-off name
+ * shows in full in a tooltip while the chip is hovered or focused
+ * (`useTruncationTooltip`, as the People and DM rows).
+ */
+function MemberChip({ member, name, room, moveTargets, isOpen, onOpenChange, onMove, memberRef }: MemberChipProps) {
+  const { labelRef, triggerRef, triggerProps, isOpen: tooltipOpen, onOpenChange: onTooltipChange } =
+    useTruncationTooltip<HTMLButtonElement>((el) => memberRef?.(member.id, el));
+  return (
+    <Menu
+      isOpen={isOpen}
+      onOpenChange={(open) => onOpenChange?.(member.id, open)}
+      onAction={(key: Key) => onMove?.(member.id, Number(key))}
+      placement="bottom start"
+      trigger={
+        <RacButton
+          {...triggerProps}
+          ref={triggerRef}
+          aria-label={`Move ${name} to another room`}
+          className={memberChipStyles()}
+        >
+          <Avatar aria-hidden="true" name={member.name} participantId={member.id} size="sm" />
+          <span ref={labelRef} className={memberChipNameStyles()}>
+            {name}
+          </span>
+          <Tooltip label={name} triggerRef={triggerRef} isOpen={tooltipOpen} onOpenChange={onTooltipChange} />
+        </RacButton>
+      }
+    >
+      <MenuSection title="Move to">
+        {moveTargets.map((t) => (
+          <MenuItem
+            key={t.index}
+            id={String(t.index)}
+            isDisabled={t.index === room.index}
+            description={t.index === room.index ? 'Current room' : formatMembers(t.count)}
+          >
+            {t.name}
+          </MenuItem>
+        ))}
+      </MenuSection>
+    </Menu>
+  );
+}
+
+/** A member that cannot be moved (solo mode, or a card without move targets): the same chip, not interactive; hover shows a cut-off name in full. */
+function Member({ member, name }: MemberProps) {
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLParagraphElement>();
+  const { hoverProps } = useHover({ onHoverStart: triggerProps.onHoverStart, onHoverEnd: triggerProps.onHoverEnd });
+  return (
+    <p {...mergeProps(hoverProps)} ref={triggerRef} className={memberStyles()}>
+      <Avatar aria-hidden="true" name={member.name} participantId={member.id} size="sm" />
+      <span ref={labelRef} className={memberChipNameStyles()}>
+        {name}
+      </span>
+      <Tooltip label={name} triggerRef={labelRef} isOpen={isOpen} onOpenChange={onOpenChange} />
+    </p>
+  );
+}
+
 /**
  * A list item with the room's name as a heading. In setup every member is
- * a "Move to…" menu trigger named "Move Ana Souza to another room" (B2):
- * the menu lists the rooms with their counts, the current one disabled,
- * and choosing one calls `onMove`; the board then keeps focus on the
- * student in their new card and the room announces the move. Live, the
- * thumbnail is the "Preview Room N" button and Join is a text button; back,
- * the thumbnail and the "Show on stage" toggle both put the work on stage.
- * An empty room (B1) says so instead of crashing or showing nothing.
+ * a "Move to…" menu trigger named "Move Ana to another room" (B2, with the
+ * short name the chip shows, B9): the menu lists the rooms with their
+ * counts, the current one disabled, and choosing one calls `onMove`; the
+ * board then keeps focus on the student in their new card and the room
+ * announces the move. Live, the thumbnail is the "Preview Room N" button
+ * and Join is a text button; back, the thumbnail ("Show Room N on stage")
+ * and the "Show on stage" button are both toggles with `aria-pressed`, so
+ * either says whether the work is on stage. An empty room (B1) says so
+ * instead of crashing or showing nothing.
  */
 export function RoomCard({
   room,
@@ -228,10 +312,7 @@ export function RoomCard({
           room.members.length === 0 ? (
             <p className={styles.empty()}>No student yet</p>
           ) : (
-            <p className={memberStyles()}>
-              <Avatar aria-hidden="true" name={room.members[0].name} participantId={room.members[0].id} size="sm" />
-              <span className={memberChipNameStyles()}>{room.subtitle}</span>
-            </p>
+            <Member member={room.members[0]} name={room.subtitle} />
           )
         ) : room.members.length === 0 ? (
           <p className={styles.empty()}>No students yet. Move someone here from another room.</p>
@@ -240,40 +321,18 @@ export function RoomCard({
             {room.members.map((m) => (
               <li key={m.id}>
                 {canMove ? (
-                  <Menu
+                  <MemberChip
+                    member={m}
+                    name={nameOf(m.id)}
+                    room={room}
+                    moveTargets={moveTargets}
                     isOpen={movingId === m.id}
-                    onOpenChange={(open) => onMoveMenuOpenChange?.(m.id, open)}
-                    onAction={(key: Key) => onMove?.(m.id, Number(key))}
-                    placement="bottom start"
-                    trigger={
-                      <RacButton
-                        ref={(el) => memberRef?.(m.id, el)}
-                        aria-label={`Move ${m.name} to another room`}
-                        className={memberChipStyles()}
-                      >
-                        <Avatar aria-hidden="true" name={m.name} participantId={m.id} size="sm" />
-                        <span className={memberChipNameStyles()}>{nameOf(m.id)}</span>
-                      </RacButton>
-                    }
-                  >
-                    <MenuSection title="Move to">
-                      {moveTargets.map((t) => (
-                        <MenuItem
-                          key={t.index}
-                          id={String(t.index)}
-                          isDisabled={t.index === room.index}
-                          description={t.index === room.index ? 'Current room' : formatMembers(t.count)}
-                        >
-                          {t.name}
-                        </MenuItem>
-                      ))}
-                    </MenuSection>
-                  </Menu>
+                    onOpenChange={onMoveMenuOpenChange}
+                    onMove={onMove}
+                    memberRef={memberRef}
+                  />
                 ) : (
-                  <p className={memberStyles()}>
-                    <Avatar aria-hidden="true" name={m.name} participantId={m.id} size="sm" />
-                    <span className={memberChipNameStyles()}>{nameOf(m.id)}</span>
-                  </p>
+                  <Member member={m} name={nameOf(m.id)} />
                 )}
               </li>
             ))}
@@ -285,34 +344,45 @@ export function RoomCard({
 
   const shown = room.members.slice(0, MAX_THUMB_AVATARS);
   const rest = room.members.length - shown.length;
-  const thumbLabel = variant === 'back' ? `Show ${room.name} on stage` : `Preview ${room.name}`;
-  const onThumb = variant === 'back' ? () => onShowOnStage?.(!isOnStage) : onPreview;
+  const thumbContent = (
+    <>
+      <RoomWork aria-hidden="true" kind={room.work} showLabel={false} />
+      {shown.length > 0 && (
+        <span aria-hidden="true" className={styles.avatars()}>
+          {shown.map((m) => (
+            <span key={m.id} className={styles.avatar()}>
+              <Avatar aria-hidden="true" name={m.name} participantId={m.id} size="sm" />
+            </span>
+          ))}
+          {rest > 0 && <span className={styles.more()}>+{rest}</span>}
+        </span>
+      )}
+      {variant === 'live' && room.help && (
+        <span aria-hidden="true" className={styles.helpBadge()}>
+          <Icon name="help" size="xs" />
+          Help
+        </span>
+      )}
+    </>
+  );
   return (
     <li aria-current={isPeeked || undefined} {...props} className={styles.root({ className })}>
-      <RacButton
-        ref={previewRef}
-        aria-label={thumbLabel}
-        onPress={onThumb}
-        className={roomThumbStyles()}
-      >
-        <RoomWork aria-hidden="true" kind={room.work} showLabel={false} />
-        {shown.length > 0 && (
-          <span aria-hidden="true" className={styles.avatars()}>
-            {shown.map((m) => (
-              <span key={m.id} className={styles.avatar()}>
-                <Avatar aria-hidden="true" name={m.name} participantId={m.id} size="sm" />
-              </span>
-            ))}
-            {rest > 0 && <span className={styles.more()}>+{rest}</span>}
-          </span>
-        )}
-        {variant === 'live' && room.help && (
-          <span aria-hidden="true" className={styles.helpBadge()}>
-            <Icon name="help" size="xs" />
-            Help
-          </span>
-        )}
-      </RacButton>
+      {variant === 'back' ? (
+        // The same toggle as "Show on stage" below, with the room in its fixed label and `aria-pressed`.
+        <RacToggleButton
+          ref={previewRef}
+          aria-label={`Show ${room.name} on stage`}
+          isSelected={isOnStage}
+          onChange={(show) => onShowOnStage?.(show)}
+          className={roomThumbStyles()}
+        >
+          {thumbContent}
+        </RacToggleButton>
+      ) : (
+        <RacButton ref={previewRef} aria-label={`Preview ${room.name}`} onPress={onPreview} className={roomThumbStyles()}>
+          {thumbContent}
+        </RacButton>
+      )}
       <div className={styles.footer()}>
         <span aria-hidden="true" className={styles.dot()} />
         <div className={styles.body()}>

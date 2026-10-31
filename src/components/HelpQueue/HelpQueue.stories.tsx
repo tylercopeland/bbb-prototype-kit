@@ -5,6 +5,7 @@ import {
   roomReducer,
   selectDisplayNames,
   selectHelpQueue,
+  selectRooms,
   type RoomAction,
   type RoomState,
 } from '../../mocks';
@@ -94,6 +95,16 @@ export const Many: Story = {
       state = run(state, { type: 'requestHelp', roomIndex: i * 3 }, { type: 'tick', now: state.clock.now + 20_000 });
     }
     return <LiveQueue initial={state} />;
+  },
+};
+
+/** Long names (the `longNames` fixture): the title truncates and shows in full in a tooltip on hover or focus. */
+export const LongNames: Story = {
+  render: () => {
+    const long = run(createRoom({ participants: 'longNames' }), { type: 'openRooms' });
+    const longest = long.participants.reduce((a, b) => (b.name.length > a.name.length ? b : a));
+    const room = selectRooms(long).find((r) => r.members.some((m) => m.id === longest.id))?.index ?? 0;
+    return <LiveQueue initial={run(long, { type: 'requestHelp', roomIndex: room, from: longest.id })} />;
   },
 };
 

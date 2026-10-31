@@ -125,6 +125,23 @@ describe('RoomPreview', () => {
     expect(screen.getByRole('button', { name: 'Next room' })).toHaveFocus();
   });
 
+  it('shows a cut-off talk-time name in full in a tooltip while its row is hovered', async () => {
+    const user = userEvent.setup();
+    render(<Demo />);
+    const talk = within(screen.getByRole('dialog')).getByRole('region', { name: 'Talk time' });
+    const row = within(talk).getAllByRole('listitem')[0];
+    const name = within(row).getByText(/^\S+$/, { selector: 'span' });
+    Object.defineProperty(name, 'scrollWidth', { value: 300, configurable: true });
+    Object.defineProperty(name, 'clientWidth', { value: 120, configurable: true });
+    await user.pointer({ target: document.body });
+    await user.hover(row);
+    // The tooltip portals outside the modal, which hides the rest of the page from assistive technology;
+    // it is a visual aid here, since the full name is already the row's text.
+    expect(await screen.findByRole('tooltip', { hidden: true })).toHaveTextContent(name.textContent ?? '');
+    await user.unhover(row);
+    await waitFor(() => expect(screen.queryByRole('tooltip', { hidden: true })).not.toBeInTheDocument());
+  });
+
   it('says "Working solo" in solo mode (B7) and handles an empty room (B1)', () => {
     const solo = run(createRoom(), { type: 'setBreakoutMode', mode: 'solo' }, { type: 'openRooms' });
     const { rerender } = render(<Demo {...propsFor(solo, 2)} />);

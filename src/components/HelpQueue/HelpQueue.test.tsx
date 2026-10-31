@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   createRoom,
@@ -69,6 +69,24 @@ describe('HelpQueue', () => {
     expect(screen.queryByText(/Rafaela/)).not.toBeInTheDocument();
     // The next row (none after it) then the previous one: Room 4's Preview button.
     expect(screen.getByRole('button', { name: 'Preview Room 4 · Octavio' })).toHaveFocus();
+  });
+
+  it('shows a cut-off title in full in a tooltip while the row is hovered, and not when it fits', async () => {
+    const user = userEvent.setup();
+    render(<Demo initial={two} />);
+    const row = screen.getAllByRole('listitem')[0];
+    const title = within(row).getByText('Room 2 · Rafaela');
+    // jsdom has no layout: fake a cut-off title, then one that fits.
+    Object.defineProperty(title, 'scrollWidth', { value: 300, configurable: true });
+    Object.defineProperty(title, 'clientWidth', { value: 120, configurable: true });
+    await user.pointer({ target: document.body });
+    await user.hover(row);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Room 2 · Rafaela');
+    await user.unhover(row);
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+    Object.defineProperty(title, 'scrollWidth', { value: 120, configurable: true });
+    await user.hover(row);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
   it('moves focus to the heading when the last request is cleared', async () => {

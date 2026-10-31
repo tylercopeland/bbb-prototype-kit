@@ -1,6 +1,6 @@
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   createRoom,
@@ -110,7 +110,7 @@ describe('RoomCard', () => {
     await waitFor(() => expect(chip).toHaveFocus());
   });
 
-  it('tells two Anas apart on the chips (B9) and keeps the full name in the menu trigger', () => {
+  it('tells two Anas apart on the chips (B9), and each chip’s label contains the name it shows', () => {
     const twoAnas = createRoom({ participants: 'duplicateNames' });
     const anaNames = selectDisplayNames(twoAnas);
     const roomsWithAnas = selectRooms(twoAnas);
@@ -128,10 +128,39 @@ describe('RoomCard', () => {
         ))}
       </ul>,
     );
-    expect(screen.getByRole('button', { name: 'Move Ana Souza to another room' })).toHaveTextContent('Ana S.');
-    expect(screen.getByRole('button', { name: 'Move Ana Ferreira to another room' })).toHaveTextContent(
-      'Ana F.',
+    expect(screen.getByRole('button', { name: 'Move Ana S. to another room' })).toHaveTextContent('Ana S.');
+    expect(screen.getByRole('button', { name: 'Move Ana F. to another room' })).toHaveTextContent('Ana F.');
+    expect(screen.queryByRole('button', { name: /Ana Souza/ })).not.toBeInTheDocument();
+  });
+
+  it('shows a cut-off name in full in a tooltip while the chip is focused, and not when it fits', async () => {
+    const user = userEvent.setup();
+    const long = createRoom({ participants: 'longNames' });
+    const longNames = selectDisplayNames(long);
+    const longRooms = selectRooms(long);
+    const longest = long.participants.reduce((a, b) => (b.name.length > a.name.length ? b : a));
+    const room = longRooms.find((r) => r.members.some((m) => m.id === longest.id))!;
+    render(
+      <ul>
+        <RoomCard room={room} names={longNames} variant="setup" moveTargets={targets} onMove={() => undefined} />
+      </ul>,
     );
+    const name = longNames[longest.id];
+    const chip = screen.getByRole('button', { name: `Move ${name} to another room` });
+    const label = within(chip).getByText(name);
+    // jsdom has no layout: fake a cut-off label, then one that fits.
+    Object.defineProperty(label, 'scrollWidth', { value: 300, configurable: true });
+    Object.defineProperty(label, 'clientWidth', { value: 120, configurable: true });
+    act(() => chip.focus());
+    expect(chip).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(name);
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+    Object.defineProperty(label, 'scrollWidth', { value: 120, configurable: true });
+    act(() => chip.blur());
+    act(() => chip.focus());
+    expect(chip).toHaveFocus();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
   it('solo cards show the student, not a menu, and keep the same preview and join actions live (B7)', () => {
@@ -203,7 +232,7 @@ describe('RoomCard', () => {
     expect(screen.getByRole('listitem')).toHaveAttribute('aria-current', 'true');
   });
 
-  it('after the rooms closed, "Show on stage" is a toggle with a fixed label and the thumbnail does the same', async () => {
+  it('after the rooms closed, "Show on stage" and the thumbnail are both toggles with fixed labels and aria-pressed', async () => {
     const user = userEvent.setup();
     const onShowOnStage = vi.fn();
     const back = run(live, { type: 'bringEveryoneBack' });
@@ -217,8 +246,13 @@ describe('RoomCard', () => {
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     await user.click(toggle);
     expect(onShowOnStage).toHaveBeenLastCalledWith(true);
-    await user.click(screen.getByRole('button', { name: 'Show Room 2 on stage' }));
+    const thumb = screen.getByRole('button', { name: 'Show Room 2 on stage' });
+    expect(thumb).toHaveAttribute('aria-pressed', 'false');
+    await user.click(thumb);
     expect(onShowOnStage).toHaveBeenLastCalledWith(true);
+    thumb.focus();
+    await user.keyboard(' ');
+    expect(onShowOnStage).toHaveBeenCalledTimes(3);
     rerender(
       <ul>
         <RoomCard
@@ -232,8 +266,11 @@ describe('RoomCard', () => {
       </ul>,
     );
     expect(screen.getByRole('button', { name: 'Show on stage' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Show Room 2 on stage' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('On stage')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Show on stage' }));
+    expect(onShowOnStage).toHaveBeenLastCalledWith(false);
+    await user.click(screen.getByRole('button', { name: 'Show Room 2 on stage' }));
     expect(onShowOnStage).toHaveBeenLastCalledWith(false);
   });
 

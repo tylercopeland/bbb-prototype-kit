@@ -1,4 +1,4 @@
-import { useState, type Ref } from 'react';
+import { useId, useState, type Ref } from 'react';
 import { Label, Radio as RacRadio, RadioGroup as RacRadioGroup } from 'react-aria-components';
 import { DURATIONS_MIN, MAX_ROOMS, MIN_ROOMS, ROOM_COLORS, roomCountFor, studentsPerRoom } from '../../mocks/breakouts';
 import type { BreakoutAssignment, BreakoutMode, BreakoutOptions } from '../../mocks/types';
@@ -118,6 +118,53 @@ export function formatOpenRooms(count: number): string {
   return `Open ${count} ${count === 1 ? 'room' : 'rooms'}`;
 }
 
+/**
+ * A split-type card: the radio is named by its label ("Groups") and
+ * described by its line of description, which is hidden from the name
+ * (`aria-describedby`, as the plugin cards), so it reads "Groups, radio,
+ * Mix students into a few rooms" rather than one long name.
+ */
+function SplitCard({ mode, label, description }: (typeof splitTypes)[number]) {
+  const card = splitCardTextStyles();
+  const descriptionId = useId();
+  return (
+    <RacRadio value={mode} aria-describedby={descriptionId} className={splitCardStyles()}>
+      <span aria-hidden="true" className={card.marks()}>
+        {mode === 'groups'
+          ? [1, 2, 3, 4].map((c) => (
+              <span key={c} className={roomMarkStyles({ shape: 'bar', color: c as RoomMarkColor })} />
+            ))
+          : Array.from({ length: 10 }, (_, i) => (
+              <span key={i} className={roomMarkStyles({ shape: 'dot', color: ((i % ROOM_COLORS) + 1) as RoomMarkColor })} />
+            ))}
+      </span>
+      <span className={card.label()}>{label}</span>
+      <span id={descriptionId} aria-hidden="true" className={card.description()}>
+        {description}
+      </span>
+    </RacRadio>
+  );
+}
+
+/** An assignment row: named "Spread evenly", described by its line (the same pattern as the split cards). */
+function AssignRow({ value, label, description }: (typeof assignments)[number]) {
+  const row = assignRowPartsStyles();
+  const descriptionId = useId();
+  return (
+    <RacRadio value={value} aria-describedby={descriptionId} className={assignRowStyles()}>
+      <span aria-hidden="true" className={row.circle()}>
+        <span className={row.innerDot()} />
+      </span>
+      <span className={row.body()}>
+        <span className={row.label()}>{label}</span>
+        <span id={descriptionId} aria-hidden="true" className={row.description()}>
+          {description}
+        </span>
+      </span>
+    </RacRadio>
+  );
+}
+
 export interface BreakoutSetupProps {
   mode: BreakoutMode;
   /** Rooms in groups mode (`MIN_ROOMS`–`MAX_ROOMS`, B6). */
@@ -164,8 +211,6 @@ export function BreakoutSetup({
   className,
 }: BreakoutSetupProps) {
   const styles = breakoutSetupStyles();
-  const card = splitCardTextStyles();
-  const row = assignRowPartsStyles();
   const [confirming, setConfirming] = useState(false);
   const opening = roomCountFor(mode, roomCount, studentCount);
   const openLabel = formatOpenRooms(opening);
@@ -181,26 +226,7 @@ export function BreakoutSetup({
           <Label className={styles.kicker()}>How to split the class</Label>
           <div className={styles.cards()}>
             {splitTypes.map((t) => (
-              <RacRadio
-                key={t.mode}
-                value={t.mode}
-                className={splitCardStyles()}
-              >
-                <span aria-hidden="true" className={card.marks()}>
-                  {t.mode === 'groups'
-                    ? [1, 2, 3, 4].map((c) => (
-                        <span key={c} className={roomMarkStyles({ shape: 'bar', color: c as RoomMarkColor })} />
-                      ))
-                    : Array.from({ length: 10 }, (_, i) => (
-                        <span
-                          key={i}
-                          className={roomMarkStyles({ shape: 'dot', color: ((i % ROOM_COLORS) + 1) as RoomMarkColor })}
-                        />
-                      ))}
-                </span>
-                <span className={card.label()}>{t.label}</span>
-                <span className={card.description()}>{t.description}</span>
-              </RacRadio>
+              <SplitCard key={t.mode} {...t} />
             ))}
           </div>
         </RacRadioGroup>
@@ -224,19 +250,7 @@ export function BreakoutSetup({
               className={styles.rows()}
             >
               {assignments.map((a) => (
-                <RacRadio
-                  key={a.value}
-                  value={a.value}
-                  className={assignRowStyles()}
-                >
-                  <span aria-hidden="true" className={row.circle()}>
-                    <span className={row.innerDot()} />
-                  </span>
-                  <span className={row.body()}>
-                    <span className={row.label()}>{a.label}</span>
-                    <span className={row.description()}>{a.description}</span>
-                  </span>
-                </RacRadio>
+                <AssignRow key={a.value} {...a} />
               ))}
             </RacRadioGroup>
           </div>

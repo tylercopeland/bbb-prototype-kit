@@ -51,6 +51,24 @@ describe('BreakoutSetup', () => {
     expect(formatOpenRooms(1)).toBe('Open 1 room');
   });
 
+  it('names the split cards and the assignment rows by their label alone, with the line below as the description', () => {
+    render(<Demo initial={createRoom()} />);
+    const groups = screen.getByRole('radio', { name: 'Groups' });
+    expect(groups).toHaveAccessibleDescription('Mix students into a few rooms');
+    expect(screen.getByRole('radio', { name: 'One per student' })).toHaveAccessibleDescription(
+      'Everyone gets their own room',
+    );
+    expect(screen.getByRole('radio', { name: 'Spread evenly' })).toHaveAccessibleDescription(
+      'Shuffled so room sizes differ by one at most',
+    );
+    expect(screen.getByRole('radio', { name: 'Let students choose' })).toHaveAccessibleDescription(
+      'They pick a room; you can still move people',
+    );
+    expect(screen.queryByRole('radio', { name: /Mix students/ })).not.toBeInTheDocument();
+    // The description is still on screen.
+    expect(screen.getByText('Mix students into a few rooms')).toBeVisible();
+  });
+
   it('changes every setting by keyboard', async () => {
     const user = userEvent.setup();
     render(<Demo initial={createRoom()} />);

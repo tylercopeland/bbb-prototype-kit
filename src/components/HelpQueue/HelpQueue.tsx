@@ -1,10 +1,12 @@
-import { useEffect, useId, useRef, type ComponentProps } from 'react';
+import { useEffect, useId, useRef, type ComponentProps, type Ref } from 'react';
+import { mergeProps, useHover } from 'react-aria';
 import { Icon } from '../../icons';
 import { roomName } from '../../mocks/breakouts';
 import { formatAgo } from '../../mocks/time';
 import type { HelpRequest, ParticipantId } from '../../mocks/types';
 import { tv } from '../../styles/tv';
 import { IconButton } from '../IconButton';
+import { Tooltip, useTruncationTooltip } from '../Tooltip';
 
 /**
  * The help queue (B3): every request from a room as a row in the live
@@ -63,6 +65,56 @@ export function helpTitle(request: HelpRequest, names: Record<ParticipantId, str
   return who ? `${roomName(request.roomIndex)} · ${who}` : roomName(request.roomIndex);
 }
 
+interface HelpRowProps {
+  request: HelpRequest;
+  title: string;
+  now: number;
+  onOpen?: () => void;
+  onAcknowledge?: () => void;
+  onClear?: () => void;
+  openRef: Ref<HTMLButtonElement>;
+  clearRef: Ref<HTMLButtonElement>;
+}
+
+/**
+ * One row. The row is the tooltip's trigger (hover anywhere on it, or
+ * focus one of its buttons) and the title is what is measured: a cut-off
+ * "Room 2 · Rafaela" shows in full (`useTruncationTooltip`, as the People
+ * rows).
+ */
+function HelpRow({ request, title, now, onOpen, onAcknowledge, onClear, openRef, clearRef }: HelpRowProps) {
+  const isOpen = request.acknowledgedAt === null;
+  const row = helpQueueStyles({ isOpen });
+  const { labelRef, triggerRef, triggerProps, isOpen: tooltipOpen, onOpenChange } = useTruncationTooltip<HTMLLIElement>();
+  const { hoverProps } = useHover({ onHoverStart: triggerProps.onHoverStart, onHoverEnd: triggerProps.onHoverEnd });
+  return (
+    <li
+      {...mergeProps(hoverProps, { onFocus: triggerProps.onFocus, onBlur: triggerProps.onBlur })}
+      ref={triggerRef}
+      className={row.row()}
+    >
+      <span aria-hidden="true" className={row.icon()}>
+        <Icon name="help" size="xs" />
+      </span>
+      <span className={row.body()}>
+        <span ref={labelRef} className={row.title()}>
+          {title}
+        </span>
+        <span className={row.when()}>{isOpen ? `Asked ${formatAgo(request.askedAt, now)} ago` : 'Acknowledged'}</span>
+        <Tooltip label={title} triggerRef={labelRef} isOpen={tooltipOpen} onOpenChange={onOpenChange} />
+      </span>
+      <span className={row.actions()}>
+        <IconButton ref={openRef} label={`Preview ${title}`} icon="preview" variant="soft" size="sm" onPress={onOpen} />
+        {isOpen ? (
+          <IconButton label={`Acknowledge ${title}`} icon="check" variant="soft" size="sm" onPress={onAcknowledge} />
+        ) : (
+          <IconButton ref={clearRef} label={`Clear ${title}`} icon="close" variant="soft" size="sm" onPress={onClear} />
+        )}
+      </span>
+    </li>
+  );
+}
+
 /**
  * A section named "Help requests" with a list of rows. Open requests are
  * amber with "Asked 1 min ago"; acknowledged ones are grey with
@@ -118,52 +170,19 @@ export function HelpQueue({ requests, names, now, onOpen, onAcknowledge, onClear
         <p className={styles.empty()}>No room has asked for help.</p>
       ) : (
         <ul className={styles.list()}>
-          {requests.map((r) => {
-            const isOpen = r.acknowledgedAt === null;
-            const row = helpQueueStyles({ isOpen });
-            const title = helpTitle(r, names);
-            return (
-              <li key={r.id} className={row.row()}>
-                <span aria-hidden="true" className={row.icon()}>
-                  <Icon name="help" size="xs" />
-                </span>
-                <span className={row.body()}>
-                  <span className={row.title()}>{title}</span>
-                  <span className={row.when()}>
-                    {isOpen ? `Asked ${formatAgo(r.askedAt, now)} ago` : 'Acknowledged'}
-                  </span>
-                </span>
-                <span className={row.actions()}>
-                  <IconButton
-                    ref={register(`open-${r.id}`)}
-                    label={`Preview ${title}`}
-                    icon="preview"
-                    variant="soft"
-                    size="sm"
-                    onPress={() => onOpen?.(r)}
-                  />
-                  {isOpen ? (
-                    <IconButton
-                      label={`Acknowledge ${title}`}
-                      icon="check"
-                      variant="soft"
-                      size="sm"
-                      onPress={() => acknowledge(r.id)}
-                    />
-                  ) : (
-                    <IconButton
-                      ref={register(`clear-${r.id}`)}
-                      label={`Clear ${title}`}
-                      icon="close"
-                      variant="soft"
-                      size="sm"
-                      onPress={() => clear(r.id)}
-                    />
-                  )}
-                </span>
-              </li>
-            );
-          })}
+          {requests.map((r) => (
+            <HelpRow
+              key={r.id}
+              request={r}
+              title={helpTitle(r, names)}
+              now={now}
+              onOpen={() => onOpen?.(r)}
+              onAcknowledge={() => acknowledge(r.id)}
+              onClear={() => clear(r.id)}
+              openRef={register(`open-${r.id}`)}
+              clearRef={register(`clear-${r.id}`)}
+            />
+          ))}
         </ul>
       )}
     </section>

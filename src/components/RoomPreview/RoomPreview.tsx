@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type Ref, type RefObject } from 'react';
+import { mergeProps, useHover } from 'react-aria';
 import { Icon } from '../../icons';
 import type { Room } from '../../mocks/breakouts';
 import { formatTalkTime, type TalkTime } from '../../mocks/selectors';
@@ -13,6 +14,7 @@ import { FocusFallback } from '../Popover';
 import { RoomWork } from '../RoomWork';
 import { TextField } from '../TextField';
 import { ToggleButton } from '../ToggleButton';
+import { Tooltip, useTruncationTooltip } from '../Tooltip';
 import { VideoTile } from '../VideoTile';
 
 /**
@@ -89,6 +91,28 @@ export interface RoomPreviewProps {
   className?: string;
   /** The dialog element. */
   ref?: Ref<HTMLElement>;
+}
+
+/** One talk-time row: the name, the minutes and the bar. A cut-off name shows in full in a tooltip while the row is hovered. */
+function TalkRow({ name, talk }: { name: string; talk: TalkTime }) {
+  const styles = roomPreviewStyles();
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLLIElement>();
+  const { hoverProps } = useHover({ onHoverStart: triggerProps.onHoverStart, onHoverEnd: triggerProps.onHoverEnd });
+  return (
+    <li {...mergeProps(hoverProps)} ref={triggerRef} className={styles.talkRow()}>
+      <p className={styles.talkText()}>
+        <span ref={labelRef} className={styles.talkName()}>
+          {name}
+        </span>
+        <span className={styles.talkMinutes()}>{formatTalkTime(talk.seconds)}</span>
+        <Tooltip label={name} triggerRef={labelRef} isOpen={isOpen} onOpenChange={onOpenChange} />
+      </p>
+      <svg aria-hidden="true" className={styles.bar()} preserveAspectRatio="none" viewBox="0 0 100 1">
+        <rect width="100" height="1" className={styles.barTrack()} />
+        <rect width={Math.round(talk.share * 100)} height="1" className={styles.barFill()} />
+      </svg>
+    </li>
+  );
 }
 
 /**
@@ -203,16 +227,7 @@ export function RoomPreview({
             ) : (
               <ul className={styles.talkList()}>
                 {talk.map((t) => (
-                  <li key={t.participant.id} className={styles.talkRow()}>
-                    <p className={styles.talkText()}>
-                      <span className={styles.talkName()}>{shortName(t.participant.id)}</span>
-                      <span className={styles.talkMinutes()}>{formatTalkTime(t.seconds)}</span>
-                    </p>
-                    <svg aria-hidden="true" className={styles.bar()} preserveAspectRatio="none" viewBox="0 0 100 1">
-                      <rect width="100" height="1" className={styles.barTrack()} />
-                      <rect width={Math.round(t.share * 100)} height="1" className={styles.barFill()} />
-                    </svg>
-                  </li>
+                  <TalkRow key={t.participant.id} name={shortName(t.participant.id)} talk={t} />
                 ))}
               </ul>
             )}

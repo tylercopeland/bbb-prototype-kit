@@ -19,9 +19,9 @@ test.describe('breakout rooms, keyboard only', () => {
     await expect(board.getByRole('heading', { level: 3 })).toHaveCount(4);
 
     // Every student is a "Move to…" menu trigger (B2).
-    await tabTo(page, 'Move Ana Souza to another room', 80);
+    await tabTo(page, 'Move Ana to another room', 80);
     await page.keyboard.press('Enter');
-    const menu = page.getByRole('menu', { name: 'Move Ana Souza to another room' });
+    const menu = page.getByRole('menu', { name: 'Move Ana to another room' });
     await expect(menu).toBeVisible();
     await expect(menu.getByRole('menuitem', { name: /^Room 4/ })).toHaveAttribute('aria-disabled', 'true');
     await expect(menu.getByRole('menuitem', { name: /^Room 1/ })).toBeFocused();
@@ -30,7 +30,7 @@ test.describe('breakout rooms, keyboard only', () => {
     // The move is announced and focus stays on Ana, now in Room 1.
     await expect(page.getByRole('status')).toContainText('Ana moved to Room 1');
     const room1 = page.getByRole('list', { name: 'Room 1 students' });
-    await expect(room1.getByRole('button', { name: 'Move Ana Souza to another room' })).toBeFocused();
+    await expect(room1.getByRole('button', { name: 'Move Ana to another room' })).toBeFocused();
     await expect(page.getByRole('button', { name: 'Rooms are uneven · Even out' })).toBeVisible();
 
     // Back to the panel: Open 4 rooms asks first (B5), Cancel takes focus, then the confirm.

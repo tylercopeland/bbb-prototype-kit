@@ -12,7 +12,7 @@
  * remounts "Close all rooms", which takes it back; "Set up new rooms"
  * lands on the heading.
  */
-import { useEffect, useMemo, useRef, useState, type FormEvent, type RefObject } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { Button as RacButton } from 'react-aria-components';
 import {
   BreakoutSetup,
@@ -24,10 +24,12 @@ import {
   HelpQueue,
   IconButton,
   TextField,
+  Tooltip,
   sidePanelStyles,
+  useTruncationTooltip,
 } from '../../components';
 import { Icon } from '../../icons';
-import { breakoutStudents } from '../../mocks/breakouts';
+import { breakoutStudents, type Room } from '../../mocks/breakouts';
 import { useRoom, useRoomDispatch } from '../../mocks/context';
 import {
   roomStatus,
@@ -88,6 +90,8 @@ const roomRowPartsStyles = tv({
   slots: {
     dot: 'size-2 shrink-0 rounded-xs',
     body: 'flex min-w-0 flex-1 flex-col',
+    /** "Preview " before the room's name, for assistive technology only: the row's name is "Preview Room 2". */
+    action: 'sr-only',
     name: 'truncate text-md font-semibold text-text',
     status: 'truncate text-xs text-text-muted',
     avatars: 'flex shrink-0',
@@ -118,6 +122,55 @@ const filterLabels: Record<RoomFilter, string> = {
   help: 'Rooms that need help',
   quiet: 'Quiet rooms',
 };
+
+interface RoomRowProps {
+  room: Room;
+  status: string;
+  isPeeked: boolean;
+  onPreview?: () => void;
+}
+
+/**
+ * A room row. Its name is "Preview Room 2" (the visible name with a hidden
+ * "Preview" before it) and its status is its description, so a screen
+ * reader hears "Asked for help · 1 min" after the name instead of losing
+ * it. A cut-off name shows in full in a tooltip while the row is hovered
+ * or focused (`useTruncationTooltip`, as the DM rows).
+ */
+function RoomRow({ room, status, isPeeked, onPreview }: RoomRowProps) {
+  const statusId = useId();
+  const parts = roomRowPartsStyles({ color: room.color as 1, statusTone: room.help ? 'help' : 'neutral' });
+  const { labelRef, triggerRef, triggerProps, isOpen, onOpenChange } = useTruncationTooltip<HTMLButtonElement>();
+  return (
+    <RacButton
+      {...triggerProps}
+      ref={triggerRef}
+      aria-describedby={statusId}
+      onPress={onPreview}
+      className={roomRowStyles({ isPeeked, hasHelp: room.help !== null && !isPeeked })}
+    >
+      <span aria-hidden="true" className={parts.dot()} />
+      <span className={parts.body()}>
+        <span className={parts.action()}>Preview</span>
+        {/* The space keeps the name "Preview Room 2", not "PreviewRoom 2"; flex drops it visually. */}{' '}
+        <span ref={labelRef} className={parts.name()}>
+          {room.name}
+        </span>
+        <span id={statusId} aria-hidden="true" className={parts.status()}>
+          {status}
+        </span>
+      </span>
+      <span aria-hidden="true" className={parts.avatars()}>
+        {room.members.slice(0, 3).map((m) => (
+          <span key={m.id} className={parts.avatar()}>
+            <Avatar aria-hidden="true" name={m.name} participantId={m.id} size="sm" />
+          </span>
+        ))}
+      </span>
+      <Tooltip label={room.name} triggerRef={triggerRef} isOpen={isOpen} onOpenChange={onOpenChange} />
+    </RacButton>
+  );
+}
 
 export interface BreakoutPanelProps {
   /** Close the panel and leave the breakout surface; the room moves focus to Plugins. */
@@ -310,38 +363,16 @@ export function BreakoutPanel({ onClose, onPreview, closeRoomsRef, keepOpenRef }
                 <p className={styles.empty()}>No rooms match this filter.</p>
               ) : (
                 <ul aria-label={filterLabels[filter]} className={styles.rooms()}>
-                  {visibleRooms.map((room) => {
-                    const status = roomStatus(room, phase, now, names);
-                    const parts = roomRowPartsStyles({
-                      color: room.color as 1,
-                      statusTone: room.help ? 'help' : 'neutral',
-                    });
-                    return (
-                      <li key={room.index}>
-                        <RacButton
-                          aria-label={`Preview ${room.name}`}
-                          onPress={() => onPreview?.(room.index)}
-                          className={roomRowStyles({
-                            isPeeked: breakouts.peek === room.index,
-                            hasHelp: room.help !== null && breakouts.peek !== room.index,
-                          })}
-                        >
-                          <span aria-hidden="true" className={parts.dot()} />
-                          <span className={parts.body()}>
-                            <span className={parts.name()}>{room.name}</span>
-                            <span className={parts.status()}>{status}</span>
-                          </span>
-                          <span aria-hidden="true" className={parts.avatars()}>
-                            {room.members.slice(0, 3).map((m) => (
-                              <span key={m.id} className={parts.avatar()}>
-                                <Avatar aria-hidden="true" name={m.name} participantId={m.id} size="sm" />
-                              </span>
-                            ))}
-                          </span>
-                        </RacButton>
-                      </li>
-                    );
-                  })}
+                  {visibleRooms.map((room) => (
+                    <li key={room.index}>
+                      <RoomRow
+                        room={room}
+                        status={roomStatus(room, phase, now, names)}
+                        isPeeked={breakouts.peek === room.index}
+                        onPreview={() => onPreview?.(room.index)}
+                      />
+                    </li>
+                  ))}
                 </ul>
               )}
             </div>

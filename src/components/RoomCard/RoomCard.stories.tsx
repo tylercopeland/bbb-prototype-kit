@@ -102,6 +102,23 @@ export const SetupSolo: Story = {
   },
 };
 
+/** Long names (the `longNames` fixture): the chips truncate and show the full name in a tooltip on hover or focus. */
+export const SetupLongNames: Story = {
+  render: () => {
+    const long = createRoom({ participants: 'longNames' });
+    const longNames = selectDisplayNames(long);
+    const longRooms = selectRooms(long);
+    return (
+      <SetupCard
+        room={longRooms[0]}
+        names={longNames}
+        moveTargets={longRooms.map((r) => ({ index: r.index, name: r.name, count: r.members.length }))}
+        className="w-40"
+      />
+    );
+  },
+};
+
 /** The card's width on the board; a `li` may not sit in a wrapper, so it goes on the card itself. */
 const wide = { className: 'w-72' };
 

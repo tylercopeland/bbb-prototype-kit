@@ -110,6 +110,17 @@ export const SoloRoom: Story = {
   render: () => <Demo state={solo} index={2} defaultOpen />,
 };
 
+/** Long names (the `longNames` fixture): the talk-time names truncate and show in full in a tooltip on hover. */
+export const LongNames: Story = {
+  tags: ['wait-for-overlay'],
+  render: () => {
+    const long = run(createRoom({ participants: 'longNames' }), { type: 'openRooms' });
+    const longest = long.participants.reduce((a, b) => (b.name.length > a.name.length ? b : a));
+    const index = selectRooms(long).find((r) => r.members.some((m) => m.id === longest.id))?.index ?? 0;
+    return <Demo state={long} index={index} defaultOpen />;
+  },
+};
+
 /** A room with nobody in it (B1): the preview still opens. */
 export const EmptyRoom: Story = {
   tags: ['wait-for-overlay'],

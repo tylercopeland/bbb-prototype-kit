@@ -620,13 +620,14 @@ describe('RoomScreen breakouts (batch C)', () => {
   it('BO3: Ana’s Move to… menu is open on load; moving her keeps focus on her chip in the new room and announces it (B2, B4)', async () => {
     const user = userEvent.setup();
     renderAt(BO3);
-    const menu = await screen.findByRole('menu', { name: 'Move Ana Souza to another room' });
+    // The chip is named with the short name it shows (B9): "Move Ana to another room".
+    const menu = await screen.findByRole('menu', { name: 'Move Ana to another room' });
     expect(screen.getByText('Pick a room for Ana')).toBeInTheDocument();
     await waitFor(() => expect(within(menu).getByRole('menuitem', { name: /^Room 1/ })).toHaveFocus());
     await user.keyboard('{Enter}');
     await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
     const room1 = screen.getByRole('list', { name: 'Room 1 students' });
-    const chip = within(room1).getByRole('button', { name: 'Move Ana Souza to another room' });
+    const chip = within(room1).getByRole('button', { name: 'Move Ana to another room' });
     await waitFor(() => expect(chip).toHaveFocus());
     expect(screen.getByRole('status')).toHaveTextContent('Ana moved to Room 1');
     expect(screen.getByText('5 students')).toBeInTheDocument();
@@ -659,7 +660,11 @@ describe('RoomScreen breakouts (batch C)', () => {
     expect(within(panel).getByRole('region', { name: 'Help requests 1' })).toHaveTextContent('Room 2 · Rafaela');
     expect(within(panel).getByRole('radio', { name: 'Need help 1 rooms' })).toBeInTheDocument();
     const rows = within(within(panel).getByRole('list', { name: 'All rooms' })).getAllByRole('button');
+    // The row is named "Preview Room 2" and its status is its description, not lost behind a label.
     expect(rows[0]).toHaveAccessibleName('Preview Room 2');
+    expect(rows[0]).toHaveAccessibleDescription('Asked for help · 1 min');
+    expect(rows[1]).toHaveAccessibleName('Preview Room 1');
+    expect(rows[1]).toHaveAccessibleDescription('Bruno and Frederick are talking');
     const board = screen.getByRole('list', { name: 'Rooms' });
     expect(within(board).getByRole('button', { name: 'Preview Room 2' })).toBeInTheDocument();
     expect(within(board).getByText('Asked for help · 1 min')).toBeInTheDocument();
