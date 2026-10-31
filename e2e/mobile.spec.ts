@@ -6,7 +6,9 @@
  * that opened it holds focus again afterwards (WCAG 2.4.3); the student
  * sheet's switches and Remove, React and Raise hand, More, Leave, All
  * slides, Annotate, Minimize and Restore, the keyboard-open chat and the
- * student view (MB15) each get a walk. Axe runs on every phone route in
+ * student view (MB15) each get a walk, as do the landscape side sheet
+ * (MB9), a sheet dismissed by a tap on the scrim, and the Leave and Remove
+ * confirmations from their deep links (MB16, `confirm=remove`). Axe runs on every phone route in
  * routes.spec.ts, so nothing here scans.
  */
 import { test, expect, type Page } from '@playwright/test';
@@ -302,5 +304,90 @@ test.describe('phone, by touch', () => {
     await hand.tap();
     await expect(hand).toHaveAttribute('aria-pressed', 'false');
     await expect(hand).toHaveText('Raise hand');
+  });
+
+  test('MB9 → landscape: People opens as a side sheet at the end, Close returns focus to the bar', async ({
+    page,
+  }) => {
+    // The artboard opens with the sheet up; from its closed state the walk opens it by touch.
+    await gotoArtboard(page, 'mobile', 'MB9LandscapePeople', '?sheet=none');
+    const people = bar(page).getByRole('button', { name: 'People and chat' });
+    await people.tap();
+    const sheet = page.getByRole('dialog', { name: 'People and chat' });
+    await expect(sheet).toBeVisible();
+    await expectFocusWithin(sheet);
+    // A side sheet: full height, anchored to the right edge, the slide still visible on the left.
+    // Read once the slide-in has settled: the right edge on the viewport's edge.
+    await expect
+      .poll(async () => {
+        const box = await sheet.boundingBox();
+        return Math.round((box?.x ?? 0) + (box?.width ?? 0));
+      })
+      .toBe(844);
+    const box = await sheet.boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(390 - 1);
+    expect(box?.x).toBeGreaterThan(844 / 3);
+    await expect(page.getByRole('heading', { name: 'BigBlueButton 4.0, refined' })).toBeVisible();
+    await expect(sheet.getByRole('tab', { name: /^People/ })).toHaveAttribute('aria-selected', 'true');
+    await sheet.getByRole('button', { name: 'Close' }).tap();
+    await expect(sheet).toHaveCount(0);
+    await expect(people).toBeFocused();
+  });
+
+  test('MB1 → a tap on the scrim outside the sheet dismisses it and returns focus to its control', async ({
+    page,
+  }) => {
+    await gotoArtboard(page, 'mobile', 'MB1Room');
+    const more = bar(page).getByRole('button', { name: 'More' });
+    await more.tap();
+    const sheet = page.getByRole('dialog', { name: 'More' });
+    await expect(sheet).toBeVisible();
+    const box = await sheet.boundingBox();
+    // Above the sheet, on the scrim over the stage.
+    await page.touchscreen.tap(390 / 2, (box?.y ?? 400) / 2);
+    await expect(sheet).toHaveCount(0);
+    await expect(more).toBeFocused();
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('MB16 → the Leave confirmation from its deep link: Cancel focused, Cancel returns to Leave', async ({
+    page,
+  }) => {
+    await gotoArtboard(page, 'mobile', 'MB16Confirm');
+    const confirm = page.getByRole('alertdialog', { name: 'Leave the session?' });
+    await expect(confirm).toBeVisible();
+    await expect(confirm.getByRole('button', { name: 'Cancel' })).toBeFocused();
+    await confirm.getByRole('button', { name: 'Cancel' }).tap();
+    await expect(confirm).toHaveCount(0);
+    // Nothing was pressed to get here, so the fallback lands on the control that asks.
+    await expect(bar(page).getByRole('button', { name: 'Leave session' })).toBeFocused();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hack Week: Brazil 2026');
+  });
+
+  test('confirm=remove → the student sheet and the Remove confirmation open together; Cancel lands on Remove, Remove removes', async ({
+    page,
+  }) => {
+    await gotoArtboard(page, 'mobile', 'MB16Confirm', '?confirm=remove');
+    const people = page.getByRole('dialog', { name: 'People and chat' });
+    const student = page.getByRole('dialog', { name: 'Anton Georgiev' });
+    const confirm = page.getByRole('alertdialog', { name: 'Remove Anton Georgiev?' });
+    await expect(people).toBeVisible();
+    await expect(student).toBeVisible();
+    await expect(confirm).toBeVisible();
+    await expect(confirm.getByRole('button', { name: 'Cancel' })).toBeFocused();
+    await confirm.getByRole('button', { name: 'Cancel' }).tap();
+    await expect(confirm).toHaveCount(0);
+    await expect(student).toBeVisible();
+    const remove = student.getByRole('button', { name: 'Remove from session' });
+    await expect(remove).toBeFocused();
+    await remove.tap();
+    await expect(confirm).toBeVisible();
+    await confirm.getByRole('button', { name: 'Remove' }).tap();
+    await expect(confirm).toHaveCount(0);
+    await expect(student).toHaveCount(0);
+    await expect(people).toBeVisible();
+    await expect(people.getByText('Anton Georgiev')).toHaveCount(0);
+    await expect(page.getByRole('status')).toContainText('Anton removed');
+    await expectFocusWithin(people);
   });
 });
