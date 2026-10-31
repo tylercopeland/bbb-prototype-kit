@@ -23,7 +23,6 @@ const moreSheetStyles = tv({
     grid: 'grid grid-cols-4 gap-2',
     rows: 'flex flex-col border-t border-border pt-2',
     row: 'w-full justify-start px-2 text-text',
-    rowIcon: 'text-insight-text',
   },
 });
 

@@ -41,7 +41,11 @@ export function PeoplePanel({
   const { hands, others } = useRoom(people);
   const counts = useRoom(selectPeopleFilterCounts);
   const now = useRoom((s) => s.clock.now);
-  const openMenu = useRoom((s) => s.ui.peopleMenu);
+  // Whose actions are open: the ⋯ menu on the desktop, the student sheet on the phone (MB4), so the row's
+  // ⋯ button reports the real `aria-expanded` in both flows.
+  const openMenu = useRoom((s) =>
+    onOpenActions ? (s.ui.sheet === 'student' ? s.ui.sheetStudent : null) : s.ui.peopleMenu,
+  );
   // "Message privately" follows the Private chat setting (owner decision 2026-10-30):
   // a student sees none while it is off, a moderator always does.
   const privateChat = useRoom((s) => s.session.privateChat);

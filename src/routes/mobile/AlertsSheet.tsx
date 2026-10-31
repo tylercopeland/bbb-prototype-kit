@@ -4,11 +4,25 @@
  * jumps to the people or chat view that resolves it"). The rows are named by
  * their title and described by their second line, so a row reads "4 hands
  * raised, Bruno has waited 3 min".
+ *
+ * Each row is tinted in its kind's soft color with a dashed border in the
+ * kind's text color, as the canvas draws them (Mobile.dc.html 263, 497–499:
+ * a tinted fill and a colored dashed border), so the rows read against the
+ * sheet's white without relying on the border alone, and every border is
+ * at least 3:1 on both the tint and the sheet (WCAG 1.4.11). The border
+ * tokens are the `*-text` colors, which pass in every mode where the
+ * fills (`*`) do not (`insight` is 2.4:1 on the dark tint).
  */
 import { useId, type RefObject } from 'react';
 import { Button as RacButton } from 'react-aria-components';
 import { Icon } from '../../icons';
-import { alertPillIconStyles, FocusFallback, Sheet, type SheetPosition } from '../../components';
+import {
+  alertPillIconStyles,
+  alertPillKindIcon,
+  FocusFallback,
+  Sheet,
+  type SheetPosition,
+} from '../../components';
 import { useRoom, useRoomDispatch } from '../../mocks/context';
 import { selectAlerts, selectDisplayNames, type Alert } from '../../mocks/selectors';
 import { formatAgo } from '../../mocks/time';
@@ -17,7 +31,8 @@ import { tv } from '../../styles/tv';
 const alertRowStyles = tv({
   slots: {
     list: 'flex list-none flex-col gap-2 p-0',
-    row: 'flex min-h-16 w-full items-center gap-3 rounded-tile border border-dashed bg-surface px-3 py-2 text-left focus-ring data-hovered:bg-surface-sunken data-pressed:bg-surface-sunken',
+    /** The dashed border turns solid under the pointer and the press, so the row answers without losing its tint. */
+    row: 'flex min-h-16 w-full items-center gap-3 rounded-tile border border-dashed px-3 py-2 text-left focus-ring data-hovered:border-solid data-pressed:border-solid',
     disc: 'size-9',
     body: 'flex min-w-0 flex-1 flex-col',
     title: 'text-md font-bold text-text',
@@ -26,11 +41,11 @@ const alertRowStyles = tv({
   },
   variants: {
     kind: {
-      hands: { row: 'border-status-hand' },
-      question: { row: 'border-accent' },
-      insight: { row: 'border-insight' },
-      help: { row: 'border-danger-text' },
-      back: { row: 'border-status-live' },
+      hands: { row: 'border-status-hand-text bg-status-hand-soft' },
+      question: { row: 'border-accent bg-accent-soft' },
+      insight: { row: 'border-insight-text bg-insight-soft' },
+      help: { row: 'border-danger-text bg-danger-soft' },
+      back: { row: 'border-status-live-text bg-status-live-soft' },
     },
   },
 });
@@ -46,7 +61,10 @@ function alertLines(alert: Alert, names: Record<string, string>, now: number, qu
           : '',
       };
     case 'question':
-      return { title: `${alert.text.replace(/ asked$/, '')} asked a question`, sub: question ? `“${question}”` : '' };
+      return {
+        title: `${alert.from ? (names[alert.from.id] ?? alert.from.name) : 'Someone'} asked a question`,
+        sub: question ? `“${question}”` : '',
+      };
     case 'insight':
       return {
         title: alert.count === 1 ? '1 student with low engagement' : `${alert.count} students with low engagement`,
@@ -77,7 +95,7 @@ function AlertRow({ alert, onPress }: { alert: Alert; onPress: () => void }) {
         className={styles.row()}
       >
         <span aria-hidden="true" className={alertPillIconStyles({ kind: alert.kind, className: styles.disc() })}>
-          <Icon name={alert.kind === 'hands' ? 'raiseHand' : alert.kind === 'question' ? 'question' : alert.kind === 'insight' ? 'insight' : alert.kind === 'help' ? 'help' : 'breakouts'} size="sm" />
+          <Icon name={alertPillKindIcon[alert.kind]} size="sm" />
         </span>
         <span className={styles.body()}>
           <span id={titleId} className={styles.title()}>
@@ -89,7 +107,7 @@ function AlertRow({ alert, onPress }: { alert: Alert; onPress: () => void }) {
             </span>
           )}
         </span>
-        <Icon name="nextSlide" size="sm" className={styles.chevron()} />
+        <Icon name="submenu" size="sm" className={styles.chevron()} />
       </RacButton>
     </li>
   );
