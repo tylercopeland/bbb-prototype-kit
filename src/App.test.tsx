@@ -52,18 +52,19 @@ describe('routes', () => {
     expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
+  // MB11 (All slides) is batch B of milestone 6, so it still renders the placeholder.
   it('renders an accessible placeholder for an unbuilt artboard, with its state', () => {
-    renderAt('/mobile/MB5Chat');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Phone · Chat tab');
+    renderAt('/mobile/MB11Slides');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Phone · All slides (grid button)');
     expect(screen.getByText('Not built yet (milestone 6)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to the artboards' })).toHaveAttribute('href', '/');
     expect(screen.getByText('People')).toBeInTheDocument();
     expect(screen.getByText('14 · 4 hands raised')).toBeInTheDocument();
-    expect(screen.getByText('chat · filter all')).toBeInTheDocument();
+    expect(screen.getByText('none · filter all')).toBeInTheDocument();
   });
 
   it('lets query parameters override the artboard props', () => {
-    renderAt('/mobile/MB1Room?panel=people&pfilter=low&people=thirty');
+    renderAt('/mobile/MB11Slides?panel=people&pfilter=low&people=thirty');
     expect(screen.getByText('30 · 5 hands raised')).toBeInTheDocument();
     expect(screen.getByText('people · filter low')).toBeInTheDocument();
   });
@@ -75,12 +76,28 @@ describe('routes', () => {
     expect(screen.getByRole('complementary', { name: 'People' })).toBeInTheDocument();
   });
 
-  it('marks mobile artboards with their milestone, and renders every desktop artboard as a screen', () => {
-    renderAt('/mobile/MB1Room');
+  it('marks unbuilt mobile artboards with their milestone, and renders every desktop artboard as a screen', () => {
+    renderAt('/mobile/MB11Slides');
     expect(screen.getByText('Not built yet (milestone 6)')).toBeInTheDocument();
     const desktop = artboards.filter((a) => a.group === 'desktop');
     expect(desktop.length).toBeGreaterThan(0);
     for (const a of desktop) expect(screenFor(a).Screen, a.stem).toBeDefined();
+    // Milestone 6 batch A: the phone shell, its sheets, the student view and the confirmations.
+    const built = artboards.filter((a) => a.group === 'mobile' && screenFor(a).Screen);
+    expect(built.map((a) => a.stem)).toEqual([
+      'MB1Room',
+      'MB2Updates',
+      'MB3People',
+      'MB4Student',
+      'MB5Chat',
+      'MB6React',
+      'MB7More',
+      'MB8Landscape',
+      'MB9LandscapePeople',
+      'MB10Everyone',
+      'MB15Attendee',
+      'MB16Confirm',
+    ]);
   });
 
   it('shows the not-found page for an unknown artboard or group', () => {
@@ -93,8 +110,10 @@ describe('routes', () => {
   it('navigates from the index to an artboard and back by link', async () => {
     const user = userEvent.setup();
     renderAt('/');
-    await user.click(screen.getByRole('link', { name: 'Phone · Chat tab' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Phone · Chat tab' })).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Phone · All slides (grid button)' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Phone · All slides (grid button)' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('link', { name: 'Back to the artboards' }));
     expect(
       await screen.findByRole('heading', { level: 1, name: 'BigBlueButton 4.0 prototype' }),

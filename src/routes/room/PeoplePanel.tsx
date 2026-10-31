@@ -15,7 +15,16 @@ import type { ParticipantId } from '../../mocks/types';
 import { useRoomFocus } from './focus';
 import { useParticipantActions } from './participantActions';
 
-export function PeoplePanel() {
+export interface PeoplePanelProps {
+  /** Whether the viewer may act on people (the ⋯ actions): a moderator may, a student may not (MB15). @default true */
+  canModerate?: boolean;
+  /** On the phone, the ⋯ button opens the student actions sheet (MB4) instead of the menu; `trigger` is that button. */
+  onOpenActions?: (participantId: ParticipantId, trigger: HTMLButtonElement | null) => void;
+  /** "See full activity in Learning Analytics" in the insight note. */
+  onAnalytics?: () => void;
+}
+
+export function PeoplePanel({ canModerate = true, onOpenActions, onAnalytics }: PeoplePanelProps) {
   const store = useRoomStore();
   const dispatch = useRoomDispatch();
   const { requestFocus } = useRoomFocus();
@@ -50,8 +59,11 @@ export function PeoplePanel() {
       onMenuOpenChange={(id, open) => dispatch({ type: 'openPeopleMenu', participantId: open ? id : null })}
       onMessage={onMessage}
       canMessage={canMessage}
+      canModerate={canModerate}
       key={privateChat ? 'private-chat-on' : 'private-chat-off'}
       onAction={onAction}
+      onOpenActions={onOpenActions}
+      onAnalytics={onAnalytics}
     />
   );
 }

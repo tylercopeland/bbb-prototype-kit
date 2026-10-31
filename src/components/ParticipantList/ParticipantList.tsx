@@ -58,8 +58,8 @@ export interface ParticipantListProps extends Omit<ComponentProps<'div'>, 'child
   /** Whether the viewer is a moderator: rows show the ⋯ actions only then (MB15). @default true */
   canModerate?: boolean;
   onAction?: (participantId: ParticipantId, action: ParticipantAction) => void;
-  /** On the phone, the ⋯ button opens the student actions sheet for this person instead of a menu (MB4). */
-  onOpenActions?: (participantId: ParticipantId) => void;
+  /** On the phone, the ⋯ button opens the student actions sheet for this person instead of a menu (MB4); `trigger` is that button. */
+  onOpenActions?: (participantId: ParticipantId, trigger: HTMLButtonElement | null) => void;
   /** "See full activity in Learning Analytics" in the insight note. */
   onAnalytics?: () => void;
   className?: string;
@@ -145,7 +145,7 @@ export function ParticipantList({
       canMessage={canMessage ? canMessage(p.id) : true}
       canModerate={canModerate}
       onAction={(action) => act(p, action)}
-      onOpenActions={onOpenActions ? () => onOpenActions(p.id) : undefined}
+      onOpenActions={onOpenActions ? (trigger) => onOpenActions(p.id, trigger) : undefined}
       moreRef={(el) => {
         if (el) moreButtons.current.set(p.id, el);
         else moreButtons.current.delete(p.id);

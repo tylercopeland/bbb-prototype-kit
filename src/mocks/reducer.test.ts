@@ -153,7 +153,7 @@ describe('presenter, flags and removal', () => {
     expect(gone.alerts.some((a) => a.from === 'rafaela')).toBe(false);
     expect(gone.breakouts.helpQueue).toHaveLength(1);
     expect(gone.breakouts.helpQueue[0].from).toBeNull();
-    expect(gone.ui).toMatchObject({ sheet: 'none', sheetStudent: null });
+    expect(gone.ui).toMatchObject({ sheet: 'people', sheetStudent: null });
     expect(gone.participants.filter((p) => p.isPresenter).map((p) => p.id)).toEqual(['helena']);
     // Her public message stays; the chat names her "Someone who left".
     expect(gone.chat.everyone.some((m) => m.from === 'rafaela')).toBe(true);

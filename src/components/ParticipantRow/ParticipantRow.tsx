@@ -124,10 +124,11 @@ export interface ParticipantRowProps extends Omit<ComponentProps<'li'>, 'childre
   onAction?: (action: ParticipantAction) => void;
   /**
    * On the phone the ⋯ button opens the student actions sheet (MB4) instead
-   * of the menu: the row calls this and renders no `Menu`. The button keeps
-   * its name, `aria-haspopup="dialog"` and `aria-expanded` from `isMenuOpen`.
+   * of the menu: the row calls this with the button and renders no `Menu`,
+   * so the sheet can return focus to it. The button keeps its name,
+   * `aria-haspopup="dialog"` and `aria-expanded` from `isMenuOpen`.
    */
-  onOpenActions?: () => void;
+  onOpenActions?: (trigger: HTMLButtonElement | null) => void;
   /** The ⋯ button, so the list can move focus to a neighbouring row when this one is removed (WCAG 2.4.3). */
   moreRef?: Ref<HTMLButtonElement>;
   className?: string;
@@ -267,7 +268,7 @@ export function ParticipantRow({
               size="sm"
               aria-haspopup="dialog"
               aria-expanded={isMenuOpen}
-              onPress={onOpenActions}
+              onPress={() => onOpenActions(moreButton.current)}
             />
           )}
           {canModerate && !onOpenActions && (

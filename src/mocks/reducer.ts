@@ -354,8 +354,9 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       if (ui.peopleMenu === id) ui.peopleMenu = null;
       if (ui.dm === id) ui.dm = null;
       if (ui.sheetStudent === id) {
+        // The student sheet is gone with them; the People sheet under it stays (MB4).
         ui.sheetStudent = null;
-        if (ui.sheet === 'student') ui.sheet = 'none';
+        if (ui.sheet === 'student') ui.sheet = 'people';
       }
       const chat = state.chat.direct.some((t) => t.with === id)
         ? { ...state.chat, direct: state.chat.direct.filter((t) => t.with !== id) }

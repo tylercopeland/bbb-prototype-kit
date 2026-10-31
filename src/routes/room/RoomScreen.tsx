@@ -32,7 +32,6 @@ import {
   Surface,
   Timer,
   ToastRegion,
-  showToast,
   type ActionBarPanel,
   type MediaAction,
   type StageLayout,
@@ -65,6 +64,7 @@ import { BreakoutPanel } from './BreakoutPanel';
 import { BreakoutScreen } from './BreakoutScreen';
 import { ChatPanel } from './ChatPanel';
 import { RoomFocusContext, useRoomFocusState } from './focus';
+import { notInPrototype } from './notInPrototype';
 import { PeoplePanel } from './PeoplePanel';
 import { PollPanel } from './PollPanel';
 import { useRoomShortcuts } from './useRoomShortcuts';
@@ -88,14 +88,6 @@ const alertDescriptions: Record<Alert['kind'], string> = {
   help: 'Opens the room’s preview',
   back: 'Opens the rooms’ work',
 };
-
-/** What the prototype cannot do yet, said in a toast instead of a dead button. */
-function notInPrototype(what: string) {
-  showToast(
-    { title: `${what} isn’t part of this prototype yet`, description: 'In BigBlueButton it opens here.' },
-    { timeout: 6000 },
-  );
-}
 
 export function RoomScreen() {
   const styles = roomStyles();

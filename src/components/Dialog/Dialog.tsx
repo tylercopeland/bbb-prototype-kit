@@ -1,4 +1,4 @@
-import { useId, useRef, type ReactElement, type ReactNode, type Ref } from 'react';
+import { useEffect, useId, useRef, useState, type ReactElement, type ReactNode, type Ref } from 'react';
 import {
   DialogTrigger,
   Modal,
@@ -52,6 +52,25 @@ export type DialogRenderable = ReactNode | ((opts: { close: () => void }) => Rea
 /** Renders a `DialogRenderable`, handing a function `close`. Dialog and Sheet share it. */
 export function renderWith(content: DialogRenderable | undefined, close: () => void): ReactNode {
   return typeof content === 'function' ? content({ close }) : content;
+}
+
+/**
+ * Mounts its children one commit after itself. An overlay opened over
+ * another one in the same render (a deep link to the student sheet over
+ * People, or to its Remove confirmation) must register after the one
+ * under it: React Aria hides the page outside the newest overlay and
+ * assumes the outer one came first, so two that mount together hide each
+ * other. Sheet wraps its `stacked` content in it; a confirmation opened on
+ * load inside a sheet wraps itself in it.
+ */
+export function StackedOverlay({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    // A tick later: after every effect of the commit that mounted the overlay under this one.
+    const id = setTimeout(() => setReady(true), 0);
+    return () => clearTimeout(id);
+  }, []);
+  return ready ? <>{children}</> : null;
 }
 
 export interface DialogProps extends Pick<

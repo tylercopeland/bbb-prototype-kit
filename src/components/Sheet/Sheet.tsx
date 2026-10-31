@@ -8,7 +8,7 @@ import {
   type ModalOverlayProps,
 } from 'react-aria-components';
 import { tv, type VariantProps } from '../../styles/tv';
-import { renderWith, type DialogRenderable } from '../Dialog';
+import { renderWith, StackedOverlay, type DialogRenderable } from '../Dialog';
 import { OverlayHeader } from '../Popover';
 import { SurfaceProvider } from '../Surface';
 
@@ -91,6 +91,16 @@ export interface SheetProps extends Pick<
    * the header (`headerExtra`) with the `TabPanel`s in the body (D3).
    */
   frame?: (content: ReactNode) => ReactNode;
+  /**
+   * A sheet stacked over this one (the student actions over People, MB4):
+   * rendered inside this dialog, so it shares the scrim and returns focus
+   * here, but outside `frame`, because React Aria's `Tabs` renders its
+   * children a second time to build its collection and a modal in there
+   * would portal a ghost copy into the page. It mounts one commit after
+   * this sheet (`StackedOverlay`), so React Aria registers it as the
+   * newer overlay even when both open from a deep link.
+   */
+  stacked?: ReactNode;
   /** Merged onto the sheet. */
   className?: string;
   /** The dialog element. */
@@ -122,6 +132,7 @@ export function Sheet({
   children,
   footer,
   frame = (content) => content,
+  stacked,
   isDismissable = true,
   isKeyboardDismissDisabled,
   className,
@@ -163,6 +174,7 @@ export function Sheet({
                     {footer && <div className={styles.footer()}>{renderWith(footer, close)}</div>}
                   </>,
                 )}
+                {stacked && <StackedOverlay>{stacked}</StackedOverlay>}
               </SheetDepthContext.Provider>
             )}
           </RacDialog>

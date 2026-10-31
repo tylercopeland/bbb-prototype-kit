@@ -68,10 +68,11 @@ export const stageStyles = tv({
 /**
  * The slide placeholder: white paper in every mode (`slide` / `on-slide`),
  * 16:9, fitted like the stage says. It is the hover `group` for the
- * presentation controls drawn over its bottom edge (X13). `webcams="none"`
- * is the phone's slide (Mobile.dc.html 38): it fills its column's width,
- * with tighter padding and no reserved corner, because the pager sits
- * below it and the alerts in the header.
+ * presentation controls drawn over its bottom edge (X13). `below` and
+ * `beside` are the phone's slide (Mobile.dc.html 38): full width with the
+ * webcams under it in portrait, fitted by height with the webcams beside
+ * it in landscape, both with tighter padding and no reserved corner,
+ * because the pager sits below the slide and the alerts in the header.
  */
 export const slideStyles = tv({
   slots: {
@@ -88,7 +89,8 @@ export const slideStyles = tv({
     webcams: {
       side: { root: 'slide-fit' },
       top: { root: 'slide-fit-stacked' },
-      none: { root: 'aspect-video w-full p-4', header: 'pr-12', title: 'text-lg' },
+      below: { root: 'aspect-video w-full p-4', header: 'pr-12', title: 'text-lg' },
+      beside: { root: 'slide-fit p-4', header: 'pr-12', title: 'text-lg' },
     },
   },
   defaultVariants: { webcams: 'side' },
