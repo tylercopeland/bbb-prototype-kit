@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, type Page } from '@playwright/test';
 import { storybookUrl } from './ports.ts';
+import { settleAnimations } from './helpers.ts';
 
 export type IndexEntry = { id: string; title: string; name: string; type: 'story' | 'docs'; tags?: string[] };
 type StoryIndex = { entries: Record<string, IndexEntry> };
@@ -48,5 +49,6 @@ export async function storyReady(page: Page, story: Pick<IndexEntry, 'tags'>) {
       .waitFor({ state: 'visible', timeout: 1000 })
       .catch(() => undefined);
   }
+  await settleAnimations(page);
   await page.waitForFunction(() => !(window as { axe?: { _running?: boolean } }).axe?._running);
 }

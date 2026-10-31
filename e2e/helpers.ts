@@ -7,6 +7,27 @@
 import { readFileSync } from 'node:fs';
 import type { Locator, Page } from '@playwright/test';
 
+/**
+ * Waits until overlays opened on load have finished entering, so axe and the
+ * screenshots never read a mid-fade colour (a white panel half-faded over the
+ * stage reads as grey). Covers React Aria's hidden pre-entry state (it alone
+ * sets `mask-image`; VisuallyHidden text also uses `clip-path: inset(50%)`),
+ * `data-entering`, and every finite CSS animation or transition still running.
+ */
+export async function settleAnimations(page: Page) {
+  await page.waitForFunction(
+    () => document.querySelectorAll('[style*="mask-image"], [data-entering]').length === 0,
+  );
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
+}
+
 /** The desktop artboard size. */
 export const SIZE = { width: 1400, height: 900 };
 
@@ -56,7 +77,9 @@ export async function tabTo(page: Page, name: string | RegExp, max = 60, key = '
           .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
           .join(' ');
       return (
-        el.getAttribute('aria-label') ?? byIds('aria-labelledby') ?? visibleText(el).replace(/\s+/g, ' ').trim()
+        el.getAttribute('aria-label') ??
+        byIds('aria-labelledby') ??
+        visibleText(el).replace(/\s+/g, ' ').trim()
       );
     });
     if (typeof name === 'string' ? label === name : name.test(label)) return;

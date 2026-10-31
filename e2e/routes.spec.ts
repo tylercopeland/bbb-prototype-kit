@@ -7,6 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { settleAnimations } from './helpers.ts';
 
 type Artboard = {
   stem: string;
@@ -20,6 +21,7 @@ const artboards = JSON.parse(readFileSync('src/routes/artboards.json', 'utf8')) 
 const wcag = ['wcag2a', 'wcag2aa', 'wcag21aa'];
 
 async function noViolations(page: Page, label: string) {
+  await settleAnimations(page);
   const results = await new AxeBuilder({ page }).withTags(wcag).analyze();
   expect(results.violations, label).toEqual([]);
 }

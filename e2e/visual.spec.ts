@@ -17,6 +17,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, expect, type Page } from '@playwright/test';
+import { settleAnimations } from './helpers.ts';
 
 type Artboard = {
   stem: string;
@@ -52,11 +53,10 @@ const updating = process.env.VISUAL_UPDATE === '1';
 async function shoot(page: Page, a: Artboard, name: string) {
   await page.goto(`/${a.group}/${a.stem}`);
   await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
-  // Overlays open on load finish entering before the shot. React Aria hides a modal (opacity 0 and a
-  // clip-path) until it is ready to enter, and on a touch device with an autofocused field (MB17) it
-  // waits for the on-screen keyboard first, so the shot also waits for that hidden state to clear.
-  await expect(page.locator('[style*="inset(50%)"]')).toHaveCount(0);
-  await expect(page.locator('[data-entering]')).toHaveCount(0);
+  // Overlays open on load finish entering before the shot. React Aria hides a modal until it is
+  // ready to enter, and on a touch device with an autofocused field (MB17) it waits for the
+  // on-screen keyboard first; settleAnimations waits for that hidden state and the fade to clear.
+  await settleAnimations(page);
   await page.evaluate(() => document.fonts.ready);
   await expect(page).toHaveScreenshot(name, {
     animations: 'disabled',
