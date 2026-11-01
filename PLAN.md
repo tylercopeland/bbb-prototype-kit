@@ -8,11 +8,11 @@ This is a standalone prototype. It does not need to fit into the bbb-html5 clien
 
 ## Definition of done
 
-- [ ] Every artboard in `docs/artboards.md` has a matching route or Storybook story, set to the same state.
-- [ ] axe reports zero violations on every route and story.
-- [ ] Every flow can be completed with the keyboard alone (Playwright tests prove it).
-- [ ] No hard-coded colors, sizes or radii outside the tokens (lint enforces it).
-- [ ] CI runs `check` and `test:e2e` on every push and is green.
+- [x] Every artboard in `docs/artboards.md` has a matching route or Storybook story, set to the same state. _All 50 render a built screen (`App.test.tsx`); `stateForArtboard` maps each artboard's props. 2026-11-01._
+- [x] axe reports zero violations on every route and story. _`e2e/routes.spec.ts` (every route at its size) and `e2e/storybook.spec.ts` (every story in light, dark and stage), green in CI. 2026-11-01._
+- [x] Every flow can be completed with the keyboard alone (Playwright tests prove it). _The `room`, `sharing`, `poll-timer` and `breakouts` walks; the phone flows also by touch (`mobile.spec.ts`). 2026-11-01._
+- [x] No hard-coded colors, sizes or radii outside the tokens (lint enforces it). _The token lint rules, proved by `src/test/lint-rules.test.ts`; `tokens:check` for contrast and the 4px grid. 2026-11-01._
+- [x] CI runs `check` and `test:e2e` on every push and is green. _`.github/workflows/ci.yml`, plus the 50 screenshot baselines. 2026-11-01._
 - [ ] Deployed to a shareable link with a short readme for reviewers.
 
 ## How each milestone runs
@@ -117,7 +117,7 @@ Decide first: the host (see "Open decisions").
 
 Exit:
 - [ ] Deployed with Storybook published alongside.
-- [ ] Readme for reviewers: what to try, what's mocked, known gaps.
+- [x] Readme for reviewers: what to try, what's mocked, known gaps. _`README.md` › For reviewers. 2026-11-01._
 - [ ] Everything in "Definition of done" is ticked.
 
 ---
@@ -126,9 +126,7 @@ Exit:
 
 Move each one to the decisions log once it's made.
 
-| Decision | Options | Needed by |
-|---|---|---|
-| Deploy host | GitHub Pages (no new account; private repos need a paid plan), Vercel or Netlify | M7 |
+None open.
 
 ## Decisions log
 
@@ -176,5 +174,6 @@ Record decisions here as they're made, with the date.
 - 2026-10-31 · M5 sign-off. The owner approved the 33 desktop baselines and every builder decision from batches A–C as built: **cards and controls on the stage stay dark** (presentation controls, poll and timer cards; dialogs stay white panels); the timer and poll start in the top-right corner; clocks tick only with `?clock=live`; "Move to…" menus instead of drop buttons; the thumbnail opens the preview (no eye button); Join is real; the main view keeps the strip beside the slide with the back card in a right column; the closing dialog is dismissable with the banner kept; help requests are pill then acknowledge; the live room list filters but does not sort. Review fixes are in `docs/plans/m5-desktop.md` › Review fixes. `update-snapshots.yml` also runs on a push whose message contains `[update-snapshots]`.
 - 2026-10-31 · M6 batch A (the phone shell and its sheets: MB1–MB10, MB15, MB16), built as planned; details in `docs/plans/m6-mobile.md` › Build notes (batch A). **No new tokens.** **Utilities:** `p*-safe-*` (a spacing step plus `env(safe-area-inset-*)`, P2) and `container-size` (`container-type: size`, so the landscape slide fits by height). **Store:** `ui.confirm` + `setConfirm`, `setViewer`; `role=student` and `confirm=leave|remove` map through them; `removeParticipant` falls back to the People sheet. **Components:** `Sheet` `frame` / `stacked` / `bodyClassName` and safe-area padding, `StackedOverlay` (a nested overlay mounts a tick after the one under it, so two that open from a deep link register in order), `WebcamStrip` grid, `StageSlide` with the phone fits, `SessionHeader` stacked, `ParticipantRow`/`List` `canModerate` / `actionsVisible` / `onOpenActions`, new `TextToggle` and `UpdatesPill`. **Deviations:** the pager and See all take the stage tokens; the Everyone sheet is a white panel with a dark tile area, two columns; 44px pager and pill; the pager shows for the presenter only; the camera is a switch in the student sheet; the landscape slide fits by height; All slides, Annotate and the minimized state are interim until batch B. Owner decisions needed are listed in the build notes (Raise hand in the React sheet for both roles, no updates pill for students, students cannot turn slides, More's items toast, full-height People sheet, dark stage controls, help alerts just close, the Everyone list is tabbable).
 - 2026-10-31 · M6 batch B (the slides sheet, annotating, the minimized presentation, the keyboard-open chat: MB11–MB14, MB17; the touch e2e walks and the phone visual baselines), built as planned; details in `docs/plans/m6-mobile.md` › Build notes (batch B). **No new tokens.** **Utility:** `pb-keyboard` (the Sheet overlay's bottom padding from `--bbb-keyboard-inset`, a measured length the phone room writes from `visualViewport`, not a token). **Store:** `ui.keyboardInset` + `setKeyboardInset`; `keyboard=open` maps to a fixed 336px so the route is deterministic. **Components:** `SlideThumb` exported from `SlideOverview`; `PresentationTile` exported from `Stage` with a whole-tile `button` variant; `WhiteboardToolbar` `size="touch"` and `wrap`; `WebcamStrip` `columns` and `leading`; `ChatPanel` `autoFocusComposer`; focus requests `presentationMinimize` / `presentationRestore`. **e2e:** `e2e/mobile.spec.ts` (touch emulation, every route at its size, `tap()`), `visual.spec.ts` covers the 17 phone routes as `mobile-<stem>.png` with a per-group skip until the update-snapshots workflow seeds them. **Deviations:** the pressed Annotate toggle (and Escape) ends annotating instead of the canvas's Done; the desktop toolbar is reused whole (six tools, six inks, no Undo) on two rows; minimized tiles stay 16:9; landscape minimized is one column with a 360px bar. Owner decisions needed are listed in the build notes (Done vs the toggle, the toolbar subset, drawing not built, the whole-tile Restore, one-column landscape, the 336px fake keyboard, every sheet shrinking above the keyboard).
+- 2026-11-01 · M7 decisions. **Host: GitHub Pages** (the repo is public). `.github/workflows/deploy.yml` publishes after CI succeeds on main: the app at `/bbb-prototype-kit/` (Vite `base` from `BASE_PATH`, the router's `basename` from it, `404.html` a copy of `index.html` so deep links load) and Storybook at `/bbb-prototype-kit/storybook/`, linked from the index via `VITE_STORYBOOK_PATH`. **`window.bbbRoom` stays in the public build** and is documented in the readme, so reviewers can play other participants from the console; it is mock data only.
 - 2026-11-01 · M6 sign-off. The owner approved the 17 phone screens, their CI baselines and every batch A and B decision as built: Raise hand in the React sheet for both roles (the bar stays at six); no updates pill and no slide controls for students; More's items show a "not part of this prototype yet" toast; the People sheet is full height and other sheets fit their content; dark stage controls, and the Everyone sheet white with a dark tile area in two columns; help and "Breakouts ended" alerts just close the Updates sheet; the Everyone list is tabbable; the pressed Annotate toggle (and Escape) ends annotating; the desktop whiteboard toolbar is reused at touch size on two rows, with drawing unbuilt as on desktop; the minimized presentation is one whole-tile Restore button; landscape minimized is one column with a 360px bar; the fake keyboard is 336px; every sheet shrinks above the keyboard. **Review fixes:** the Updates rows got tinted fills and borders that pass 3:1 (15 contrast pairs, no new tokens), plus stories and tests for every extended component. **e2e:** `settleAnimations` in `e2e/helpers.ts` waits for overlays to finish entering (React Aria's `mask-image` pre-entry state, `data-entering`, finite animations) before axe in `routes.spec.ts` and the stories, and before every screenshot; a mid-fade overlay reads as blended colours.
 - 2026-10-31 · M6 decisions. **P9, core set:** build the student (attendee) view, the confirm dialogs for Leave and Remove, and the keyboard-open chat as extra mobile artboards; reconnecting, phone screen share and the landscape variants of Student, More, Slides and Alerts are out of scope. **No swipe to close:** sheets close with their visible close button, Escape or a tap outside.

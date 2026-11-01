@@ -23,8 +23,11 @@ export const routes: RouteObject[] = [
   },
 ];
 
+/** Vite's base (`/` or `/bbb-prototype-kit/` on GitHub Pages) without its trailing slash. */
+const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
+
 export function createAppRouter() {
-  return createBrowserRouter(routes);
+  return createBrowserRouter(routes, { basename });
 }
 
 /** For tests: the same routes on an in-memory history, opened at `path`. */
