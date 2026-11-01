@@ -55,7 +55,13 @@ export interface ParticipantListProps extends Omit<ComponentProps<'div'>, 'child
   onMessage?: (participantId: ParticipantId) => void;
   /** Whether a row may offer "Message privately" (`selectCanMessage`); students see none while private chat is off. @default always */
   canMessage?: (participantId: ParticipantId) => boolean;
+  /** Whether the viewer is a moderator: rows show the ⋯ actions only then (MB15). @default true */
+  canModerate?: boolean;
+  /** Keep every row's actions visible (the phone's sheet has no hover). @default false */
+  actionsVisible?: boolean;
   onAction?: (participantId: ParticipantId, action: ParticipantAction) => void;
+  /** On the phone, the ⋯ button opens the student actions sheet for this person instead of a menu (MB4); `trigger` is that button. */
+  onOpenActions?: (participantId: ParticipantId, trigger: HTMLButtonElement | null) => void;
   /** "See full activity in Learning Analytics" in the insight note. */
   onAnalytics?: () => void;
   className?: string;
@@ -91,7 +97,10 @@ export function ParticipantList({
   onMenuOpenChange,
   onMessage,
   canMessage,
+  canModerate = true,
+  actionsVisible = false,
   onAction,
+  onOpenActions,
   onAnalytics,
   className,
   ...props
@@ -137,7 +146,10 @@ export function ParticipantList({
       onMenuOpenChange={(open) => onMenuOpenChange?.(p.id, open)}
       onMessage={() => onMessage?.(p.id)}
       canMessage={canMessage ? canMessage(p.id) : true}
+      canModerate={canModerate}
+      actionsVisible={actionsVisible}
       onAction={(action) => act(p, action)}
+      onOpenActions={onOpenActions ? (trigger) => onOpenActions(p.id, trigger) : undefined}
       moreRef={(el) => {
         if (el) moreButtons.current.set(p.id, el);
         else moreButtons.current.delete(p.id);

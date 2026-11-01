@@ -8,7 +8,7 @@
  * nothing takes is overwritten by the next one. Nothing here touches the
  * store, and nothing reads the request during render.
  */
-import { createContext, useContext } from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
 import type { ParticipantId } from '../../mocks/types';
 
 export type FocusRequest =
@@ -27,7 +27,11 @@ export type FocusRequest =
   /** The first share-back control, after "Bring everyone back now" replaced the live surface. */
   | { kind: 'shareBack' }
   /** The breakout panel's heading, after "Set up new rooms" replaced the back view. */
-  | { kind: 'breakoutSetup' };
+  | { kind: 'breakoutSetup' }
+  /** The phone's Minimize button, after the presentation tile's Restore brought the slide back (MB13). */
+  | { kind: 'presentationMinimize' }
+  /** The phone's presentation tile, after Minimize replaced the slide with the tile (MB13). */
+  | { kind: 'presentationRestore' };
 
 export type FocusRequestKind = FocusRequest['kind'];
 
@@ -43,4 +47,41 @@ export const RoomFocusContext = createContext<RoomFocus>({ requestFocus: () => {
 /** The screen's focus requests. Outside a `RoomScreen` requests are dropped and nothing is ever pending. */
 export function useRoomFocus(): RoomFocus {
   return useContext(RoomFocusContext);
+}
+
+/**
+ * The one pending request a screen holds, as the context value for
+ * `RoomFocusContext.Provider`. Written by a handler, taken by the target's
+ * mount effect; the desktop room and the phone room share it.
+ */
+export function useRoomFocusState(): RoomFocus {
+  const pendingFocus = useRef<FocusRequest | null>(null);
+  const requestFocus = useCallback((request: FocusRequest) => {
+    pendingFocus.current = request;
+  }, []);
+  const takeFocus = useCallback(<K extends FocusRequestKind>(kind: K) => {
+    const pending = pendingFocus.current;
+    if (pending?.kind !== kind) return null;
+    pendingFocus.current = null;
+    return pending as Extract<FocusRequest, { kind: K }>;
+  }, []);
+  return useMemo<RoomFocus>(() => ({ requestFocus, takeFocus }), [requestFocus, takeFocus]);
+}
+
+/**
+ * Moves focus to `element` after an overlay inside another one has closed,
+ * and keeps it there (WCAG 2.4.3). React Aria's focus containment on the
+ * outer dialog re-focuses its own scope a frame after focus left it, so a
+ * single move can lose the race: this one runs a tick later and checks
+ * again over the next frames, until the element holds focus or is gone.
+ */
+export function focusAfterOverlay(element: HTMLElement | null | undefined): void {
+  if (!element) return;
+  let tries = 0;
+  const settle = () => {
+    if (!element.isConnected) return;
+    if (document.activeElement !== element) element.focus();
+    if (++tries < 4) setTimeout(settle, 20);
+  };
+  setTimeout(settle, 0);
 }

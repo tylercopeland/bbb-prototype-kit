@@ -131,7 +131,8 @@ export function SlideOverview({
   );
 }
 
-interface SlideThumbProps {
+export interface SlideThumbProps {
+  /** Zero-based; the caption shows `index + 1`. */
   index: number;
   title: string;
   isCurrent: boolean;
@@ -139,7 +140,13 @@ interface SlideThumbProps {
   className?: string;
 }
 
-function SlideThumb({ index, title, isCurrent, onPress, className }: SlideThumbProps) {
+/**
+ * One slide in a list of thumbnails: a list item holding a button named
+ * "Go to slide 3: BigBlueButton 4.0, refined", `aria-current` on the
+ * current one. The overview's grid and the phone's All slides sheet (MB11)
+ * render it; the parent provides the `role="list"`.
+ */
+export function SlideThumb({ index, title, isCurrent, onPress, className }: SlideThumbProps) {
   const styles = slideThumbPartsStyles({ isCurrent });
   const number = index + 1;
   return (

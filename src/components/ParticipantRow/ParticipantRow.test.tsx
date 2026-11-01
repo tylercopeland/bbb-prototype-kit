@@ -205,6 +205,47 @@ describe('ParticipantRow', () => {
     expect(screen.getByRole('button', { name: 'Message Michelle Winkler privately' })).toHaveFocus();
   });
 
+  it('shows no ⋯ to a viewer who may not moderate (a student, MB15), keeping Message privately', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Subject canModerate={false} />);
+    expect(screen.queryByRole('button', { name: 'More actions for Anton Georgiev' })).not.toBeInTheDocument();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Message Anton Georgiev privately' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Message Anton Georgiev privately' })).not.toHaveFocus();
+    // Neither action: no actions cell at all, so nothing invisible is left to Tab to.
+    rerender(<Subject canModerate={false} canMessage={false} />);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('opens the student actions sheet from the ⋯ on the phone (onOpenActions) instead of a menu', async () => {
+    const user = userEvent.setup();
+    const onOpenActions = vi.fn();
+    const onMenuOpenChange = vi.fn();
+    const { rerender } = render(
+      <Subject actionsVisible onOpenActions={onOpenActions} onMenuOpenChange={onMenuOpenChange} />,
+    );
+    const more = screen.getByRole('button', { name: 'More actions for Anton Georgiev' });
+    expect(more).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    // Always visible on the phone: no fade, no inert state.
+    expect(more.parentElement).toHaveClass('opacity-100', 'pointer-events-auto');
+    await user.tab();
+    await user.tab();
+    expect(more).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onOpenActions).toHaveBeenCalledTimes(1);
+    expect(onOpenActions).toHaveBeenLastCalledWith(more);
+    await user.keyboard(' ');
+    expect(onOpenActions).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(onMenuOpenChange).not.toHaveBeenCalled();
+    // The sheet's open state comes back in as isMenuOpen.
+    rerender(<Subject actionsVisible onOpenActions={onOpenActions} isMenuOpen />);
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
   it('describes every state in words and merges a className', () => {
     expect(participantStatus({ audio: 'notJoined', camera: false })).toBe('Audio not joined, camera off');
     render(<Subject className="px-4" />);

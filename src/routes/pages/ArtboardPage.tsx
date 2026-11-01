@@ -74,7 +74,8 @@ function StateSummary() {
   );
 }
 
-function Placeholder({ artboard, milestone }: { artboard: Artboard; milestone: number }) {
+/** What a route shows until its screen is registered. Every artboard has a screen now; the tests keep it honest for the next one. */
+export function Placeholder({ artboard, milestone }: { artboard: Artboard; milestone: number }) {
   const props = Object.entries(artboard.props);
   return (
     <main className="mx-auto flex max-w-page flex-col gap-6 p-6">

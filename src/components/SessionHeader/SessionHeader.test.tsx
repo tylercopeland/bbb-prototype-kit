@@ -29,4 +29,28 @@ describe('SessionHeader', () => {
     expect(screen.getByRole('banner')).toHaveClass('gap-6');
     expect(screen.getByRole('banner')).not.toHaveClass('gap-3');
   });
+
+  it('stacks the title over the recording mark and the count on the phone (layout="stacked")', () => {
+    const { rerender } = render(
+      <SessionHeader
+        title="Hack Week: Brazil 2026"
+        recording
+        peopleCount={14}
+        elapsed="29:36"
+        layout="stacked"
+      />,
+    );
+    const header = screen.getByRole('banner');
+    expect(header).toHaveClass('flex-wrap', 'h-auto');
+    expect(header).not.toHaveClass('h-control-lg');
+    // The title takes the whole first line; the rest wraps under it, still one header with the same names.
+    expect(screen.getByRole('heading', { level: 1 })).toHaveClass('basis-full', 'truncate');
+    expect(screen.getByRole('img', { name: 'Recording' })).toBeInTheDocument();
+    expect(screen.getByText(/14 people/)).toHaveTextContent('14 people · Session time 29:36');
+    expect(document.querySelector('[aria-live], [role="status"]')).toBeNull();
+    rerender(<SessionHeader title="Hack Week" peopleCount={14} elapsed="29:36" />);
+    expect(header).toHaveClass('h-control-lg');
+    expect(header).not.toHaveClass('flex-wrap');
+    expect(screen.getByRole('heading', { level: 1 })).not.toHaveClass('basis-full');
+  });
 });

@@ -19,15 +19,32 @@ export const whiteboardToolbarStyles = tv({
     root: 'flex items-center gap-1 rounded-tile border border-border bg-surface p-1 shadow-overlay',
     divider: 'mx-1 h-5 shrink-0 border-l border-border',
   },
+  variants: {
+    /** The tools and the inks wrap onto two rows where one is too wide (the phone, Mobile.dc.html 59); the hairline goes. */
+    wrap: {
+      true: { root: 'flex-wrap', divider: 'hidden' },
+    },
+  },
 });
 
 /**
- * One ink swatch: a soft 36px square like a tool. Selected uses the
- * toggle's selected fill and inset ring, never the hue alone.
+ * One ink swatch: a soft 36px square like a tool (44px at the touch size).
+ * Selected uses the toggle's selected fill and inset ring, never the hue
+ * alone.
  */
 export const swatchStyles = tv({
-  base: 'hit-area flex size-control-md shrink-0 items-center justify-center rounded-control bg-surface-raised focus-ring outline-none data-hovered:bg-surface-sunken data-pressed:bg-surface-sunken data-selected:bg-selected data-selected:selected-ring data-selected:data-hovered:bg-selected data-selected:data-pressed:bg-selected',
+  base: 'hit-area flex shrink-0 items-center justify-center rounded-control bg-surface-raised focus-ring outline-none data-hovered:bg-surface-sunken data-pressed:bg-surface-sunken data-selected:bg-selected data-selected:selected-ring data-selected:data-hovered:bg-selected data-selected:data-pressed:bg-selected',
+  variants: {
+    size: {
+      md: 'size-control-md',
+      touch: 'size-control-touch',
+    },
+  },
+  defaultVariants: { size: 'md' },
 });
+
+/** The toolbar's control sizes: 36px on the desktop stage, 44px on the phone (X14). */
+export type WhiteboardToolbarSize = NonNullable<VariantProps<typeof swatchStyles>['size']>;
 
 /**
  * The 16px dot inside a swatch, filled with the ink, with a control border
@@ -76,6 +93,10 @@ export interface WhiteboardToolbarProps extends Omit<ComponentProps<'div'>, 'chi
   color: InkColor;
   onToolChange?: (tool: WhiteboardTool) => void;
   onColorChange?: (color: InkColor) => void;
+  /** @default 'md' */
+  size?: WhiteboardToolbarSize;
+  /** Lets the two groups wrap onto two rows where the card is too narrow for one (the phone). @default false */
+  wrap?: boolean;
   className?: string;
 }
 
@@ -93,10 +114,12 @@ export function WhiteboardToolbar({
   color,
   onToolChange,
   onColorChange,
+  size = 'md',
+  wrap = false,
   className,
   ...props
 }: WhiteboardToolbarProps) {
-  const styles = whiteboardToolbarStyles();
+  const styles = whiteboardToolbarStyles({ wrap });
   const onTool = (keys: Set<Key>) => {
     const next = [...keys][0];
     if (next !== undefined && next !== tool) onToolChange?.(next as WhiteboardTool);
@@ -114,7 +137,7 @@ export function WhiteboardToolbar({
         disallowEmptySelection
       >
         {whiteboardTools.map((t) => (
-          <ToggleButton key={t.id} id={t.id} label={t.label} icon={t.icon} size="md" />
+          <ToggleButton key={t.id} id={t.id} label={t.label} icon={t.icon} size={size} />
         ))}
       </ToggleGroup>
       <span aria-hidden="true" className={styles.divider()} />
@@ -125,7 +148,7 @@ export function WhiteboardToolbar({
         disallowEmptySelection
       >
         {inkColors.map((c) => (
-          <Swatch key={c.id} color={c.id} label={c.label} />
+          <Swatch key={c.id} color={c.id} label={c.label} size={size} />
         ))}
       </ToggleGroup>
     </div>
@@ -135,17 +158,18 @@ export function WhiteboardToolbar({
 interface SwatchProps {
   color: InkColor;
   label: string;
+  size: WhiteboardToolbarSize;
   className?: string;
 }
 
 /** One ink in the group: a React Aria ToggleButton named by its ink, with the tooltip every icon-only control has. */
-function Swatch({ color, label, className }: SwatchProps) {
+function Swatch({ color, label, size, className }: SwatchProps) {
   return (
     <Tooltip label={label} labelHidden>
       <RacToggleButton
         id={color}
         aria-label={label}
-        className={composeRenderProps(className, (cls) => swatchStyles({ className: cls }))}
+        className={composeRenderProps(className, (cls) => swatchStyles({ size, className: cls }))}
       >
         <span aria-hidden="true" className={swatchDotStyles({ color })} />
       </RacToggleButton>

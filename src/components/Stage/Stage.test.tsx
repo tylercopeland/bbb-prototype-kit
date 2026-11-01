@@ -8,7 +8,8 @@ import {
   selectTileOrder,
   type ParticipantFixture,
 } from '../../mocks';
-import { gridColumns, Stage, type StagePresentation } from './Stage';
+import { createRef } from 'react';
+import { gridColumns, PresentationTile, Stage, StageSlide, type StagePresentation } from './Stage';
 
 const forFixture = (people: ParticipantFixture) => {
   const state = createRoom({ participants: people });
@@ -159,5 +160,86 @@ describe('Stage', () => {
     );
     expect(screen.getByText('Timer card')).toBeInTheDocument();
     expect(screen.getByText('Timer card').closest('[data-surface="stage"]')).not.toBeNull();
+  });
+
+  describe('PresentationTile variant="button"', () => {
+    const tile = (props: Partial<React.ComponentProps<typeof PresentationTile>> = {}) => (
+      <ul>
+        <PresentationTile
+          slideTitle="BigBlueButton 4.0, refined"
+          slideNumber={3}
+          slideCount={12}
+          variant="button"
+          {...props}
+        />
+      </ul>
+    );
+
+    it('is one whole-cell button named by its visible plate, with the glyph and thumbnail hidden', () => {
+      render(tile());
+      const button = screen.getByRole('button', { name: 'Presentation · 3 / 12, restore' });
+      expect(button).toHaveClass('absolute', 'inset-0');
+      expect(screen.getByText('Presentation · 3 / 12').closest('[aria-hidden="true"]')).not.toBeNull();
+      expect(screen.queryByText('BigBlueButton 4.0, refined')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Restore presentation' })).not.toBeInTheDocument();
+      expect(button.querySelector('[data-icon="restore"]')).not.toBeNull();
+      expect(screen.getByRole('listitem')).toHaveClass('aspect-video');
+    });
+
+    it('presses with Enter and Space, reaches by Tab, and forwards its ref to the button', async () => {
+      const user = userEvent.setup();
+      const onRestore = vi.fn();
+      const ref = createRef<HTMLButtonElement>();
+      render(tile({ onRestore, ref }));
+      const button = screen.getByRole('button', { name: 'Presentation · 3 / 12, restore' });
+      expect(ref.current).toBe(button);
+      await user.tab();
+      expect(button).toHaveFocus();
+      await user.keyboard('{Enter}');
+      await user.keyboard(' ');
+      expect(onRestore).toHaveBeenCalledTimes(2);
+      await user.click(button);
+      expect(onRestore).toHaveBeenCalledTimes(3);
+    });
+
+    it('keeps the tile variant with a separate Restore button and the title in the thumbnail', () => {
+      render(tile({ variant: 'tile', className: 'w-60' }));
+      expect(screen.getByRole('button', { name: 'Restore presentation' })).toBeInTheDocument();
+      expect(screen.getByText('BigBlueButton 4.0, refined')).toBeInTheDocument();
+      expect(screen.getByRole('listitem')).toHaveClass('w-60');
+    });
+  });
+
+  describe('StageSlide', () => {
+    const slide = (webcams: React.ComponentProps<typeof StageSlide>['webcams']) => (
+      <StageSlide
+        deckName="bbb-4-refined.pdf"
+        slideTitle="Scalable UI"
+        slideNumber={9}
+        slideCount={12}
+        webcams={webcams}
+      >
+        <button type="button">Minimize presentation</button>
+      </StageSlide>
+    );
+
+    it('fills the width at 16:9 with the webcams below, fits by height beside them, and draws its children', () => {
+      const { rerender } = render(slide('below'));
+      const root = screen.getByRole('heading', { level: 2 }).closest('.group');
+      expect(root).toHaveClass('aspect-video', 'w-full', 'p-4', 'bg-slide');
+      expect(root).not.toHaveClass('slide-fit', 'p-6');
+      // The phone keeps no reserved corner: the title clears only the Minimize button.
+      expect(screen.getByRole('heading', { level: 2 }).parentElement).toHaveClass('pr-12');
+      expect(screen.getByRole('heading', { level: 2 }).parentElement).not.toHaveClass('pr-96');
+      expect(screen.getByText('Slide').closest('p')).toHaveTextContent('Slide 9 / 12');
+      expect(root).toContainElement(screen.getByRole('button', { name: 'Minimize presentation' }));
+      rerender(slide('beside'));
+      expect(root).toHaveClass('slide-fit', 'p-4');
+      expect(root).not.toHaveClass('aspect-video', 'w-full');
+      expect(screen.getByRole('heading', { level: 2 }).parentElement).toHaveClass('pr-12');
+      rerender(slide('side'));
+      expect(root).toHaveClass('slide-fit', 'p-6');
+      expect(screen.getByRole('heading', { level: 2 }).parentElement).toHaveClass('pr-96');
+    });
   });
 });

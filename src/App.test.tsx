@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { RouterProvider } from 'react-router';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 import { App } from './App';
-import { artboards } from './routes/artboards';
+import { RoomProvider } from './mocks';
+import { artboards, findArtboard } from './routes/artboards';
+import { stateForArtboard } from './routes/initialState';
+import { Placeholder } from './routes/pages/ArtboardPage';
 import { createTestRouter } from './routes/router';
 import { screenFor } from './routes/screens';
 
@@ -52,18 +55,28 @@ describe('routes', () => {
     expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
-  it('renders an accessible placeholder for an unbuilt artboard, with its state', () => {
-    renderAt('/mobile/MB5Chat');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Phone · Chat tab');
+  // Every artboard has a screen since milestone 6 batch B, so the placeholder is rendered on its own.
+  it('renders an accessible placeholder for an artboard without a screen, with its state', () => {
+    const artboard = findArtboard('mobile', 'MB11Slides')!;
+    render(
+      <RouterProvider
+        router={createMemoryRouter([
+          {
+            path: '/',
+            element: (
+              <RoomProvider initialState={stateForArtboard(artboard, { people: 'thirty', pfilter: 'low', panel: 'people' })}>
+                <Placeholder artboard={artboard} milestone={6} />
+              </RoomProvider>
+            ),
+          },
+        ])}
+      />,
+    );
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Phone · All slides (grid button)');
     expect(screen.getByText('Not built yet (milestone 6)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to the artboards' })).toHaveAttribute('href', '/');
     expect(screen.getByText('People')).toBeInTheDocument();
-    expect(screen.getByText('14 · 4 hands raised')).toBeInTheDocument();
-    expect(screen.getByText('chat · filter all')).toBeInTheDocument();
-  });
-
-  it('lets query parameters override the artboard props', () => {
-    renderAt('/mobile/MB1Room?panel=people&pfilter=low&people=thirty');
+    // The query overrides the props: thirty people, the People panel filtered to low engagement.
     expect(screen.getByText('30 · 5 hands raised')).toBeInTheDocument();
     expect(screen.getByText('people · filter low')).toBeInTheDocument();
   });
@@ -75,12 +88,12 @@ describe('routes', () => {
     expect(screen.getByRole('complementary', { name: 'People' })).toBeInTheDocument();
   });
 
-  it('marks mobile artboards with their milestone, and renders every desktop artboard as a screen', () => {
-    renderAt('/mobile/MB1Room');
-    expect(screen.getByText('Not built yet (milestone 6)')).toBeInTheDocument();
-    const desktop = artboards.filter((a) => a.group === 'desktop');
-    expect(desktop.length).toBeGreaterThan(0);
-    for (const a of desktop) expect(screenFor(a).Screen, a.stem).toBeDefined();
+  it('renders every desktop and every mobile artboard as a screen: no placeholder remains', () => {
+    expect(artboards.length).toBeGreaterThan(0);
+    for (const a of artboards) expect(screenFor(a).Screen, `${a.group}/${a.stem}`).toBeDefined();
+    renderAt('/mobile/MB11Slides');
+    expect(screen.getByRole('heading', { level: 1, hidden: true })).toHaveTextContent('Hack Week: Brazil 2026');
+    expect(screen.queryByText(/Not built yet/)).not.toBeInTheDocument();
   });
 
   it('shows the not-found page for an unknown artboard or group', () => {
@@ -93,9 +106,15 @@ describe('routes', () => {
   it('navigates from the index to an artboard and back by link', async () => {
     const user = userEvent.setup();
     renderAt('/');
-    await user.click(screen.getByRole('link', { name: 'Phone · Chat tab' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Phone · Chat tab' })).toBeInTheDocument();
-    await user.click(screen.getByRole('link', { name: 'Back to the artboards' }));
+    await user.click(screen.getByRole('link', { name: 'Phone · Confirm Leave' }));
+    // The confirmation is open on this route, so the room's heading is behind it.
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Hack Week: Brazil 2026', hidden: true }),
+    ).toBeInTheDocument();
+    // Leaving the session goes back to the index (MB16's confirmation).
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Leave session' }),
+    );
     expect(
       await screen.findByRole('heading', { level: 1, name: 'BigBlueButton 4.0 prototype' }),
     ).toBeInTheDocument();

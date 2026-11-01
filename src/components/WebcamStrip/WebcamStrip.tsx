@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import type { Participant, ParticipantId, ReactionKind } from '../../mocks/types';
 import { tv, type VariantProps } from '../../styles/tv';
 import { Button } from '../Button';
@@ -8,25 +8,40 @@ import { VideoTile } from '../VideoTile';
  * The webcam strip (Focus.dc.html 129–139): a row above the slide when the
  * panel is open, a column beside it when not, 8px apart. The last cell is
  * the "+N more" button when more people are in the room than tiles fit.
+ * `grid` is the phone's two-column band of 16:9 tiles (Mobile.dc.html 70:
+ * two columns in portrait and in landscape alike).
  */
 export const webcamStripStyles = tv({
-  base: 'flex list-none gap-2 p-0',
+  base: 'list-none gap-2 p-0',
   variants: {
     direction: {
-      row: 'flex-row',
-      column: 'flex-col',
+      row: 'flex flex-row',
+      column: 'flex flex-col',
+      grid: 'grid',
+    },
+    /** Columns of the grid: two in the band, three with the presentation minimized in portrait, five in landscape (Mobile.dc.html 392, 407–408). */
+    columns: {
+      2: '',
+      3: '',
+      5: '',
     },
   },
-  defaultVariants: { direction: 'column' },
+  compoundVariants: [
+    { direction: 'grid', columns: 2, className: 'grid-cols-2' },
+    { direction: 'grid', columns: 3, className: 'grid-cols-3' },
+    { direction: 'grid', columns: 5, className: 'grid-cols-5' },
+  ],
+  defaultVariants: { direction: 'column', columns: 2 },
 });
 
-/** The dashed "+N more" cell: a full tile in a row, a 36px bar under the column. */
+/** The dashed "+N more" cell: a full tile in a row, a 36px bar under the column, a 16:9 cell in the grid. */
 export const webcamStripMoreStyles = tv({
   base: 'border-dashed bg-transparent text-text data-hovered:bg-surface-raised data-pressed:bg-surface-raised',
   variants: {
     direction: {
       row: 'h-24 w-24 rounded-tile',
       column: 'h-control-md w-42',
+      grid: 'aspect-video h-auto w-full rounded-tile',
     },
   },
   defaultVariants: { direction: 'column' },
@@ -36,6 +51,7 @@ export const webcamStripMoreStyles = tv({
 export const webcamStripCellStyles = tv({ base: 'flex' });
 
 export type WebcamStripDirection = NonNullable<VariantProps<typeof webcamStripStyles>['direction']>;
+export type WebcamStripColumns = NonNullable<VariantProps<typeof webcamStripStyles>['columns']>;
 
 /** How many tiles the strip shows before "+N more" (the canvas draws five). */
 export const DEFAULT_MAX_TILES = 5;
@@ -49,10 +65,14 @@ export interface WebcamStripProps extends Omit<ComponentProps<'ul'>, 'children'>
   max?: number;
   /** @default 'column' */
   direction?: WebcamStripDirection;
+  /** The grid's columns. @default 2 */
+  columns?: WebcamStripColumns;
   /** Current reactions by person (`selectReactions`), shown on their tiles. */
   reactions?: Record<ParticipantId, ReactionKind>;
   /** "+N more" opens the People panel. */
   onShowAll?: () => void;
+  /** A list item before the tiles: the minimized presentation's `PresentationTile` (MB13). Name the list for it (`aria-label`). */
+  leading?: ReactNode;
   className?: string;
 }
 
@@ -69,20 +89,24 @@ export function WebcamStrip({
   names,
   max = DEFAULT_MAX_TILES,
   direction = 'column',
+  columns = 2,
   reactions,
   onShowAll,
+  leading,
   className,
   ...props
 }: WebcamStripProps) {
   const shown = participants.slice(0, Math.max(0, max));
   const rest = participants.length - shown.length;
   return (
-    <ul aria-label="Webcams" {...props} className={webcamStripStyles({ direction, className })}>
+    <ul aria-label="Webcams" {...props} className={webcamStripStyles({ direction, columns, className })}>
+      {leading}
       {shown.map((p) => (
         <li key={p.id} className={webcamStripCellStyles()}>
           <VideoTile
             participant={p}
             shortName={p.isSelf ? 'You' : (names[p.id] ?? p.name)}
+            size={direction === 'grid' ? 'grid' : 'strip'}
             reaction={reactions?.[p.id]}
           />
         </li>

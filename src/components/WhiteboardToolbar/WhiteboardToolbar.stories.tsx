@@ -64,6 +64,18 @@ export const Playground: Story = {
   render: (args) => <Interactive {...args} />,
 };
 
+/** The phone's toolbar (MB12): 44px controls (X14) wrapping onto two rows in a 358px column, under the slide. */
+export const Touch: Story = {
+  args: { size: 'touch', wrap: true },
+  decorators: [
+    (Story) => (
+      <div className="w-90">
+        <Story />
+      </div>
+    ),
+  ],
+};
+
 /** Over the slide inside the stage: the dark card the stage tokens give it (milestone 4 decision), on the white paper. */
 export const Stage: Story = {
   globals: { surface: 'stage' },

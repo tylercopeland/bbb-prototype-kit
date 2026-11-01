@@ -61,3 +61,8 @@ Every state here was checked against the `<dc-import>` props in `docs/canvas/pro
 | 12 | Phone · Annotate (pencil) | `MB12Annotate` | 390×844 | Mobile | orient=portrait sheet=none annot=on |
 | 13 | Phone · Presentation minimized | `MB13Minimized` | 390×844 | Mobile | orient=portrait sheet=none presmin=min |
 | 14 | Phone landscape · Presentation minimized | `MB14LandMin` | 844×390 | Mobile | orient=landscape sheet=none presmin=min |
+| 15 | Phone · Student view (attendee) | `MB15Attendee` | 390×844 | Mobile | orient=portrait sheet=none role=student |
+| 16 | Phone · Confirm Leave | `MB16Confirm` | 390×844 | Mobile | orient=portrait sheet=none confirm=leave |
+| 17 | Phone · Chat with the keyboard open | `MB17KeyboardChat` | 390×844 | Mobile | orient=portrait sheet=chat keyboard=open |
+
+Rows 15–17 are not on the canvas. They are the core set of review finding P9, added by owner decision on 2026-10-31: the student's own view (Raise hand instead of the moderator controls), the confirmation before leaving (`confirm=remove` shows the Remove confirmation from the student sheet instead), and the chat sheet with the on-screen keyboard open, the composer kept above it. Build them from the Mobile board's parts. Reconnecting, phone screen share and the landscape variants of Student, More, Slides and Alerts are out of scope.

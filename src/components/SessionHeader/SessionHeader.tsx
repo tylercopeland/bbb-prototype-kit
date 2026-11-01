@@ -1,11 +1,13 @@
 import type { ComponentProps } from 'react';
-import { tv } from '../../styles/tv';
+import { tv, type VariantProps } from '../../styles/tv';
 
 /**
  * The information row at the top of the room (Focus.dc.html 27–31): the
  * session title, the recording indicator and "14 people · 29:36". It sits
  * on the stage, so its colors come from the stage ramp through the tokens
- * (`text-text` is white there). One line, 40px tall, never wrapping.
+ * (`text-text` is white there). One line, 40px tall, never wrapping; on
+ * the phone (`layout="stacked"`, Mobile.dc.html 27–29) the title takes the
+ * first line and the recording mark and the count the second.
  */
 export const sessionHeaderStyles = tv({
   slots: {
@@ -17,7 +19,16 @@ export const sessionHeaderStyles = tv({
     /** "Session time" before the clock, for assistive technology only. */
     metaLabel: 'sr-only',
   },
+  variants: {
+    layout: {
+      row: {},
+      stacked: { root: 'h-auto flex-wrap gap-x-2 gap-y-0', title: 'basis-full', meta: 'text-xs' },
+    },
+  },
+  defaultVariants: { layout: 'row' },
 });
+
+export type SessionHeaderLayout = NonNullable<VariantProps<typeof sessionHeaderStyles>['layout']>;
 
 export interface SessionHeaderProps extends Omit<ComponentProps<'header'>, 'children' | 'title'> {
   /** The session name, rendered as the page's `h1`. */
@@ -28,6 +39,8 @@ export interface SessionHeaderProps extends Omit<ComponentProps<'header'>, 'chil
   peopleCount: number;
   /** The elapsed time, already formatted ("29:36", `formatElapsed`). */
   elapsed: string;
+  /** `stacked` puts the title on its own line, for the phone. @default 'row' */
+  layout?: SessionHeaderLayout;
   className?: string;
 }
 
@@ -47,10 +60,11 @@ export function SessionHeader({
   recording = false,
   peopleCount,
   elapsed,
+  layout = 'row',
   className,
   ...props
 }: SessionHeaderProps) {
-  const styles = sessionHeaderStyles();
+  const styles = sessionHeaderStyles({ layout });
   return (
     <header {...props} className={styles.root({ className })}>
       <h1 className={styles.title()}>{title}</h1>

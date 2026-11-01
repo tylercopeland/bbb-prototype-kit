@@ -49,7 +49,8 @@ export const alertPillLabelStyles = tv({ base: 'truncate' });
 
 export type AlertPillKind = NonNullable<VariantProps<typeof alertPillStyles>['kind']>;
 
-const kindIcon: Record<AlertPillKind, IconName> = {
+/** The kind's glyph, shared with the phone's Updates sheet rows. */
+export const alertPillKindIcon: Record<AlertPillKind, IconName> = {
   hands: 'raiseHand',
   question: 'question',
   insight: 'insight',
@@ -93,7 +94,7 @@ export function AlertPill({ kind, children, description, className, ref, ...prop
         className={composeRenderProps(className, (cls) => alertPillStyles({ kind, className: cls }))}
       >
         <span aria-hidden="true" className={alertPillIconStyles({ kind })}>
-          <Icon name={kindIcon[kind]} size="xs" />
+          <Icon name={alertPillKindIcon[kind]} size="xs" />
         </span>
         <span ref={labelRef} className={alertPillLabelStyles()}>
           {children}

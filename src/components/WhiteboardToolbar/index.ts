@@ -6,4 +6,4 @@ export {
   whiteboardToolbarStyles,
   whiteboardTools,
 } from './WhiteboardToolbar';
-export type { SwatchColor, WhiteboardToolbarProps } from './WhiteboardToolbar';
+export type { SwatchColor, WhiteboardToolbarProps, WhiteboardToolbarSize } from './WhiteboardToolbar';

@@ -47,6 +47,10 @@ export const participantRowStyles = tv({
     isMenuOpen: {
       true: { root: 'bg-surface-sunken', actions: 'pointer-events-auto opacity-100' },
     },
+    /** The phone's rows (MB3): no hover, so the actions always show. */
+    actionsVisible: {
+      true: { actions: 'pointer-events-auto opacity-100' },
+    },
     sublineTone: {
       hand: { subline: 'text-status-hand-text' },
       presenting: { subline: 'text-accent' },
@@ -116,7 +120,23 @@ export interface ParticipantRowProps extends Omit<ComponentProps<'li'>, 'childre
    * menu stays. @default true
    */
   canMessage?: boolean;
+  /**
+   * Whether the viewer may act on this person (the ⋯ button and its
+   * actions): a moderator may, a student may not (MB15). @default true
+   */
+  canModerate?: boolean;
+  /** Keep the row actions visible instead of revealing them on hover or focus: the phone's sheet has no hover. @default false */
+  actionsVisible?: boolean;
   onAction?: (action: ParticipantAction) => void;
+  /**
+   * On the phone the ⋯ button opens the student actions sheet (MB4) instead
+   * of the menu: the row calls this with the button and renders no `Menu`,
+   * so the sheet can return focus to it. The button keeps its name and
+   * gets `aria-haspopup="dialog"`; `isMenuOpen` must then say whether that
+   * sheet is open for this person (`ui.sheet === 'student' &&
+   * ui.sheetStudent === id`), so its `aria-expanded` is real.
+   */
+  onOpenActions?: (trigger: HTMLButtonElement | null) => void;
   /** The ⋯ button, so the list can move focus to a neighbouring row when this one is removed (WCAG 2.4.3). */
   moreRef?: Ref<HTMLButtonElement>;
   className?: string;
@@ -149,7 +169,10 @@ export function ParticipantRow({
   onMenuOpenChange,
   onMessage,
   canMessage = true,
+  canModerate = true,
+  actionsVisible = false,
   onAction,
+  onOpenActions,
   moreRef,
   className,
   ...props
@@ -169,7 +192,7 @@ export function ParticipantRow({
         : 'muted';
   const sublineIcon: IconName | null =
     sublineTone === 'hand' ? 'raiseHand' : sublineTone === 'presenting' ? 'presenter' : null;
-  const styles = participantRowStyles({ isMenuOpen, sublineTone, audio: p.audio });
+  const styles = participantRowStyles({ isMenuOpen, actionsVisible, sublineTone, audio: p.audio });
   const [confirmRemove, setConfirmRemove] = useState(false);
   // The ⋯ button, for the menu's focus fallback (O2 opens the menu on load) as well as the list's ref.
   const moreButton = useRef<HTMLButtonElement>(null);
@@ -234,7 +257,7 @@ export function ParticipantRow({
           </span>
         )}
       </div>
-      {!p.isSelf && (
+      {!p.isSelf && (canMessage || canModerate) && (
         <span className={styles.actions()}>
           {canMessage && (
             <IconButton
@@ -245,66 +268,80 @@ export function ParticipantRow({
               onPress={onMessage}
             />
           )}
-          <Menu
-            isOpen={isMenuOpen}
-            onOpenChange={setMenuOpen}
-            onAction={onMenuAction}
-            restoreFocusTo={moreButton}
-            trigger={
-              <IconButton
-                ref={moreButtonRef}
-                label={`More actions for ${p.name}`}
-                icon="more"
-                variant="soft"
-                size="sm"
-              />
-            }
-            header={
-              <>
-                <Avatar aria-hidden="true" name={p.name} participantId={p.id} size="lg" />
-                <span className={styles.menuHeaderBody()}>
-                  <span className={styles.menuHeaderName()}>{p.name}</span>
-                  <span className={styles.menuHeaderStatus()}>{participantStatus(p)}</span>
-                </span>
-              </>
-            }
-          >
-            <MenuItem id="presenter" icon="presenter" isDisabled={p.isPresenter}>
-              Make presenter
-            </MenuItem>
-            <MenuItem id="camera" icon={p.camera ? 'cameraOff' : 'camera'}>
-              {p.camera ? 'Turn off camera' : 'Turn on camera'}
-            </MenuItem>
-            <MenuSeparator />
-            <MenuSection
-              aria-label="Permissions"
-              selectionMode="multiple"
-              selectedKeys={flags}
-              onSelectionChange={onFlags}
+          {canModerate && onOpenActions && (
+            <IconButton
+              ref={moreButtonRef}
+              label={`More actions for ${p.name}`}
+              icon="more"
+              variant="soft"
+              size="sm"
+              aria-haspopup="dialog"
+              aria-expanded={isMenuOpen}
+              onPress={() => onOpenActions(moreButton.current)}
+            />
+          )}
+          {canModerate && !onOpenActions && (
+            <Menu
+              isOpen={isMenuOpen}
+              onOpenChange={setMenuOpen}
+              onAction={onMenuAction}
+              restoreFocusTo={moreButton}
+              trigger={
+                <IconButton
+                  ref={moreButtonRef}
+                  label={`More actions for ${p.name}`}
+                  icon="more"
+                  variant="soft"
+                  size="sm"
+                />
+              }
+              header={
+                <>
+                  <Avatar aria-hidden="true" name={p.name} participantId={p.id} size="lg" />
+                  <span className={styles.menuHeaderBody()}>
+                    <span className={styles.menuHeaderName()}>{p.name}</span>
+                    <span className={styles.menuHeaderStatus()}>{participantStatus(p)}</span>
+                  </span>
+                </>
+              }
             >
-              <MenuItem
-                id="microphone"
-                icon={micOn ? 'microphone' : 'microphoneOff'}
-                isDisabled={!audioJoined}
-                description={audioJoined ? undefined : 'Audio not joined'}
+              <MenuItem id="presenter" icon="presenter" isDisabled={p.isPresenter}>
+                Make presenter
+              </MenuItem>
+              <MenuItem id="camera" icon={p.camera ? 'cameraOff' : 'camera'}>
+                {p.camera ? 'Turn off camera' : 'Turn on camera'}
+              </MenuItem>
+              <MenuSeparator />
+              <MenuSection
+                aria-label="Permissions"
+                selectionMode="multiple"
+                selectedKeys={flags}
+                onSelectionChange={onFlags}
               >
-                Microphone
+                <MenuItem
+                  id="microphone"
+                  icon={micOn ? 'microphone' : 'microphoneOff'}
+                  isDisabled={!audioJoined}
+                  description={audioJoined ? undefined : 'Audio not joined'}
+                >
+                  Microphone
+                </MenuItem>
+                <MenuItem id="whiteboard" icon="whiteboardAccess">
+                  Whiteboard access
+                </MenuItem>
+                <MenuItem id="moderator" icon="moderator">
+                  Moderator
+                </MenuItem>
+                <MenuItem id="lock" icon="lockChat">
+                  Lock public chat
+                </MenuItem>
+              </MenuSection>
+              <MenuSeparator />
+              <MenuItem id="remove" icon="removeFromSession" tone="danger">
+                Remove from session
               </MenuItem>
-              <MenuItem id="whiteboard" icon="whiteboardAccess">
-                Whiteboard access
-              </MenuItem>
-              <MenuItem id="moderator" icon="moderator">
-                Moderator
-              </MenuItem>
-              <MenuItem id="lock" icon="lockChat">
-                Lock public chat
-              </MenuItem>
-            </MenuSection>
-            <MenuSeparator />
-            <MenuItem id="remove" icon="removeFromSession" tone="danger">
-              Remove from session
-            </MenuItem>
-          </Menu>
+            </Menu>
+          )}
           <ConfirmDialog
             isOpen={confirmRemove}
             onOpenChange={setConfirmRemove}

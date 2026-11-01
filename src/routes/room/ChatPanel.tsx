@@ -68,12 +68,21 @@ function useStickToBottom(count: number) {
   return ref;
 }
 
-export function ChatPanel() {
-  const dm = useRoom((s) => s.ui.dm);
-  return dm === null ? <ChatScopes /> : <Thread />;
+export interface ChatPanelProps {
+  /** Focuses the composer when it mounts: the phone's chat with the keyboard up (MB17). @default false */
+  autoFocusComposer?: boolean;
 }
 
-function ChatScopes() {
+export function ChatPanel({ autoFocusComposer = false }: ChatPanelProps) {
+  const dm = useRoom((s) => s.ui.dm);
+  return dm === null ? (
+    <ChatScopes autoFocusComposer={autoFocusComposer} />
+  ) : (
+    <Thread autoFocusComposer={autoFocusComposer} />
+  );
+}
+
+function ChatScopes({ autoFocusComposer }: Required<ChatPanelProps>) {
   const styles = chatPanelStyles();
   const dispatch = useRoomDispatch();
   const scope = useRoom((s) => s.ui.scope);
@@ -106,7 +115,7 @@ function ChatScopes() {
       </TabList>
       <TabPanel id="everyone" className={styles.panel()}>
         <EveryoneMessages />
-        <Composer />
+        <Composer autoFocus={autoFocusComposer} />
       </TabPanel>
       <TabPanel id="direct" className={styles.panel()}>
         <DMList
@@ -153,7 +162,7 @@ function EveryoneMessages() {
   );
 }
 
-function Thread() {
+function Thread({ autoFocusComposer }: Required<ChatPanelProps>) {
   const styles = chatPanelStyles();
   const dispatch = useRoomDispatch();
   const dm = useRoom((s) => s.ui.dm);
@@ -212,7 +221,7 @@ function Thread() {
           </ChatMessage>
         ))}
       </ol>
-      <Composer ref={composerRef} to={dm} />
+      <Composer ref={composerRef} to={dm} autoFocus={autoFocusComposer} />
     </>
   );
 }

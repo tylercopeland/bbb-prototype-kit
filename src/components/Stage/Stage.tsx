@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
-import type { Key } from 'react-aria-components';
+import type { ReactNode, Ref } from 'react';
+import { Button as RacButton, type Key } from 'react-aria-components';
+import { Icon } from '../../icons';
 import type { Participant, ParticipantId, ReactionKind, ScreenKind, StageCorner } from '../../mocks/types';
 import { tv, type VariantProps } from '../../styles/tv';
 import { IconButton } from '../IconButton';
@@ -68,7 +69,11 @@ export const stageStyles = tv({
 /**
  * The slide placeholder: white paper in every mode (`slide` / `on-slide`),
  * 16:9, fitted like the stage says. It is the hover `group` for the
- * presentation controls drawn over its bottom edge (X13).
+ * presentation controls drawn over its bottom edge (X13). `below` and
+ * `beside` are the phone's slide (Mobile.dc.html 38): full width with the
+ * webcams under it in portrait, fitted by height with the webcams beside
+ * it in landscape, both with tighter padding and no reserved corner,
+ * because the pager sits below the slide and the alerts in the header.
  */
 export const slideStyles = tv({
   slots: {
@@ -85,10 +90,14 @@ export const slideStyles = tv({
     webcams: {
       side: { root: 'slide-fit' },
       top: { root: 'slide-fit-stacked' },
+      below: { root: 'aspect-video w-full p-4', header: 'pr-12', title: 'text-lg' },
+      beside: { root: 'slide-fit p-4', header: 'pr-12', title: 'text-lg' },
     },
   },
   defaultVariants: { webcams: 'side' },
 });
+
+export type SlideWebcams = NonNullable<VariantProps<typeof slideStyles>['webcams']>;
 
 /**
  * The grid of everyone (Focus.dc.html 141–155): the column count comes
@@ -129,8 +138,31 @@ export const presentationTileStyles = tv({
     plate:
       'min-w-0 truncate rounded-xs bg-surface-overlay px-2 text-xs leading-5 font-semibold text-text-on-stage',
     restore: 'shrink-0',
+    /** The restore glyph in the corner of the whole-tile button (Mobile.dc.html 73). */
+    glyph:
+      'absolute top-2 right-2 flex size-6 items-center justify-center rounded-full bg-surface-overlay text-text-on-stage',
   },
+  variants: {
+    variant: {
+      /** The desktop grid's cell: the plate and a Restore button share the bottom row. */
+      tile: {},
+      /** The phone's cell (MB13, MB14): the whole tile is the Restore button, so a small cell still has a 44px target (X14); the thumbnail is bare paper. */
+      button: {
+        thumb: 'inset-x-3 top-2 bottom-8 p-0',
+        thumbTitle: 'hidden',
+        bottom: 'justify-start',
+      },
+    },
+  },
+  defaultVariants: { variant: 'tile' },
 });
+
+/** The whole-tile Restore button: fills the cell, the focus ring on the cell's radius, the raised fill under the pointer. */
+export const presentationTileButtonStyles = tv({
+  base: 'absolute inset-0 rounded-tile focus-ring outline-none data-hovered:bg-surface-raised data-pressed:bg-surface-raised',
+});
+
+export type PresentationTileVariant = NonNullable<VariantProps<typeof presentationTileStyles>['variant']>;
 
 /**
  * The overlay layer (D1): four corner slots over the slide (or over the
@@ -332,6 +364,19 @@ function OverlayLayer({ overlays }: { overlays: StageOverlays }) {
   );
 }
 
+export interface StageSlideProps extends StagePresentation {
+  /** How the slide fits: beside the strip, under it, or alone at full width (the phone). */
+  webcams: SlideWebcams;
+  /** Drawn over the slide: the presentation controls, or the phone's Minimize button. */
+  children?: ReactNode;
+  className?: string;
+}
+
+/** The slide alone, for a stage that lays it out itself (the phone). The `Stage` renders it in its layouts. */
+export function StageSlide(props: StageSlideProps) {
+  return <Slide {...props} />;
+}
+
 function Slide({
   deckName,
   slideTitle,
@@ -339,10 +384,11 @@ function Slide({
   slideCount,
   webcams,
   children,
-}: StagePresentation & { webcams: StageWebcams; children?: ReactNode }) {
+  className,
+}: StageSlideProps) {
   const styles = slideStyles({ webcams });
   return (
-    <div className={styles.root()}>
+    <div className={styles.root({ className })}>
       <div className={styles.header()}>
         <p className={styles.deck()}>{deckName}</p>
         <h2 className={styles.title()}>{slideTitle}</h2>
@@ -406,7 +452,6 @@ function StageGrid({
 }: Pick<StageProps, 'participants' | 'names' | 'reactions' | 'presentation' | 'onRestore'>) {
   const count = participants.length + (presentation ? 1 : 0);
   const styles = stageStyles();
-  const tile = presentationTileStyles();
   return (
     <ul
       aria-label={presentation ? 'Webcams and minimized presentation' : 'Webcams'}
@@ -422,26 +467,80 @@ function StageGrid({
           />
         </li>
       ))}
-      {presentation && (
-        <li className={tile.root()}>
-          <span aria-hidden="true" className={tile.thumb()}>
-            <span className={tile.thumbTitle()}>{presentation.slideTitle}</span>
-          </span>
-          <span className={tile.bottom()}>
-            <span className={tile.plate()}>
-              Presentation · {presentation.slideNumber} / {presentation.slideCount}
-            </span>
-            <IconButton
-              label="Restore presentation"
-              icon="restore"
-              variant="primary"
-              size="sm"
-              onPress={onRestore}
-              className={tile.restore()}
-            />
-          </span>
-        </li>
-      )}
+      {presentation && <PresentationTile {...presentation} onRestore={onRestore} />}
     </ul>
+  );
+}
+
+export interface PresentationTileProps extends Pick<
+  StagePresentation,
+  'slideTitle' | 'slideNumber' | 'slideCount'
+> {
+  onRestore?: () => void;
+  /** @default 'tile' */
+  variant?: PresentationTileVariant;
+  className?: string;
+  /** The Restore button (the whole cell as a `button`), so the room can hand it focus after Minimize (WCAG 2.4.3). */
+  ref?: Ref<HTMLButtonElement>;
+}
+
+/**
+ * The minimized presentation as one cell of a webcam list (Focus.dc.html
+ * 143–148; Mobile.dc.html 73): the slide thumbnail, a plate with the slide
+ * number and the way back. A list item, so it sits among the tiles of
+ * `StageGrid` or `WebcamStrip`. As a `tile` the plate and a Restore button
+ * share the bottom row; as a `button` (the phone, MB13 / MB14) the whole
+ * cell is the button, named by its visible plate ("Presentation · 3 / 12,
+ * restore", WCAG 2.5.3) with the restore glyph in its corner.
+ */
+export function PresentationTile({
+  slideTitle,
+  slideNumber,
+  slideCount,
+  onRestore,
+  variant = 'tile',
+  className,
+  ref,
+}: PresentationTileProps) {
+  const tile = presentationTileStyles({ variant });
+  const plate = `Presentation · ${slideNumber} / ${slideCount}`;
+  if (variant === 'button') {
+    return (
+      <li className={tile.root({ className })}>
+        <RacButton
+          ref={ref}
+          aria-label={`${plate}, restore`}
+          onPress={onRestore}
+          className={presentationTileButtonStyles()}
+        >
+          <span aria-hidden="true" className={tile.thumb()} />
+          <span aria-hidden="true" className={tile.glyph()}>
+            <Icon name="restore" size="xs" />
+          </span>
+          <span aria-hidden="true" className={tile.bottom()}>
+            <span className={tile.plate()}>{plate}</span>
+          </span>
+        </RacButton>
+      </li>
+    );
+  }
+  return (
+    <li className={tile.root({ className })}>
+      <span aria-hidden="true" className={tile.thumb()}>
+        <span className={tile.thumbTitle()}>{slideTitle}</span>
+      </span>
+      <span className={tile.bottom()}>
+        <span className={tile.plate()}>{plate}</span>
+        <IconButton
+          ref={ref}
+          label="Restore presentation"
+          icon="restore"
+          variant="primary"
+          size="sm"
+          onPress={onRestore}
+          className={tile.restore()}
+        />
+      </span>
+    </li>
   );
 }

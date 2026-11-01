@@ -17,10 +17,19 @@ function Demo({
   people = 'class',
   filter: initialFilter = 'all',
   openMenu: initialMenu = null,
+  canModerate = true,
+  actionsVisible = false,
+  opensSheet = false,
 }: {
   people?: ParticipantFixture;
   filter?: PeopleFilter;
   openMenu?: ParticipantId | null;
+  /** Whether the viewer is a moderator (a student sees no ⋯, MB15). */
+  canModerate?: boolean;
+  /** Keep every row's actions visible (the phone). */
+  actionsVisible?: boolean;
+  /** The phone's flow: the ⋯ opens the student sheet; here it marks the row expanded. */
+  opensSheet?: boolean;
 }) {
   const [state] = useState<RoomState>(() => createRoom({ participants: people }));
   const [filter, setFilter] = useState<PeopleFilter>(initialFilter);
@@ -36,6 +45,9 @@ function Demo({
       now={FIXTURE_NOW}
       openMenu={openMenu}
       onMenuOpenChange={(id, open) => setOpenMenu(open ? id : null)}
+      canModerate={canModerate}
+      actionsVisible={actionsVisible}
+      onOpenActions={opensSheet ? (id) => setOpenMenu(openMenu === id ? null : id) : undefined}
     />
   );
 }
@@ -102,6 +114,17 @@ export const LongNames: Story = { args: { people: 'longNames' } };
 
 /** Two Anas (B9): the full names tell them apart. */
 export const DuplicateNames: Story = { args: { people: 'duplicateNames' } };
+
+/** A student's view (MB15): the same list, no ⋯ on any row. */
+export const StudentViewer: Story = { args: { canModerate: false, actionsVisible: true } };
+
+/** The phone's People sheet (MB3): actions always visible, the ⋯ opens the student sheet (here it just marks the row). */
+export const OpensSheet: Story = { args: { actionsVisible: true, opensSheet: true } };
+
+/** The phone with Anton's sheet open: his ⋯ reports `aria-expanded`. */
+export const OpensSheetExpanded: Story = {
+  args: { actionsVisible: true, opensSheet: true, openMenu: 'anton' },
+};
 
 export const Stage: Story = {
   globals: { surface: 'stage' },

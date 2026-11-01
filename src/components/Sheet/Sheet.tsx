@@ -8,7 +8,7 @@ import {
   type ModalOverlayProps,
 } from 'react-aria-components';
 import { tv, type VariantProps } from '../../styles/tv';
-import { renderWith, type DialogRenderable } from '../Dialog';
+import { renderWith, StackedOverlay, type DialogRenderable } from '../Dialog';
 import { OverlayHeader } from '../Popover';
 import { SurfaceProvider } from '../Surface';
 
@@ -20,7 +20,7 @@ import { SurfaceProvider } from '../Surface';
  * visible"). A sheet stacked on another draws no scrim of its own (P4).
  */
 export const sheetOverlayStyles = tv({
-  base: 'fixed inset-0 z-50 flex data-entering:animate-fade-in data-exiting:animate-fade-out',
+  base: 'fixed inset-0 z-50 flex pb-keyboard data-entering:animate-fade-in data-exiting:animate-fade-out',
   variants: {
     position: {
       bottom: 'items-end justify-center pt-16',
@@ -34,14 +34,19 @@ export const sheetOverlayStyles = tv({
   defaultVariants: { position: 'bottom', backdrop: true },
 });
 
-/** The sheet itself: rounded on the edge away from the screen edge, sliding in from its side. */
+/**
+ * The sheet itself: rounded on the edge away from the screen edge, sliding
+ * in from its side. It carries the safe-area inset of that edge (P2): the
+ * bottom sheet clears the home indicator, the side sheet the notch or the
+ * rounded corner in landscape.
+ */
 export const sheetModalStyles = tv({
   base: 'flex max-h-full flex-col bg-surface text-text shadow-overlay outline-none',
   variants: {
     position: {
       bottom:
-        'w-full rounded-t-xl data-entering:animate-sheet-in-bottom data-exiting:animate-sheet-out-bottom',
-      end: 'h-full w-panel max-w-full rounded-l-xl data-entering:animate-sheet-in-end data-exiting:animate-sheet-out-end',
+        'w-full rounded-t-xl pb-safe-0 data-entering:animate-sheet-in-bottom data-exiting:animate-sheet-out-bottom',
+      end: 'h-full w-panel max-w-full rounded-l-xl pr-safe-0 data-entering:animate-sheet-in-end data-exiting:animate-sheet-out-end',
     },
   },
   defaultVariants: { position: 'bottom' },
@@ -80,8 +85,26 @@ export interface SheetProps extends Pick<
   children?: DialogRenderable;
   /** Pinned under the scrolling body. */
   footer?: DialogRenderable;
+  /**
+   * Wraps the header, body and footer together, inside the dialog. The
+   * People & chat sheet passes a `Tabs` here, so its `TabList` can sit in
+   * the header (`headerExtra`) with the `TabPanel`s in the body (D3).
+   */
+  frame?: (content: ReactNode) => ReactNode;
+  /**
+   * A sheet stacked over this one (the student actions over People, MB4):
+   * rendered inside this dialog, so it shares the scrim and returns focus
+   * here, but outside `frame`, because React Aria's `Tabs` renders its
+   * children a second time to build its collection and a modal in there
+   * would portal a ghost copy into the page. It mounts one commit after
+   * this sheet (`StackedOverlay`), so React Aria registers it as the
+   * newer overlay even when both open from a deep link.
+   */
+  stacked?: ReactNode;
   /** Merged onto the sheet. */
   className?: string;
+  /** Merged onto the scrolling body: `px-0 pb-0` for content that brings its own padding (the People and Chat panels). */
+  bodyClassName?: string;
   /** The dialog element. */
   ref?: Ref<HTMLElement>;
 }
@@ -95,9 +118,10 @@ export interface SheetProps extends Pick<
  * closing it returns to the parent. Swipe-to-dismiss is not built (owner
  * decision: decided in milestone 6); the handle is decoration.
  *
- * Milestone 6 (P2): the sheet has no safe-area padding yet. The bottom
- * sheet's footer and the side sheet's edge must add
- * `env(safe-area-inset-*)` so they clear the home indicator and the notch.
+ * The bottom sheet pads its bottom and the side sheet its end by the
+ * device's safe-area inset (P2), through the `p*-safe-*` utilities. The
+ * overlay pads its bottom by the on-screen keyboard (`pb-keyboard`, MB17),
+ * so a sheet never ends behind it.
  *
  * It always draws as a panel, white over the dark stage too (owner
  * decision 2026-10-24). Its content sits in a `SurfaceProvider`, so a
@@ -111,9 +135,12 @@ export function Sheet({
   position = 'bottom',
   children,
   footer,
+  frame = (content) => content,
+  stacked,
   isDismissable = true,
   isKeyboardDismissDisabled,
   className,
+  bodyClassName,
   ref,
   ...state
 }: SheetProps) {
@@ -138,16 +165,23 @@ export function Sheet({
             {({ close }) => (
               <SheetDepthContext.Provider value={depth + 1}>
                 {position === 'bottom' && <span aria-hidden="true" className={styles.handle()} />}
-                <OverlayHeader
-                  title={title}
-                  titleHidden={titleHidden}
-                  onClose={close}
-                  className={styles.header()}
-                >
-                  {headerExtra}
-                </OverlayHeader>
-                <div className={styles.body()}>{renderWith(children, close)}</div>
-                {footer && <div className={styles.footer()}>{renderWith(footer, close)}</div>}
+                {frame(
+                  <>
+                    <OverlayHeader
+                      title={title}
+                      titleHidden={titleHidden}
+                      onClose={close}
+                      className={styles.header()}
+                    >
+                      {headerExtra}
+                    </OverlayHeader>
+                    <div className={styles.body({ className: bodyClassName })}>
+                      {renderWith(children, close)}
+                    </div>
+                    {footer && <div className={styles.footer()}>{renderWith(footer, close)}</div>}
+                  </>,
+                )}
+                {stacked && <StackedOverlay>{stacked}</StackedOverlay>}
               </SheetDepthContext.Provider>
             )}
           </RacDialog>

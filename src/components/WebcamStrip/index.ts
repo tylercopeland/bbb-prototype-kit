@@ -5,4 +5,4 @@ export {
   webcamStripMoreStyles,
   webcamStripStyles,
 } from './WebcamStrip';
-export type { WebcamStripDirection, WebcamStripProps } from './WebcamStrip';
+export type { WebcamStripColumns, WebcamStripDirection, WebcamStripProps } from './WebcamStrip';

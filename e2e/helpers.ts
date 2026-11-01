@@ -4,10 +4,53 @@
  * acting as another participant through the store the `RoomProvider`
  * exposes as `window.bbbRoom`.
  */
+import { readFileSync } from 'node:fs';
 import type { Locator, Page } from '@playwright/test';
+
+/**
+ * Waits until overlays opened on load have finished entering, so axe and the
+ * screenshots never read a mid-fade colour (a white panel half-faded over the
+ * stage reads as grey). Covers React Aria's hidden pre-entry state (it alone
+ * sets `mask-image`; VisuallyHidden text also uses `clip-path: inset(50%)`),
+ * `data-entering`, and every finite CSS animation or transition still running.
+ */
+export async function settleAnimations(page: Page) {
+  await page.waitForFunction(
+    () => document.querySelectorAll('[style*="mask-image"], [data-entering]').length === 0,
+  );
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
+}
 
 /** The desktop artboard size. */
 export const SIZE = { width: 1400, height: 900 };
+
+export type ArtboardEntry = {
+  stem: string;
+  group: 'desktop' | 'mobile';
+  number: number;
+  title: string;
+  size: { width: number; height: number };
+};
+
+/** Every artboard, from the list `npm run artboards` generates out of docs/artboards.md. */
+export function readArtboards(): ArtboardEntry[] {
+  return JSON.parse(readFileSync('src/routes/artboards.json', 'utf8')) as ArtboardEntry[];
+}
+
+/** Opens an artboard's route at its own size (390×844 or 844×390 for the phone), with any extra query. */
+export async function gotoArtboard(page: Page, group: ArtboardEntry['group'], stem: string, query = '') {
+  const artboard = readArtboards().find((a) => a.group === group && a.stem === stem);
+  if (!artboard) throw new Error(`No artboard ${group}/${stem} in src/routes/artboards.json`);
+  await page.setViewportSize(artboard.size);
+  await page.goto(`/${group}/${stem}${query}`);
+}
 
 /**
  * Presses Tab (or `key`, such as Shift+Tab) until the focused element has
@@ -34,7 +77,9 @@ export async function tabTo(page: Page, name: string | RegExp, max = 60, key = '
           .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
           .join(' ');
       return (
-        el.getAttribute('aria-label') ?? byIds('aria-labelledby') ?? visibleText(el).replace(/\s+/g, ' ').trim()
+        el.getAttribute('aria-label') ??
+        byIds('aria-labelledby') ??
+        visibleText(el).replace(/\s+/g, ' ').trim()
       );
     });
     if (typeof name === 'string' ? label === name : name.test(label)) return;

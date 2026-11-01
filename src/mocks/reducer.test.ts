@@ -153,7 +153,7 @@ describe('presenter, flags and removal', () => {
     expect(gone.alerts.some((a) => a.from === 'rafaela')).toBe(false);
     expect(gone.breakouts.helpQueue).toHaveLength(1);
     expect(gone.breakouts.helpQueue[0].from).toBeNull();
-    expect(gone.ui).toMatchObject({ sheet: 'none', sheetStudent: null });
+    expect(gone.ui).toMatchObject({ sheet: 'people', sheetStudent: null });
     expect(gone.participants.filter((p) => p.isPresenter).map((p) => p.id)).toEqual(['helena']);
     // Her public message stays; the chat names her "Someone who left".
     expect(gone.chat.everyone.some((m) => m.from === 'rafaela')).toBe(true);
@@ -650,6 +650,29 @@ describe('mobile', () => {
       reacting: true,
       sheet: 'react',
     });
+  });
+
+  it('opens and closes the Leave and Remove confirmations (MB16)', () => {
+    const s = reduce(createRoom(), { type: 'setConfirm', confirm: 'leave' });
+    expect(s.ui.confirm).toBe('leave');
+    expect(reduce(s, { type: 'setConfirm', confirm: 'leave' })).toBe(s);
+    expect(reduce(s, { type: 'setConfirm', confirm: 'none' }).ui.confirm).toBe('none');
+  });
+
+  it('keeps the keyboard inset (MB17): rounded, never negative, unchanged state when equal', () => {
+    const s = reduce(createRoom(), { type: 'setKeyboardInset', inset: 335.6 });
+    expect(s.ui.keyboardInset).toBe(336);
+    expect(reduce(s, { type: 'setKeyboardInset', inset: 336 })).toBe(s);
+    expect(reduce(s, { type: 'setKeyboardInset', inset: -4 }).ui.keyboardInset).toBe(0);
+  });
+
+  it('moves the viewer to a student for the student view (MB15), and ignores unknown or current ids', () => {
+    const s = reduce(createRoom(), { type: 'setViewer', participantId: 'anton' });
+    expect(s.participants.filter((p) => p.isSelf).map((p) => p.id)).toEqual(['anton']);
+    expect(s.participants.find((p) => p.isSelf)?.role).toBe('student');
+    expect(s.participants.find((p) => p.id === 'helena')?.isPresenter).toBe(true);
+    expect(reduce(s, { type: 'setViewer', participantId: 'anton' })).toBe(s);
+    expect(reduce(s, { type: 'setViewer', participantId: 'nobody' })).toBe(s);
   });
 });
 

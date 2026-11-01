@@ -59,6 +59,6 @@ describe('parseArtboards', () => {
     expect(committed).toBe(await buildArtboardsJson());
     const entries = parseArtboards(await readFile(artboardsMdPath, 'utf8'));
     expect(entries.filter((e) => e.group === 'desktop')).toHaveLength(33);
-    expect(entries.filter((e) => e.group === 'mobile')).toHaveLength(14);
+    expect(entries.filter((e) => e.group === 'mobile')).toHaveLength(17);
   });
 });
