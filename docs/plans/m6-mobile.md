@@ -109,7 +109,7 @@ Built as planned: MB1–MB10, MB15 and MB16 render `MobileRoomScreen` (`src/rout
 - **Interim pieces batch B replaces:** All slides opens the desktop `SlideOverview` dialog (MB11 wants a sheet); Annotate is a toggle that only records `ui.annotating` (MB12 draws the toolbar); the minimized presentation shows the band with every tile and "Show presentation" (MB13 / MB14 want the slide tile); `keyboard=open` is unmapped (MB17).
 - **Timings:** `npm run check` takes about 49 s wall clock (vitest about 26 s of it, 660 tests); the post-edit hook runs it after every edit.
 
-### Owner decisions needed (batch A)
+### Owner decisions needed (batch A) — approved as built 2026-11-01
 
 1. **Raise hand lives in the React sheet** for the teacher and the student alike, as the canvas notes say ("React holds Raise hand"), as a full-width `TextToggle` with the hand tone. The bar stays at six controls in both views, so a raised hand is visible on your own tile and in the People list, not in the bar. Confirm, or give the student view a seventh bar control (a `ToggleButton` Raise hand, 7 × 44px fits 358px).
 2. **A student sees no updates pill.** The alerts are the teacher's triage (hands to call on, a question to answer, the engagement insight), so the student's header has only the session info. Confirm, or show students the hands and questions.
@@ -133,7 +133,7 @@ Built as planned: MB11–MB14 and MB17 render `MobileRoomScreen` (`src/routes/sc
 - **Deviations from the canvas:** (1) the canvas's "Done" button ends annotating; here the pressed Annotate toggle does (fixed label, X7), and Escape as well, so no second control is needed. (2) The canvas's toolbar has three tools, four inks and Undo; the desktop toolbar's six tools and six inks are reused unchanged (one toolbar), with no Undo (no undo state, as on desktop). (3) The minimized tiles stay 16:9 like every tile (the canvas's 124px rows are squarer), so in portrait the presentation tile's plate truncates to "Presentation…"; its full name is on the button. (4) The All slides sheet's count sits in the header beside the title, as the canvas draws it; the thumbnails carry the number and title under the paper as on desktop (the canvas's number alone is 12px, P6). (5) In landscape with the presentation minimized the bar is 360px wide (the portrait bar's width), not the canvas's 466px: no token is that size and six 44px controls fit.
 - **Timings:** `npm run check` takes about 43 s wall clock (vitest about 26 s, 667 tests, 43% of it jsdom environment setup across 69 files). The batch's new tests run 0.2–1 s each, like batch A's; no heavy render or real timer stands out, and the slowest single tests remain the lint-rules test and `RoomScreen`'s route-level flows.
 
-### Owner decisions needed (batch B)
+### Owner decisions needed (batch B) — approved as built 2026-11-01
 
 1. **Annotate ends with the toggle or Escape, not a "Done" button.** The pressed Annotate toggle stays where the pager's pencil was and ends the mode; the canvas draws a blue "Done" at the toolbar's end instead. Confirm, or add Done beside the toggle.
 2. **The phone reuses the desktop toolbar as is:** six tools and six inks, no Undo, wrapped onto two rows at 44px each. The canvas draws three tools, four inks and Undo in one 34px row. Confirm, or pick a phone subset (Pen, Highlighter, Eraser; four inks).
