@@ -4,6 +4,9 @@ import { artboardPath, artboardsIn, groups, groupTitles } from '../artboards';
 import { RouteLink } from '../RouteLink';
 import { screenFor } from '../screens';
 
+/** Set by the deploy build only; the published Storybook sits next to the app. */
+const storybookUrl = import.meta.env.VITE_STORYBOOK_PATH;
+
 /**
  * `/`: every artboard from `docs/artboards.md`, grouped Desktop and Mobile,
  * linking to its route. The status column says which milestone builds a
@@ -31,8 +34,13 @@ export function IndexPage() {
           override it, for example <code className="font-medium">?people=thirty</code> or{' '}
           <code className="font-medium">?chat=empty</code>.
         </p>
-        <p>
+        <p className="flex flex-wrap gap-x-6">
           <RouteLink href="/tokens">Design tokens</RouteLink>
+          {storybookUrl ? (
+            <RouteLink href={storybookUrl} target="_blank" rel="noreferrer">
+              Storybook (opens in a new tab)
+            </RouteLink>
+          ) : null}
         </p>
       </header>
       {groups.map((group) => {
@@ -48,7 +56,9 @@ export function IndexPage() {
                 const { milestone, Screen } = screenFor(artboard);
                 return (
                   <li key={artboard.stem} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-2">
-                    <span className="w-6 shrink-0 text-right text-sm text-text-muted tabular-nums">{artboard.number}</span>
+                    <span className="w-6 shrink-0 text-right text-sm text-text-muted tabular-nums">
+                      {artboard.number}
+                    </span>
                     <RouteLink href={artboardPath(artboard)} className="min-w-0 flex-1">
                       <span className="truncate">{artboard.title}</span>
                     </RouteLink>

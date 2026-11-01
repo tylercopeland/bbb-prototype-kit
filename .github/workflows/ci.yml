@@ -24,6 +24,24 @@ jobs:
       # The unit tests share one jsdom (isolate: false); a shuffled order proves
       # that src/test/setup.ts resets everything a test can leave behind.
       - run: npx vitest run --reporter=dot --sequence.shuffle --sequence.seed=${{ github.run_number }}
+      # The GitHub Pages build lives under /bbb-prototype-kit/ (deploy.yml); every
+      # other build is at /. Prove the base-path build serves its page, a deep
+      # link and every script, stylesheet and font it references.
+      - name: Smoke-test the build under the Pages path
+        env:
+          BASE_PATH: /bbb-prototype-kit/
+        run: |
+          npx vite build --logLevel warn
+          npx vite preview --port 4173 --strictPort &
+          npx --yes wait-on@8.0.3 -t 30000 http://localhost:4173/bbb-prototype-kit/
+          base=http://localhost:4173/bbb-prototype-kit
+          curl -fsS "$base/" | grep -q '/bbb-prototype-kit/assets/'
+          curl -fsS "$base/desktop/F1Bar-4roh-l8ju" | grep -q '<div id="root">'
+          for asset in $(grep -oE '/bbb-prototype-kit/assets/[^"]+' dist/index.html) \
+                       $(grep -ohE 'url\(/bbb-prototype-kit/assets/[^)]+' dist/assets/*.css | sed 's/^url(//'); do
+            curl -fsS -o /dev/null "http://localhost:4173$asset" || { echo "missing $asset"; exit 1; }
+          done
+          ! grep -lE '(src|href)="/assets/|url\(/assets/' dist/index.html dist/assets/*.css
 
   e2e:
     runs-on: ubuntu-24.04
