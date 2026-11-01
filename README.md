@@ -23,12 +23,12 @@ A clickable prototype of the redesigned BigBlueButton room, built from the desig
 
 There is no server, audio or video. The room is one in-browser store, seeded with the canvas's class of 14 people. Video tiles show avatars, and the clock stands still unless you add `?clock=live`. Reload to reset.
 
-You can play the other participants from the browser console, through `bbbRoom`:
+While a screen is open, you can play the other participants from the browser console, through `bbbRoom`:
 
 ```js
 bbbRoom.dispatch({ type: 'raiseHand', participantId: 'anton' })
 bbbRoom.dispatch({ type: 'sendMessage', from: 'rafaela', text: 'Can you repeat the last slide?' })
-bbbRoom.dispatch({ type: 'requestHelp', roomIndex: 1, from: 'bruno' }) // while breakout rooms are running
+bbbRoom.dispatch({ type: 'requestHelp', roomIndex: 0, from: 'bruno' }) // while breakout rooms run; 0 is Room 1
 bbbRoom.getState() // the whole room state
 ```
 
@@ -41,7 +41,7 @@ The participant ids are the first names in lower case (`bruno`, `rafaela`, `cibe
   - the phone's reconnecting state and phone screen sharing
   - the landscape versions of the phone's student, More, slides and updates sheets
 - **Stubbed controls** show an "isn't part of this prototype yet" message instead:
-  - sharing a video or the whiteboard
+  - sharing a video, computer audio or a URL, and the blank whiteboard
   - every plugin except breakout rooms, poll and timer
   - the Learning Analytics Dashboard
   - the items on the phone's More sheet
@@ -67,14 +67,6 @@ This repo was built with Claude Code, one milestone at a time. `PLAN.md` has the
 | `docs/plans/` | The approved implementation plan for each milestone |
 | `docs/canvas/project/` | Source of every artboard on the two prototype pages, plus the boards they render |
 | `docs/screenshots/` | Optional PNGs for visual comparison |
-
-### Before the first session
-
-1. Put this folder in a new git repo: `git init && git add -A && git commit -m "Starter kit"`.
-2. Optional: export a few key artboards as PNGs into `docs/screenshots/`.
-3. Check `.claude/` made it into the repo. Browser uploads to GitHub skip hidden folders.
-4. Delete the stray Assist paragraph from the low-engagement artboard on the live canvas. It's already removed from the copy in `docs/canvas/project/`.
-5. Review "Open decisions" in `PLAN.md`. The token ones are needed in milestone 1; people status and breakout setup by milestone 4.
 
 ### Running it
 

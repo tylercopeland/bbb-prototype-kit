@@ -4,6 +4,9 @@ import { artboardPath, artboardsIn, groups, groupTitles } from '../artboards';
 import { RouteLink } from '../RouteLink';
 import { screenFor } from '../screens';
 
+/** Set by the deploy build only; the published Storybook sits next to the app. */
+const storybookUrl = import.meta.env.VITE_STORYBOOK_PATH;
+
 /**
  * `/`: every artboard from `docs/artboards.md`, grouped Desktop and Mobile,
  * linking to its route. The status column says which milestone builds a
@@ -11,9 +14,6 @@ import { screenFor } from '../screens';
  * a link) moves focus to the heading, so the room's Leave button does not
  * drop focus on `<body>` (WCAG 2.4.3); a direct load leaves focus alone.
  */
-/** Set by the deploy build only; the published Storybook sits next to the app. */
-const storybookUrl = import.meta.env.VITE_STORYBOOK_PATH;
-
 export function IndexPage() {
   const navigationType = useNavigationType();
   const headingRef = useRef<HTMLHeadingElement>(null);

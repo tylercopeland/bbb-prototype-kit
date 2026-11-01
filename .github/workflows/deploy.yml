@@ -2,8 +2,9 @@
 #   https://tylercopeland.github.io/bbb-prototype-kit/            the app
 #   https://tylercopeland.github.io/bbb-prototype-kit/storybook/  Storybook
 # It runs after CI succeeds on main, so only a green commit is published, and
-# by hand (Actions › Deploy to GitHub Pages › Run workflow). Pages must use
-# "GitHub Actions" as its source (Settings › Pages), set once by the owner.
+# by hand from main (Actions › Deploy to GitHub Pages › Run workflow).
+# configure-pages switches Pages to the "GitHub Actions" source on the first
+# run; if the token may not, the owner sets it once in Settings › Pages.
 name: Deploy to GitHub Pages
 
 on:
@@ -24,7 +25,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    if: (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment:
@@ -43,6 +44,8 @@ jobs:
       - name: Build the app under the Pages path
         run: npm run build
         env:
+          # A project site lives under /<repo>/. (A repo named <user>.github.io
+          # would be a user site at / instead.)
           BASE_PATH: /${{ github.event.repository.name }}/
           VITE_STORYBOOK_PATH: /storybook/
       # Pages serves 404.html for any unknown path, so a deep link such as
@@ -50,6 +53,8 @@ jobs:
       - run: cp dist/index.html dist/404.html
       - run: npx storybook build --quiet --output-dir dist/storybook
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist

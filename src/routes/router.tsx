@@ -23,7 +23,11 @@ export const routes: RouteObject[] = [
   },
 ];
 
-/** Vite's base (`/` or `/bbb-prototype-kit/` on GitHub Pages) without its trailing slash. */
+/**
+ * Vite's base (`/` or `/bbb-prototype-kit/` on GitHub Pages) without its trailing slash. So `/`
+ * resolves to `/bbb-prototype-kit` on Pages, and a reload there 301s to `/bbb-prototype-kit/`:
+ * expected, and harmless.
+ */
 const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
 
 export function createAppRouter() {
