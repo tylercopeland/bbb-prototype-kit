@@ -2,8 +2,10 @@
 
 A clickable prototype of the redesigned BigBlueButton room, built from the design canvas, with its design system in Storybook.
 
-- **Prototype:** https://tylercopeland.github.io/bbb-prototype-kit/
-- **Storybook:** https://tylercopeland.github.io/bbb-prototype-kit/storybook/
+Deployed on Vercel:
+
+- **Prototype:** _add the Vercel URL here_
+- **Storybook:** the same URL followed by `/storybook/`, also linked from the prototype's index page
 
 ## For reviewers
 
@@ -50,6 +52,14 @@ The participant ids are the first names in lower case (`bruno`, `rafaela`, `cibe
 ## For contributors
 
 This repo was built with Claude Code, one milestone at a time. `PLAN.md` has the milestones and decisions, and `CLAUDE.md` the rules every session follows.
+
+### Deploying
+
+The site deploys on Vercel. Import the GitHub repo as a new Vercel project. `vercel.json` sets the build, which builds the app and Storybook into `dist/`, with Storybook at `/storybook/`. It also rewrites every other path to the app, so links straight to a screen, such as `/desktop/F1Bar-4roh-l8ju` or `/mobile/MB1Room`, load it. Nothing needs setting in Vercel's dashboard. Each push to `main` redeploys.
+
+To host the app under a subfolder somewhere else, build with `BASE_PATH=/folder/`.
+
+GitHub Actions runs CI on every push. On a private repo those minutes count against your GitHub plan's allowance, and each push uses roughly 10–15 of them.
 
 ### What's here
 

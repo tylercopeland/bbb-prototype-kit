@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "VITE_STORYBOOK_PATH=/storybook/ npm run build && npx storybook build --quiet --output-dir dist/storybook",
+  "outputDirectory": "dist",
+  "redirects": [{ "source": "/storybook", "destination": "/storybook/", "permanent": false }],
+  "rewrites": [
+    { "source": "/storybook/", "destination": "/storybook/index.html" },
+    { "source": "/((?!storybook/|assets/).*)", "destination": "/index.html" }
+  ]
+}
